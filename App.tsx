@@ -126,19 +126,6 @@ export default function App() {
                 if (isSchemaMismatchError(profilesError) || isSchemaMismatchError(matchesError) || isSchemaMismatchError(participantsError) || isSchemaMismatchError(tokensError) || functionMissing) {
                     setDbSetupRequired(true);
                 }
-            } catch (err) {
-                console.error("Critical error during database check:", err);
-            } finally {
-                setIsLoadingDbCheck(false);
-            }
-        };
-        checkDb();
-    }, []);
-
-    const fetchMatches = useCallback(async () => {
-        // Retry logic for network errors
-        for (let i = 0; i < 3; i++) {
-            try {
                 const { data, error } = await supabase
                     .from('matches')
                     .select('*')
