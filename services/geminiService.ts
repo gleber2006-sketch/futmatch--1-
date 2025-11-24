@@ -1,18 +1,18 @@
 
 
-import { GoogleGenAI, FunctionDeclaration, SchemaType } from "@google/genai";
+import { GoogleGenerativeAI, FunctionDeclaration, SchemaType } from "@google/generative-ai";
 import { GroundingSource, VenueLocation, DraftMatchData } from '../types';
 import { SPORTS_LIST } from '../constants';
 import { supabase } from './supabaseClient';
 
-let ai: GoogleGenAI | null = null;
+let ai: GoogleGenerativeAI | null = null;
 
 export const initGemini = (apiKey: string) => {
   if (!apiKey) {
     console.warn("Gemini API Key is missing!");
     return;
   }
-  ai = new GoogleGenAI({ apiKey });
+  ai = new GoogleGenerativeAI(apiKey);
 };
 
 // --- TOOL DEFINITIONS ---
