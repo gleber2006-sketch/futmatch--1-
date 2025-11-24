@@ -1,0 +1,7 @@
+{
+  "name": "FutMatch",
+  "description": "FutMatch: Seu jogo está a um passo do seu próximo match. Uma plataforma social de esportes que conecta jogadores a partidas locais.",
+  "requestFramePermissions": [
+    "geolocation"
+  ]
+}
