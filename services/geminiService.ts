@@ -1,5 +1,6 @@
 
-import { GoogleGenAI, FunctionDeclaration, Type } from "@google/genai";
+
+import { GoogleGenAI, FunctionDeclaration, SchemaType } from "@google/genai";
 import { GroundingSource, VenueLocation, DraftMatchData } from '../types';
 import { SPORTS_LIST } from '../constants';
 import { supabase } from './supabaseClient';
@@ -21,15 +22,15 @@ const draftMatchTool: FunctionDeclaration = {
   name: 'draftMatch',
   description: 'Prepara/Rascunha os dados para criar uma nova partida no formulário, quando o usuário expressa intenção de criar ou marcar um jogo.',
   parameters: {
-    type: Type.OBJECT,
+    type: SchemaType.OBJECT,
     properties: {
-      name: { type: Type.STRING, description: 'O nome da partida (ex: "Futebol de Quinta").' },
-      sport: { type: Type.STRING, description: `A modalidade. Deve ser uma das: ${SPORTS_LIST.join(', ')}.` },
-      location: { type: Type.STRING, description: 'O local ou endereço.' },
-      date: { type: Type.STRING, description: 'A data YYYY-MM-DD.' },
-      time: { type: Type.STRING, description: 'O horário HH:MM.' },
-      slots: { type: Type.NUMBER, description: 'Número de vagas.' },
-      rules: { type: Type.STRING, description: 'Regras ou observações.' }
+      name: { type: SchemaType.STRING, description: 'O nome da partida (ex: "Futebol de Quinta").' },
+      sport: { type: SchemaType.STRING, description: `A modalidade. Deve ser uma das: ${SPORTS_LIST.join(', ')}.` },
+      location: { type: SchemaType.STRING, description: 'O local ou endereço.' },
+      date: { type: SchemaType.STRING, description: 'A data YYYY-MM-DD.' },
+      time: { type: SchemaType.STRING, description: 'O horário HH:MM.' },
+      slots: { type: SchemaType.NUMBER, description: 'Número de vagas.' },
+      rules: { type: SchemaType.STRING, description: 'Regras ou observações.' }
     },
     required: ['sport'],
   },
@@ -40,11 +41,11 @@ const searchMatchesTool: FunctionDeclaration = {
   name: 'searchMatches',
   description: 'Busca partidas (jogos) JÁ CRIADAS e disponíveis no app FutMatch. Use quando o usuário perguntar "tem jogo hoje?", "onde tem vôlei?", "quais partidas estão rolando?".',
   parameters: {
-    type: Type.OBJECT,
+    type: SchemaType.OBJECT,
     properties: {
-      sport: { type: Type.STRING, description: 'Filtrar por modalidade (ex: Futebol, Vôlei)' },
-      date: { type: Type.STRING, description: 'Filtrar por data específica (YYYY-MM-DD)' },
-      status: { type: Type.STRING, description: 'Filtrar por status (Convocando, Confirmado)' }
+      sport: { type: SchemaType.STRING, description: 'Filtrar por modalidade (ex: Futebol, Vôlei)' },
+      date: { type: SchemaType.STRING, description: 'Filtrar por data específica (YYYY-MM-DD)' },
+      status: { type: SchemaType.STRING, description: 'Filtrar por status (Convocando, Confirmado)' }
     }
   }
 };
@@ -54,11 +55,11 @@ const searchArenasTool: FunctionDeclaration = {
   name: 'searchArenas',
   description: 'Busca quadras, campos e arenas cadastradas na plataforma. Use quando o usuário perguntar "quantas quadras tem?", "onde posso jogar?", "tem quadra de beach tennis?".',
   parameters: {
-    type: Type.OBJECT,
+    type: SchemaType.OBJECT,
     properties: {
-      city: { type: Type.STRING, description: 'Filtrar por cidade' },
-      sport: { type: Type.STRING, description: 'Filtrar por esporte que a arena suporta' },
-      name: { type: Type.STRING, description: 'Nome da arena' }
+      city: { type: SchemaType.STRING, description: 'Filtrar por cidade' },
+      sport: { type: SchemaType.STRING, description: 'Filtrar por esporte que a arena suporta' },
+      name: { type: SchemaType.STRING, description: 'Nome da arena' }
     }
   }
 };
