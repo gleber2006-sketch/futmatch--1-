@@ -15,6 +15,7 @@ import Notifications from './components/Notifications';
 import Wallet from './components/Wallet';
 import { Page, Feature, Profile, Match, Ranking, DraftMatchData } from './types';
 import { supabase } from './services/supabaseClient';
+import { initGemini } from './services/geminiService';
 import { AuthError, Session, User } from '@supabase/supabase-js';
 import DatabaseSetup from './components/DatabaseSetup';
 import LoadingSpinner from './components/LoadingSpinner';
@@ -55,48 +56,45 @@ const isSchemaMismatchError = (error: any): boolean => {
 
 // This type accommodates both form registration (no id, has password) and OAuth (has id, no password).
 type NewUserRegistrationData = Omit<Profile, 'id' | 'points' | 'matchesPlayed' | 'reputation' | 'matchCoins'> & {
-    id?: string;
     password?: string;
 };
 
-
-const App: React.FC = () => {
-    const [session, setSession] = useState<Session | null>(null);
-    const [currentUser, setCurrentUser] = useState<Profile | null>(null);
-    const [loginError, setLoginError] = useState<string | null>(null);
+export default function App() {
     const [activePage, setActivePage] = useState<Page>('explore');
+    const [currentUser, setCurrentUser] = useState<Profile | null>(null);
     const [matches, setMatches] = useState<Match[]>([]);
-    const [rankings, setRankings] = useState<Ranking[]>([]);
-    // An empty new Set() is of type Set<unknown>, which causes a type error. Explicitly type it as new Set<number>().
-    const [joinedMatchIds, setJoinedMatchIds] = useState<Set<number>>(new Set<number>());
-    const [showConfirmation, setShowConfirmation] = useState<string | null>(null);
-    const [dbSetupRequired, setDbSetupRequired] = useState(false);
     const [isLoadingDbCheck, setIsLoadingDbCheck] = useState(true);
+    const [dbSetupRequired, setDbSetupRequired] = useState(false);
+    const [session, setSession] = useState<Session | null>(null);
+    const [joinedMatchIds, setJoinedMatchIds] = useState<Set<number>>(new Set());
+    const [rankings, setRankings] = useState<Ranking[]>([]);
+    const [loginError, setLoginError] = useState<string | null>(null);
+    const [showConfirmation, setShowConfirmation] = useState<string | null>(null);
     const [editingMatch, setEditingMatch] = useState<Match | null>(null);
     const [draftMatchData, setDraftMatchData] = useState<DraftMatchData | null>(null);
     const [selectedChatMatchId, setSelectedChatMatchId] = useState<number | null>(null);
-    const isAuthenticated = !!currentUser;
 
-    // Check if DB tables and columns exist on initial load
+    const isAuthenticated = !!session?.user;
+
     useEffect(() => {
         const checkDb = async () => {
             try {
-                // Check for 'profiles' table and critical columns.
+                // Check for 'profiles' table
                 const { error: profilesError } = await supabase
                     .from('profiles')
-                    .select('id, name, photo_url, points, date_of_birth, matches_played, banner_url, favorite_team')
+                    .select('id')
                     .limit(0);
 
-                // Then check for 'matches' table and critical columns.
+                // Check for 'matches' table
                 const { error: matchesError } = await supabase
                     .from('matches')
-                    .select('id, name, created_by, date, filled_slots, is_boosted')
+                    .select('id')
                     .limit(0);
 
-                // Then check for 'match_participants' table and critical columns.
+                // Check for 'match_participants' table
                 const { error: participantsError } = await supabase
                     .from('match_participants')
-                    .select('match_id, user_id')
+                    .select('match_id')
                     .limit(0);
 
                 // Check for 'tokens' table (New)
@@ -1017,5 +1015,3 @@ const App: React.FC = () => {
         </div>
     );
 };
-
-export default App;
