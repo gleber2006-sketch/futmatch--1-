@@ -126,29 +126,13 @@ export default function App() {
                 if (isSchemaMismatchError(profilesError) || isSchemaMismatchError(matchesError) || isSchemaMismatchError(participantsError) || isSchemaMismatchError(tokensError) || functionMissing) {
                     setDbSetupRequired(true);
                 }
-                try {
-                    const { data, error } = await supabase
-                        .from('matches')
-                        .select('*')
-                        .order('date', { ascending: true });
-
-                    if (error) throw error;
-
-                    // Convert date strings back to Date objects
-                    const formattedMatches = data.map(m => ({ ...m, date: new Date(m.date) }));
-                    setMatches(formattedMatches);
-                    return; // Success, exit loop
-                } catch (error: any) {
-                    const isNetworkError = error.message?.includes('Failed to fetch') || error.message?.includes('Network request failed') || error.name === 'TypeError';
-
-                    if (i === 2 || !isNetworkError) {
-                        console.error('Error fetching matches:', (error as AuthError)?.message ?? error);
-                    } else {
-                        // Wait before retrying
-                        await new Promise(r => setTimeout(r, 1000 * (i + 1)));
-                    }
-                }
+            } catch (err) {
+                console.error("Critical error during database check:", err);
+            } finally {
+                setIsLoadingDbCheck(false);
             }
+        };
+        checkDb();
     }, []);
 
     const handleRegister = useCallback(async (newUser: NewUserRegistrationData) => {
