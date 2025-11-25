@@ -4,7 +4,13 @@ import { GroundingSource, VenueLocation, DraftMatchData } from '../types';
 import { SPORTS_LIST } from '../constants';
 import { supabase } from './supabaseClient';
 
-const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+const apiKey = process.env.API_KEY || import.meta.env.VITE_GEMINI_API_KEY;
+
+if (!apiKey) {
+  console.warn("Gemini API Key is missing! ChatBot features may not work.");
+}
+
+const ai = new GoogleGenAI({ apiKey: apiKey || '' });
 
 // --- TOOL DEFINITIONS ---
 
@@ -29,79 +35,79 @@ const draftMatchTool: FunctionDeclaration = {
 
 // 2. Buscar Partidas (Retrieval)
 const searchMatchesTool: FunctionDeclaration = {
-    name: 'searchMatches',
-    description: 'Busca partidas (jogos) JÁ CRIADAS e disponíveis no app FutMatch. Use quando o usuário perguntar "tem jogo hoje?", "onde tem vôlei?", "quais partidas estão rolando?".',
-    parameters: {
-        type: Type.OBJECT,
-        properties: {
-            sport: { type: Type.STRING, description: 'Filtrar por modalidade (ex: Futebol, Vôlei)' },
-            date: { type: Type.STRING, description: 'Filtrar por data específica (YYYY-MM-DD)' },
-            status: { type: Type.STRING, description: 'Filtrar por status (Convocando, Confirmado)' }
-        }
+  name: 'searchMatches',
+  description: 'Busca partidas (jogos) JÁ CRIADAS e disponíveis no app FutMatch. Use quando o usuário perguntar "tem jogo hoje?", "onde tem vôlei?", "quais partidas estão rolando?".',
+  parameters: {
+    type: Type.OBJECT,
+    properties: {
+      sport: { type: Type.STRING, description: 'Filtrar por modalidade (ex: Futebol, Vôlei)' },
+      date: { type: Type.STRING, description: 'Filtrar por data específica (YYYY-MM-DD)' },
+      status: { type: Type.STRING, description: 'Filtrar por status (Convocando, Confirmado)' }
     }
+  }
 };
 
 // 3. Buscar Arenas (Retrieval)
 const searchArenasTool: FunctionDeclaration = {
-    name: 'searchArenas',
-    description: 'Busca quadras, campos e arenas cadastradas na plataforma. Use quando o usuário perguntar "quantas quadras tem?", "onde posso jogar?", "tem quadra de beach tennis?".',
-    parameters: {
-        type: Type.OBJECT,
-        properties: {
-            city: { type: Type.STRING, description: 'Filtrar por cidade' },
-            sport: { type: Type.STRING, description: 'Filtrar por esporte que a arena suporta' },
-            name: { type: Type.STRING, description: 'Nome da arena' }
-        }
+  name: 'searchArenas',
+  description: 'Busca quadras, campos e arenas cadastradas na plataforma. Use quando o usuário perguntar "quantas quadras tem?", "onde posso jogar?", "tem quadra de beach tennis?".',
+  parameters: {
+    type: Type.OBJECT,
+    properties: {
+      city: { type: Type.STRING, description: 'Filtrar por cidade' },
+      sport: { type: Type.STRING, description: 'Filtrar por esporte que a arena suporta' },
+      name: { type: Type.STRING, description: 'Nome da arena' }
     }
+  }
 };
 
 // --- HELPER FUNCTIONS (DATABASE QUERIES) ---
 
 async function executeSearchMatches(args: any) {
-    try {
-        let query = supabase.from('matches').select('*').neq('status', 'Cancelado');
-        
-        if (args.sport) query = query.ilike('sport', `%${args.sport}%`);
-        if (args.date) query = query.eq('date', args.date); // Note: DB stores timestamp, simple date match might miss. Ideally range.
-        // For simplicity in this demo, we'll fetch recent matches if no date, or try precise match
-        if (args.status) query = query.eq('status', args.status);
+  try {
+    let query = supabase.from('matches').select('*').neq('status', 'Cancelado');
 
-        const { data, error } = await query.order('date', { ascending: true }).limit(5);
-        
-        if (error) return `Erro ao buscar partidas: ${error.message}`;
-        if (!data || data.length === 0) return "Nenhuma partida encontrada com esses critérios.";
-        
-        return JSON.stringify(data.map(m => ({
-            id: m.id,
-            name: m.name,
-            sport: m.sport,
-            date: new Date(m.date).toLocaleString('pt-BR'),
-            location: m.location,
-            slots: `${m.filled_slots}/${m.slots}`,
-            status: m.status
-        })));
-    } catch (e) {
-        return "Erro ao executar busca no banco.";
-    }
+    if (args.sport) query = query.ilike('sport', `%${args.sport}%`);
+    if (args.date) query = query.eq('date', args.date); // Note: DB stores timestamp, simple date match might miss. Ideally range.
+    // For simplicity in this demo, we'll fetch recent matches if no date, or try precise match
+    if (args.status) query = query.eq('status', args.status);
+
+    const { data, error } = await query.order('date', { ascending: true }).limit(5);
+
+    if (error) return `Erro ao buscar partidas: ${error.message}`;
+    if (!data || data.length === 0) return "Nenhuma partida encontrada com esses critérios.";
+
+    return JSON.stringify(data.map(m => ({
+      id: m.id,
+      name: m.name,
+      sport: m.sport,
+      date: new Date(m.date).toLocaleString('pt-BR'),
+      location: m.location,
+      slots: `${m.filled_slots}/${m.slots}`,
+      status: m.status
+    })));
+  } catch (e) {
+    return "Erro ao executar busca no banco.";
+  }
 }
 
 async function executeSearchArenas(args: any) {
-    try {
-        let query = supabase.from('arenas').select('name, city, neighborhood, sports, price_info, is_partner');
+  try {
+    let query = supabase.from('arenas').select('name, city, neighborhood, sports, price_info, is_partner');
 
-        if (args.city) query = query.ilike('city', `%${args.city}%`);
-        if (args.name) query = query.ilike('name', `%${args.name}%`);
-        if (args.sport) query = query.contains('sports', [args.sport]); // Assuming sports is array
+    if (args.city) query = query.ilike('city', `%${args.city}%`);
+    if (args.name) query = query.ilike('name', `%${args.name}%`);
+    if (args.sport) query = query.contains('sports', [args.sport]); // Assuming sports is array
 
-        const { data, error } = await query.limit(5);
+    const { data, error } = await query.limit(5);
 
-        if (error) return `Erro ao buscar arenas: ${error.message}`;
-        if (!data || data.length === 0) return "Nenhuma arena encontrada com esses critérios.";
+    if (error) return `Erro ao buscar arenas: ${error.message}`;
+    if (!data || data.length === 0) return "Nenhuma arena encontrada com esses critérios.";
 
-        return JSON.stringify(data);
-    } catch (e) {
-        return "Erro ao executar busca no banco.";
-    }
+    return JSON.stringify(data);
+  } catch (e) {
+    return "Erro ao executar busca no banco.";
+  }
 }
 
 
@@ -140,87 +146,87 @@ export const getBotResponse = async (
 
     // 1. Primeira chamada ao modelo (Decision Making)
     const response = await ai.models.generateContent({
-        model: "gemini-2.5-flash",
-        contents: { parts: [{ text: prompt }] },
-        config: {
-          tools: [
-            { googleMaps: {} },
-            { functionDeclarations: [draftMatchTool, searchMatchesTool, searchArenasTool] }
-          ],
-          toolConfig: location ? {
-            retrievalConfig: {
-              latLng: {
-                latitude: location.latitude,
-                longitude: location.longitude,
-              }
+      model: "gemini-2.5-flash",
+      contents: { parts: [{ text: prompt }] },
+      config: {
+        tools: [
+          { googleMaps: {} },
+          { functionDeclarations: [draftMatchTool, searchMatchesTool, searchArenasTool] }
+        ],
+        toolConfig: location ? {
+          retrievalConfig: {
+            latLng: {
+              latitude: location.latitude,
+              longitude: location.longitude,
             }
-          } : undefined,
-        },
+          }
+        } : undefined,
+      },
     });
 
     let text = response.text || "";
     let draftData: DraftMatchData | undefined;
-    
+
     const functionCalls = response.functionCalls;
-    
+
     // 2. Processar Chamadas de Função
     if (functionCalls && functionCalls.length > 0) {
-        for (const call of functionCalls) {
-            // A. Ação de Rascunho (Retorna controle ao App UI)
-            if (call.name === 'draftMatch') {
-                draftData = call.args as DraftMatchData;
-                text = "Beleza! Abri o formulário com os dados que você pediu. É só confirmar!";
-            } 
-            // B. Ação de Busca (Precisa de resposta do banco para gerar texto final)
-            else if (call.name === 'searchMatches') {
-                const dbResult = await executeSearchMatches(call.args);
-                // Chamada recursiva ou segundo prompt com o contexto
-                // Para simplificar, faremos uma segunda chamada rápida para interpretar o JSON
-                const followUpPrompt = `
+      for (const call of functionCalls) {
+        // A. Ação de Rascunho (Retorna controle ao App UI)
+        if (call.name === 'draftMatch') {
+          draftData = call.args as DraftMatchData;
+          text = "Beleza! Abri o formulário com os dados que você pediu. É só confirmar!";
+        }
+        // B. Ação de Busca (Precisa de resposta do banco para gerar texto final)
+        else if (call.name === 'searchMatches') {
+          const dbResult = await executeSearchMatches(call.args);
+          // Chamada recursiva ou segundo prompt com o contexto
+          // Para simplificar, faremos uma segunda chamada rápida para interpretar o JSON
+          const followUpPrompt = `
                     O usuário perguntou: "${message}".
                     A ferramenta 'searchMatches' retornou estes dados do banco:
                     ${dbResult}
                     
                     Responda ao usuário de forma natural resumindo essas informações.
                 `;
-                const followUpResp = await ai.models.generateContent({
-                    model: "gemini-2.5-flash",
-                    contents: { parts: [{ text: followUpPrompt }] }
-                });
-                text = followUpResp.text || "Encontrei algumas partidas!";
-            }
-            else if (call.name === 'searchArenas') {
-                const dbResult = await executeSearchArenas(call.args);
-                const followUpPrompt = `
+          const followUpResp = await ai.models.generateContent({
+            model: "gemini-2.5-flash",
+            contents: { parts: [{ text: followUpPrompt }] }
+          });
+          text = followUpResp.text || "Encontrei algumas partidas!";
+        }
+        else if (call.name === 'searchArenas') {
+          const dbResult = await executeSearchArenas(call.args);
+          const followUpPrompt = `
                     O usuário perguntou: "${message}".
                     A ferramenta 'searchArenas' retornou estes dados do banco:
                     ${dbResult}
                     
                     Responda ao usuário de forma natural resumindo essas informações.
                 `;
-                const followUpResp = await ai.models.generateContent({
-                    model: "gemini-2.5-flash",
-                    contents: { parts: [{ text: followUpPrompt }] }
-                });
-                text = followUpResp.text || "Encontrei algumas arenas!";
-            }
+          const followUpResp = await ai.models.generateContent({
+            model: "gemini-2.5-flash",
+            contents: { parts: [{ text: followUpPrompt }] }
+          });
+          text = followUpResp.text || "Encontrei algumas arenas!";
         }
+      }
     }
 
     // Processar fontes do Google Maps se houver (da primeira ou segunda chamada, 
     // mas aqui simplificamos pegando da primeira, pois o Maps vem via tool googleMaps)
     const groundingChunks = response.candidates?.[0]?.groundingMetadata?.groundingChunks || [];
     const sources: GroundingSource[] = groundingChunks
-        .map((chunk: any) => ({
-            uri: chunk.maps?.uri || '',
-            title: chunk.maps?.title || 'Google Maps'
-        }))
-        .filter((source: GroundingSource) => source.uri);
+      .map((chunk: any) => ({
+        uri: chunk.maps?.uri || '',
+        title: chunk.maps?.title || 'Google Maps'
+      }))
+      .filter((source: GroundingSource) => source.uri);
 
-    return { 
-        text: text, 
-        sources, 
-        draftData 
+    return {
+      text: text,
+      sources,
+      draftData
     };
 
   } catch (error) {
@@ -232,53 +238,53 @@ export const getBotResponse = async (
 // --- IMAGE GENERATION HELPERS (Keep existing) ---
 
 export const generateAvatar = async (name: string): Promise<string | null> => {
-    try {
-        const prompt = `A simple, modern, flat design avatar icon for a sports social network profile. The user's name is "${name}". The avatar should be vibrant and energetic, suitable for a football player. Clean background, no text in the image.`;
+  try {
+    const prompt = `A simple, modern, flat design avatar icon for a sports social network profile. The user's name is "${name}". The avatar should be vibrant and energetic, suitable for a football player. Clean background, no text in the image.`;
 
-        const response = await ai.models.generateImages({
-            model: 'imagen-4.0-generate-001',
-            prompt: prompt,
-            config: {
-                numberOfImages: 1,
-                outputMimeType: 'image/jpeg',
-                aspectRatio: '1:1',
-            },
-        });
+    const response = await ai.models.generateImages({
+      model: 'imagen-4.0-generate-001',
+      prompt: prompt,
+      config: {
+        numberOfImages: 1,
+        outputMimeType: 'image/jpeg',
+        aspectRatio: '1:1',
+      },
+    });
 
-        if (response.generatedImages && response.generatedImages.length > 0) {
-            const base64ImageBytes: string = response.generatedImages[0].image.imageBytes;
-            return `data:image/jpeg;base64,${base64ImageBytes}`;
-        }
-        return null;
-    } catch (error) {
-        console.error("Error generating avatar:", (error as Error)?.message ?? error);
-        return null;
+    if (response.generatedImages && response.generatedImages.length > 0) {
+      const base64ImageBytes: string = response.generatedImages[0].image.imageBytes;
+      return `data:image/jpeg;base64,${base64ImageBytes}`;
     }
+    return null;
+  } catch (error) {
+    console.error("Error generating avatar:", (error as Error)?.message ?? error);
+    return null;
+  }
 };
 
 export const generateSportsBackground = async (): Promise<string | null> => {
-    try {
-        const prompt = `A vibrant, high-resolution, professional photograph of a sports scene suitable for a website background. Epic, cinematic, wide-angle shot. Could be a soccer field at sunset, a basketball court with dramatic lighting, or a volleyball court on a beach. No people or minimal people, focus on the empty field/court.`;
+  try {
+    const prompt = `A vibrant, high-resolution, professional photograph of a sports scene suitable for a website background. Epic, cinematic, wide-angle shot. Could be a soccer field at sunset, a basketball court with dramatic lighting, or a volleyball court on a beach. No people or minimal people, focus on the empty field/court.`;
 
-        const response = await ai.models.generateImages({
-            model: 'imagen-4.0-generate-001',
-            prompt: prompt,
-            config: {
-                numberOfImages: 1,
-                outputMimeType: 'image/jpeg',
-                aspectRatio: '16:9',
-            },
-        });
+    const response = await ai.models.generateImages({
+      model: 'imagen-4.0-generate-001',
+      prompt: prompt,
+      config: {
+        numberOfImages: 1,
+        outputMimeType: 'image/jpeg',
+        aspectRatio: '16:9',
+      },
+    });
 
-        if (response.generatedImages && response.generatedImages.length > 0) {
-            const base64ImageBytes: string = response.generatedImages[0].image.imageBytes;
-            return `data:image/jpeg;base64,${base64ImageBytes}`;
-        }
-        return null;
-    } catch (error) {
-        console.error("Error generating sports background:", (error as Error)?.message ?? error);
-        return null;
+    if (response.generatedImages && response.generatedImages.length > 0) {
+      const base64ImageBytes: string = response.generatedImages[0].image.imageBytes;
+      return `data:image/jpeg;base64,${base64ImageBytes}`;
     }
+    return null;
+  } catch (error) {
+    console.error("Error generating sports background:", (error as Error)?.message ?? error);
+    return null;
+  }
 };
 
 export const searchLocalVenues = async (
@@ -299,55 +305,55 @@ export const searchLocalVenues = async (
     Não inclua markdown (\`\`\`json). Apenas o JSON puro.`;
 
     const response = await ai.models.generateContent({
-        model: "gemini-2.5-flash",
-        contents: { parts: [{ text: prompt }] },
-        config: {
-          tools: [{googleMaps: {}}],
-          toolConfig: {
-            retrievalConfig: {
-              latLng: {
-                latitude: location.latitude,
-                longitude: location.longitude,
-              }
+      model: "gemini-2.5-flash",
+      contents: { parts: [{ text: prompt }] },
+      config: {
+        tools: [{ googleMaps: {} }],
+        toolConfig: {
+          retrievalConfig: {
+            latLng: {
+              latitude: location.latitude,
+              longitude: location.longitude,
             }
           }
-        },
+        }
+      },
     });
 
     const text = response.text.trim();
     const cleanText = text.replace(/^```json\s*/, '').replace(/\s*```$/, '');
 
     if (!cleanText) {
-        return [];
+      return [];
     }
-    
+
     try {
       const result = JSON.parse(cleanText);
 
       if (Array.isArray(result)) {
-          const groundingChunks = response.candidates?.[0]?.groundingMetadata?.groundingChunks || [];
-          const genericUri = groundingChunks.find((chunk: any) => chunk.maps?.uri)?.maps?.uri;
+        const groundingChunks = response.candidates?.[0]?.groundingMetadata?.groundingChunks || [];
+        const genericUri = groundingChunks.find((chunk: any) => chunk.maps?.uri)?.maps?.uri;
 
-          return result.map((item: any) => ({
-              name: item.name,
-              address: item.address,
-              lat: item.lat,
-              lng: item.lng,
-              uri: item.uri || genericUri 
-          })) as VenueLocation[];
+        return result.map((item: any) => ({
+          name: item.name,
+          address: item.address,
+          lat: item.lat,
+          lng: item.lng,
+          uri: item.uri || genericUri
+        })) as VenueLocation[];
       } else if (result && typeof result === 'object' && result.name) {
-          return [{
-             name: result.name,
-             address: result.address,
-             lat: result.lat,
-             lng: result.lng,
-             uri: result.uri
-          }] as VenueLocation[];
+        return [{
+          name: result.name,
+          address: result.address,
+          lat: result.lat,
+          lng: result.lng,
+          uri: result.uri
+        }] as VenueLocation[];
       }
-      
+
       return [];
     } catch (parseError) {
-        return [];
+      return [];
     }
 
   } catch (apiError) {
@@ -366,16 +372,16 @@ export const findVenueImage = async (venueName: string, city: string): Promise<s
     Se não encontrar nada, retorne "null".`;
 
     const response = await ai.models.generateContent({
-        model: "gemini-2.5-flash",
-        contents: { parts: [{ text: prompt }] },
-        config: {
-          tools: [{ googleSearch: {} }],
-        },
+      model: "gemini-2.5-flash",
+      contents: { parts: [{ text: prompt }] },
+      config: {
+        tools: [{ googleSearch: {} }],
+      },
     });
 
     const text = response.text?.trim();
     if (!text || text.toLowerCase().includes('null') || !text.startsWith('http')) {
-        return null;
+      return null;
     }
     return text.split(' ')[0];
   } catch (error) {
