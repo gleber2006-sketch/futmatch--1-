@@ -76,6 +76,44 @@ export default function App() {
 
     const isAuthenticated = !!session?.user;
 
+    // Initialize Gemini AI on mount
+    useEffect(() => {
+        const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
+        if (apiKey) {
+            initGemini(apiKey);
+        } else {
+            console.warn('VITE_GEMINI_API_KEY not found in environment variables');
+        }
+    }, []);
+
+    // Fetch matches function
+    const fetchMatches = useCallback(async () => {
+        for (let i = 0; i < 3; i++) {
+            try {
+                const { data, error } = await supabase
+                    .from('matches')
+                    .select('*')
+                    .order('date', { ascending: true });
+
+                if (error) throw error;
+
+                // Convert date strings back to Date objects
+                const formattedMatches = data.map(m => ({ ...m, date: new Date(m.date) }));
+                setMatches(formattedMatches);
+                return; // Success, exit loop
+            } catch (error: any) {
+                const isNetworkError = error.message?.includes('Failed to fetch') || error.message?.includes('Network request failed') || error.name === 'TypeError';
+
+                if (i === 2 || !isNetworkError) {
+                    console.error('Error fetching matches:', (error as AuthError)?.message ?? error);
+                } else {
+                    // Wait before retrying
+                    await new Promise(r => setTimeout(r, 1000 * (i + 1)));
+                }
+            }
+        }
+    }, []);
+
     useEffect(() => {
         const checkDb = async () => {
             try {
@@ -126,29 +164,18 @@ export default function App() {
                 if (isSchemaMismatchError(profilesError) || isSchemaMismatchError(matchesError) || isSchemaMismatchError(participantsError) || isSchemaMismatchError(tokensError) || functionMissing) {
                     setDbSetupRequired(true);
                 }
-                const { data, error } = await supabase
-                    .from('matches')
-                    .select('*')
-                    .order('date', { ascending: true });
 
-                if (error) throw error;
-
-                // Convert date strings back to Date objects
-                const formattedMatches = data.map(m => ({ ...m, date: new Date(m.date) }));
-                setMatches(formattedMatches);
-                return; // Success, exit loop
+                // Load initial matches
+                await fetchMatches();
             } catch (error: any) {
-                const isNetworkError = error.message?.includes('Failed to fetch') || error.message?.includes('Network request failed') || error.name === 'TypeError';
-
-                if (i === 2 || !isNetworkError) {
-                    console.error('Error fetching matches:', (error as AuthError)?.message ?? error);
-                } else {
-                    // Wait before retrying
-                    await new Promise(r => setTimeout(r, 1000 * (i + 1)));
-                }
+                console.error('Error during database check:', (error as AuthError)?.message ?? error);
+            } finally {
+                setIsLoadingDbCheck(false);
             }
-        }
-    }, []);
+        };
+
+        checkDb();
+    }, [fetchMatches]);
 
     const handleRegister = useCallback(async (newUser: NewUserRegistrationData) => {
         setLoginError(null);
