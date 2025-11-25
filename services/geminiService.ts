@@ -1,19 +1,16 @@
 
-
 import { GoogleGenerativeAI, FunctionDeclaration, SchemaType } from "@google/generative-ai";
 import { GroundingSource, VenueLocation, DraftMatchData } from '../types';
 import { SPORTS_LIST } from '../constants';
 import { supabase } from './supabaseClient';
 
-let ai: GoogleGenerativeAI | null = null;
+const apiKey = process.env.API_KEY || import.meta.env.VITE_GEMINI_API_KEY;
 
-export const initGemini = (apiKey: string) => {
-  if (!apiKey) {
-    console.warn("Gemini API Key is missing!");
-    return;
-  }
-  ai = new GoogleGenerativeAI(apiKey);
-};
+if (!apiKey) {
+  console.warn("Gemini API Key is missing! ChatBot features may not work.");
+}
+
+const ai = new GoogleGenAI({ apiKey: apiKey || '' });
 
 // --- TOOL DEFINITIONS ---
 
@@ -22,15 +19,15 @@ const draftMatchTool: FunctionDeclaration = {
   name: 'draftMatch',
   description: 'Prepara/Rascunha os dados para criar uma nova partida no formulário, quando o usuário expressa intenção de criar ou marcar um jogo.',
   parameters: {
-    type: SchemaType.OBJECT,
+    type: Type.OBJECT,
     properties: {
-      name: { type: SchemaType.STRING, description: 'O nome da partida (ex: "Futebol de Quinta").' },
-      sport: { type: SchemaType.STRING, description: `A modalidade. Deve ser uma das: ${SPORTS_LIST.join(', ')}.` },
-      location: { type: SchemaType.STRING, description: 'O local ou endereço.' },
-      date: { type: SchemaType.STRING, description: 'A data YYYY-MM-DD.' },
-      time: { type: SchemaType.STRING, description: 'O horário HH:MM.' },
-      slots: { type: SchemaType.NUMBER, description: 'Número de vagas.' },
-      rules: { type: SchemaType.STRING, description: 'Regras ou observações.' }
+      name: { type: Type.STRING, description: 'O nome da partida (ex: "Futebol de Quinta").' },
+      sport: { type: Type.STRING, description: `A modalidade. Deve ser uma das: ${SPORTS_LIST.join(', ')}.` },
+      location: { type: Type.STRING, description: 'O local ou endereço.' },
+      date: { type: Type.STRING, description: 'A data YYYY-MM-DD.' },
+      time: { type: Type.STRING, description: 'O horário HH:MM.' },
+      slots: { type: Type.NUMBER, description: 'Número de vagas.' },
+      rules: { type: Type.STRING, description: 'Regras ou observações.' }
     },
     required: ['sport'],
   },
@@ -41,11 +38,11 @@ const searchMatchesTool: FunctionDeclaration = {
   name: 'searchMatches',
   description: 'Busca partidas (jogos) JÁ CRIADAS e disponíveis no app FutMatch. Use quando o usuário perguntar "tem jogo hoje?", "onde tem vôlei?", "quais partidas estão rolando?".',
   parameters: {
-    type: SchemaType.OBJECT,
+    type: Type.OBJECT,
     properties: {
-      sport: { type: SchemaType.STRING, description: 'Filtrar por modalidade (ex: Futebol, Vôlei)' },
-      date: { type: SchemaType.STRING, description: 'Filtrar por data específica (YYYY-MM-DD)' },
-      status: { type: SchemaType.STRING, description: 'Filtrar por status (Convocando, Confirmado)' }
+      sport: { type: Type.STRING, description: 'Filtrar por modalidade (ex: Futebol, Vôlei)' },
+      date: { type: Type.STRING, description: 'Filtrar por data específica (YYYY-MM-DD)' },
+      status: { type: Type.STRING, description: 'Filtrar por status (Convocando, Confirmado)' }
     }
   }
 };
@@ -55,11 +52,11 @@ const searchArenasTool: FunctionDeclaration = {
   name: 'searchArenas',
   description: 'Busca quadras, campos e arenas cadastradas na plataforma. Use quando o usuário perguntar "quantas quadras tem?", "onde posso jogar?", "tem quadra de beach tennis?".',
   parameters: {
-    type: SchemaType.OBJECT,
+    type: Type.OBJECT,
     properties: {
-      city: { type: SchemaType.STRING, description: 'Filtrar por cidade' },
-      sport: { type: SchemaType.STRING, description: 'Filtrar por esporte que a arena suporta' },
-      name: { type: SchemaType.STRING, description: 'Nome da arena' }
+      city: { type: Type.STRING, description: 'Filtrar por cidade' },
+      sport: { type: Type.STRING, description: 'Filtrar por esporte que a arena suporta' },
+      name: { type: Type.STRING, description: 'Nome da arena' }
     }
   }
 };
@@ -146,10 +143,6 @@ export const getBotResponse = async (
       
       Usuário: "${message}"
     `;
-
-    if (!ai) {
-      return { text: "O chat não foi inicializado corretamente. Verifique a chave de API.", sources: [] };
-    }
 
     // 1. Primeira chamada ao modelo (Decision Making)
     const response = await ai.models.generateContent({
@@ -246,7 +239,6 @@ export const getBotResponse = async (
 
 export const generateAvatar = async (name: string): Promise<string | null> => {
   try {
-    if (!ai) return null;
     const prompt = `A simple, modern, flat design avatar icon for a sports social network profile. The user's name is "${name}". The avatar should be vibrant and energetic, suitable for a football player. Clean background, no text in the image.`;
 
     const response = await ai.models.generateImages({
@@ -272,7 +264,6 @@ export const generateAvatar = async (name: string): Promise<string | null> => {
 
 export const generateSportsBackground = async (): Promise<string | null> => {
   try {
-    if (!ai) return null;
     const prompt = `A vibrant, high-resolution, professional photograph of a sports scene suitable for a website background. Epic, cinematic, wide-angle shot. Could be a soccer field at sunset, a basketball court with dramatic lighting, or a volleyball court on a beach. No people or minimal people, focus on the empty field/court.`;
 
     const response = await ai.models.generateImages({
@@ -301,7 +292,6 @@ export const searchLocalVenues = async (
   location: { latitude: number; longitude: number }
 ): Promise<VenueLocation[]> => {
   try {
-    if (!ai) return [];
     const prompt = `Encontre até 3 locais esportivos (como quadras, ginásios ou campos) que melhor correspondam à busca por "${query}", perto da latitude ${location.latitude} e longitude ${location.longitude}.
     
     Retorne um ARRAY JSON contendo as sugestões encontradas. Cada objeto do array deve ter:
@@ -374,7 +364,6 @@ export const searchLocalVenues = async (
 
 export const findVenueImage = async (venueName: string, city: string): Promise<string | null> => {
   try {
-    if (!ai) return null;
     const prompt = `Encontre uma URL de imagem pública e válida para o local esportivo "${venueName}" na cidade de "${city}".
     Use a Busca do Google para encontrar uma foto representativa do local (fachada, quadra, campo, interior).
     Retorne APENAS a string da URL da imagem. 

@@ -169,18 +169,6 @@ export default function App() {
                 await fetchMatches();
             } catch (error: any) {
                 console.error('Error during database check:', (error as AuthError)?.message ?? error);
-            } finally {
-                setIsLoadingDbCheck(false);
-            }
-        };
-
-        checkDb();
-    }, [fetchMatches]);
-
-    const handleRegister = useCallback(async (newUser: NewUserRegistrationData) => {
-        setLoginError(null);
-        try {
-            if (!newUser.email || !newUser.password) {
                 throw new Error("Email and password are required for registration.");
             }
             // Step 1: Sign up user. The database trigger will create the basic profile.
