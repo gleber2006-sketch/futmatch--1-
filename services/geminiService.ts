@@ -1,5 +1,5 @@
 
-import { GoogleGenAI, FunctionDeclaration, Type } from "@google/genai";
+import { GoogleGenerativeAI, FunctionDeclaration, SchemaType } from "@google/generative-ai";
 import { GroundingSource, VenueLocation, DraftMatchData } from '../types';
 import { SPORTS_LIST } from '../constants';
 import { supabase } from './supabaseClient';
