@@ -169,55 +169,11 @@ export default function App() {
                 await fetchMatches();
             } catch (error: any) {
                 console.error('Error during database check:', (error as AuthError)?.message ?? error);
-                throw new Error("Email and password are required for registration.");
             }
-            // Step 1: Sign up user. The database trigger will create the basic profile.
-            const { data: authData, error: authError } = await supabase.auth.signUp({
-                email: newUser.email,
-                password: newUser.password,
-                options: {
-                    data: {
-                        full_name: newUser.name,
-                        avatar_url: newUser.photoUrl,
-                    }
-                }
-            });
-
-            if (authError) throw authError;
-            if (!authData.user) throw new Error("Registration failed, user not created.");
-
-            // Step 2: Update the just-created profile with additional details from the form.
-            const profileUpdateData = {
-                date_of_birth: newUser.dateOfBirth,
-                city: newUser.city,
-                state: newUser.state,
-                sport: newUser.sport,
-                position: newUser.position,
-                bio: newUser.bio,
-                updated_at: new Date().toISOString(),
-            };
-
-            const { error: updateError } = await supabase
-                .from('profiles')
-                .update(profileUpdateData)
-                .eq('id', authData.user.id);
-
-            if (updateError) {
-                console.warn(`Registration successful, but failed to update profile details: ${updateError.message}`);
-            }
-            setActivePage('profile');
-        } catch (error: any) {
-            let message = error.message || 'An unknown registration error occurred.';
-
-            // Translate common registration errors
-            if (message.includes('User already registered')) {
-                message = 'Este e-mail já está cadastrado. Tente fazer login.';
-            }
-
-            setLoginError(message);
-            console.error('Registration Error:', error);
-        }
-    }, []);
+            setIsLoadingDbCheck(false);
+        };
+        checkDb();
+    }, [fetchMatches]);
 
     const fetchUserProfile = useCallback(async (user: User): Promise<Profile | null> => {
         // Mapper function to convert snake_case from DB to camelCase for the app
@@ -707,6 +663,57 @@ export default function App() {
         });
         if (error) setLoginError(error.message);
     }
+
+    const handleRegister = useCallback(async (newUser: NewUserRegistrationData) => {
+        setLoginError(null);
+        try {
+            // Step 1: Sign up user. The database trigger will create the basic profile.
+            const { data: authData, error: authError } = await supabase.auth.signUp({
+                email: newUser.email!,
+                password: newUser.password!,
+                options: {
+                    data: {
+                        full_name: newUser.name,
+                        avatar_url: newUser.photoUrl,
+                    }
+                }
+            });
+
+            if (authError) throw authError;
+            if (!authData.user) throw new Error("Registration failed, user not created.");
+
+            // Step 2: Update the just-created profile with additional details from the form.
+            const profileUpdateData = {
+                date_of_birth: newUser.dateOfBirth,
+                city: newUser.city,
+                state: newUser.state,
+                sport: newUser.sport,
+                position: newUser.position,
+                bio: newUser.bio,
+                updated_at: new Date().toISOString(),
+            };
+
+            const { error: updateError } = await supabase
+                .from('profiles')
+                .update(profileUpdateData)
+                .eq('id', authData.user.id);
+
+            if (updateError) {
+                console.warn(`Registration successful, but failed to update profile details: ${updateError.message}`);
+            }
+            setActivePage('profile');
+        } catch (error: any) {
+            let message = error.message || 'An unknown registration error occurred.';
+
+            // Translate common registration errors
+            if (message.includes('User already registered')) {
+                message = 'Este e-mail já está cadastrado. Tente fazer login.';
+            }
+
+            setLoginError(message);
+            console.error('Registration Error:', error);
+        }
+    }, []);
 
     const handleUpdateUser = useCallback(async (updatedUser: Profile) => {
         if (!session?.user) {

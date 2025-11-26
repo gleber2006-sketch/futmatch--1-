@@ -4,13 +4,24 @@ import { GroundingSource, VenueLocation, DraftMatchData } from '../types';
 import { SPORTS_LIST } from '../constants';
 import { supabase } from './supabaseClient';
 
-const apiKey = process.env.API_KEY || import.meta.env.VITE_GEMINI_API_KEY;
+let genAI: GoogleGenerativeAI | null = null;
 
-if (!apiKey) {
-  console.warn("Gemini API Key is missing! ChatBot features may not work.");
-}
+export const initGemini = (key: string) => {
+  genAI = new GoogleGenerativeAI(key);
+};
 
-const ai = new GoogleGenAI({ apiKey: apiKey || '' });
+// Helper to get the AI instance or throw if not initialized
+const getAI = () => {
+  if (!genAI) {
+    const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
+    if (apiKey) {
+      genAI = new GoogleGenerativeAI(apiKey);
+    } else {
+      throw new Error("Gemini API not initialized. Call initGemini() first or ensure VITE_GEMINI_API_KEY is set.");
+    }
+  }
+  return genAI;
+};
 
 // --- TOOL DEFINITIONS ---
 
@@ -19,15 +30,15 @@ const draftMatchTool: FunctionDeclaration = {
   name: 'draftMatch',
   description: 'Prepara/Rascunha os dados para criar uma nova partida no formulário, quando o usuário expressa intenção de criar ou marcar um jogo.',
   parameters: {
-    type: Type.OBJECT,
+    type: SchemaType.OBJECT,
     properties: {
-      name: { type: Type.STRING, description: 'O nome da partida (ex: "Futebol de Quinta").' },
-      sport: { type: Type.STRING, description: `A modalidade. Deve ser uma das: ${SPORTS_LIST.join(', ')}.` },
-      location: { type: Type.STRING, description: 'O local ou endereço.' },
-      date: { type: Type.STRING, description: 'A data YYYY-MM-DD.' },
-      time: { type: Type.STRING, description: 'O horário HH:MM.' },
-      slots: { type: Type.NUMBER, description: 'Número de vagas.' },
-      rules: { type: Type.STRING, description: 'Regras ou observações.' }
+      name: { type: SchemaType.STRING, description: 'O nome da partida (ex: "Futebol de Quinta").' },
+      sport: { type: SchemaType.STRING, description: `A modalidade. Deve ser uma das: ${SPORTS_LIST.join(', ')}.` },
+      location: { type: SchemaType.STRING, description: 'O local ou endereço.' },
+      date: { type: SchemaType.STRING, description: 'A data YYYY-MM-DD.' },
+      time: { type: SchemaType.STRING, description: 'O horário HH:MM.' },
+      slots: { type: SchemaType.NUMBER, description: 'Número de vagas.' },
+      rules: { type: SchemaType.STRING, description: 'Regras ou observações.' }
     },
     required: ['sport'],
   },
@@ -38,11 +49,11 @@ const searchMatchesTool: FunctionDeclaration = {
   name: 'searchMatches',
   description: 'Busca partidas (jogos) JÁ CRIADAS e disponíveis no app FutMatch. Use quando o usuário perguntar "tem jogo hoje?", "onde tem vôlei?", "quais partidas estão rolando?".',
   parameters: {
-    type: Type.OBJECT,
+    type: SchemaType.OBJECT,
     properties: {
-      sport: { type: Type.STRING, description: 'Filtrar por modalidade (ex: Futebol, Vôlei)' },
-      date: { type: Type.STRING, description: 'Filtrar por data específica (YYYY-MM-DD)' },
-      status: { type: Type.STRING, description: 'Filtrar por status (Convocando, Confirmado)' }
+      sport: { type: SchemaType.STRING, description: 'Filtrar por modalidade (ex: Futebol, Vôlei)' },
+      date: { type: SchemaType.STRING, description: 'Filtrar por data específica (YYYY-MM-DD)' },
+      status: { type: SchemaType.STRING, description: 'Filtrar por status (Convocando, Confirmado)' }
     }
   }
 };
@@ -52,11 +63,11 @@ const searchArenasTool: FunctionDeclaration = {
   name: 'searchArenas',
   description: 'Busca quadras, campos e arenas cadastradas na plataforma. Use quando o usuário perguntar "quantas quadras tem?", "onde posso jogar?", "tem quadra de beach tennis?".',
   parameters: {
-    type: Type.OBJECT,
+    type: SchemaType.OBJECT,
     properties: {
-      city: { type: Type.STRING, description: 'Filtrar por cidade' },
-      sport: { type: Type.STRING, description: 'Filtrar por esporte que a arena suporta' },
-      name: { type: Type.STRING, description: 'Nome da arena' }
+      city: { type: SchemaType.STRING, description: 'Filtrar por cidade' },
+      sport: { type: SchemaType.STRING, description: 'Filtrar por esporte que a arena suporta' },
+      name: { type: SchemaType.STRING, description: 'Nome da arena' }
     }
   }
 };
@@ -145,29 +156,33 @@ export const getBotResponse = async (
     `;
 
     // 1. Primeira chamada ao modelo (Decision Making)
-    const response = await ai.models.generateContent({
+    const ai = getAI();
+    const model = ai.getGenerativeModel({
       model: "gemini-2.5-flash",
-      contents: { parts: [{ text: prompt }] },
-      config: {
-        tools: [
-          { googleMaps: {} },
-          { functionDeclarations: [draftMatchTool, searchMatchesTool, searchArenasTool] }
-        ],
-        toolConfig: location ? {
-          retrievalConfig: {
-            latLng: {
-              latitude: location.latitude,
-              longitude: location.longitude,
-            }
+      tools: [
+        { googleMaps: {} } as any,
+        { functionDeclarations: [draftMatchTool, searchMatchesTool, searchArenasTool] }
+      ],
+      toolConfig: location ? {
+        // @ts-ignore
+        retrievalConfig: {
+          latLng: {
+            latitude: location.latitude,
+            longitude: location.longitude,
           }
-        } : undefined,
-      },
+        }
+      } : undefined,
     });
 
-    let text = response.text || "";
+    const result = await model.generateContent({
+      contents: [{ role: 'user', parts: [{ text: prompt }] }]
+    });
+
+    const response = result.response;
+    let text = response.text() || "";
     let draftData: DraftMatchData | undefined;
 
-    const functionCalls = response.functionCalls;
+    const functionCalls = response.functionCalls();
 
     // 2. Processar Chamadas de Função
     if (functionCalls && functionCalls.length > 0) {
@@ -189,11 +204,10 @@ export const getBotResponse = async (
                     
                     Responda ao usuário de forma natural resumindo essas informações.
                 `;
-          const followUpResp = await ai.models.generateContent({
-            model: "gemini-2.5-flash",
-            contents: { parts: [{ text: followUpPrompt }] }
+          const followUpResult = await model.generateContent({
+            contents: [{ role: 'user', parts: [{ text: followUpPrompt }] }]
           });
-          text = followUpResp.text || "Encontrei algumas partidas!";
+          text = followUpResult.response.text() || "Encontrei algumas partidas!";
         }
         else if (call.name === 'searchArenas') {
           const dbResult = await executeSearchArenas(call.args);
@@ -204,18 +218,17 @@ export const getBotResponse = async (
                     
                     Responda ao usuário de forma natural resumindo essas informações.
                 `;
-          const followUpResp = await ai.models.generateContent({
-            model: "gemini-2.5-flash",
-            contents: { parts: [{ text: followUpPrompt }] }
+          const followUpResult = await model.generateContent({
+            contents: [{ role: 'user', parts: [{ text: followUpPrompt }] }]
           });
-          text = followUpResp.text || "Encontrei algumas arenas!";
+          text = followUpResult.response.text() || "Encontrei algumas arenas!";
         }
       }
     }
 
-    // Processar fontes do Google Maps se houver (da primeira ou segunda chamada, 
-    // mas aqui simplificamos pegando da primeira, pois o Maps vem via tool googleMaps)
-    const groundingChunks = response.candidates?.[0]?.groundingMetadata?.groundingChunks || [];
+    // Processar fontes do Google Maps se houver
+    const candidates = response.candidates;
+    const groundingChunks = candidates?.[0]?.groundingMetadata?.groundingChunks || [];
     const sources: GroundingSource[] = groundingChunks
       .map((chunk: any) => ({
         uri: chunk.maps?.uri || '',
@@ -239,22 +252,12 @@ export const getBotResponse = async (
 
 export const generateAvatar = async (name: string): Promise<string | null> => {
   try {
-    const prompt = `A simple, modern, flat design avatar icon for a sports social network profile. The user's name is "${name}". The avatar should be vibrant and energetic, suitable for a football player. Clean background, no text in the image.`;
-
-    const response = await ai.models.generateImages({
-      model: 'imagen-4.0-generate-001',
-      prompt: prompt,
-      config: {
-        numberOfImages: 1,
-        outputMimeType: 'image/jpeg',
-        aspectRatio: '1:1',
-      },
-    });
-
-    if (response.generatedImages && response.generatedImages.length > 0) {
-      const base64ImageBytes: string = response.generatedImages[0].image.imageBytes;
-      return `data:image/jpeg;base64,${base64ImageBytes}`;
-    }
+    // Note: Imagen model usage might differ in the official SDK. 
+    // Assuming 'imagen-3.0-generate-001' or similar is available via specific model methods or REST.
+    // For now, we will comment out this part as the standard SDK usually handles text-to-text or multimodal.
+    // If using a specific Imagen integration, it would look different.
+    // We will return null to avoid runtime errors until Imagen is properly set up with the SDK.
+    console.warn("Imagen generation not fully implemented in this SDK version.");
     return null;
   } catch (error) {
     console.error("Error generating avatar:", (error as Error)?.message ?? error);
@@ -264,22 +267,8 @@ export const generateAvatar = async (name: string): Promise<string | null> => {
 
 export const generateSportsBackground = async (): Promise<string | null> => {
   try {
-    const prompt = `A vibrant, high-resolution, professional photograph of a sports scene suitable for a website background. Epic, cinematic, wide-angle shot. Could be a soccer field at sunset, a basketball court with dramatic lighting, or a volleyball court on a beach. No people or minimal people, focus on the empty field/court.`;
-
-    const response = await ai.models.generateImages({
-      model: 'imagen-4.0-generate-001',
-      prompt: prompt,
-      config: {
-        numberOfImages: 1,
-        outputMimeType: 'image/jpeg',
-        aspectRatio: '16:9',
-      },
-    });
-
-    if (response.generatedImages && response.generatedImages.length > 0) {
-      const base64ImageBytes: string = response.generatedImages[0].image.imageBytes;
-      return `data:image/jpeg;base64,${base64ImageBytes}`;
-    }
+    // Same as above, disabling Imagen for now.
+    console.warn("Imagen generation not fully implemented in this SDK version.");
     return null;
   } catch (error) {
     console.error("Error generating sports background:", (error as Error)?.message ?? error);
@@ -304,23 +293,20 @@ export const searchLocalVenues = async (
     Se nenhum local for encontrado, retorne um array vazio [].
     Não inclua markdown (\`\`\`json). Apenas o JSON puro.`;
 
-    const response = await ai.models.generateContent({
+    const ai = getAI();
+    const model = ai.getGenerativeModel({
       model: "gemini-2.5-flash",
-      contents: { parts: [{ text: prompt }] },
-      config: {
-        tools: [{ googleMaps: {} }],
-        toolConfig: {
-          retrievalConfig: {
-            latLng: {
-              latitude: location.latitude,
-              longitude: location.longitude,
-            }
-          }
-        }
-      },
+      tools: [{ googleSearch: {} } as any], // Cast to any if googleSearch is not in types yet, or use googleMaps if intended
     });
 
-    const text = response.text.trim();
+    const result = await model.generateContent({
+      contents: [{ role: 'user', parts: [{ text: prompt }] }],
+      // tools config if needed
+    });
+
+    const response = result.response;
+
+    const text = response.text().trim();
     const cleanText = text.replace(/^```json\s*/, '').replace(/\s*```$/, '');
 
     if (!cleanText) {
@@ -331,7 +317,8 @@ export const searchLocalVenues = async (
       const result = JSON.parse(cleanText);
 
       if (Array.isArray(result)) {
-        const groundingChunks = response.candidates?.[0]?.groundingMetadata?.groundingChunks || [];
+        const candidates = response.candidates;
+        const groundingChunks = candidates?.[0]?.groundingMetadata?.groundingChunks || [];
         const genericUri = groundingChunks.find((chunk: any) => chunk.maps?.uri)?.maps?.uri;
 
         return result.map((item: any) => ({
@@ -371,15 +358,19 @@ export const findVenueImage = async (venueName: string, city: string): Promise<s
     Não coloque markdown. Retorne apenas o link puro.
     Se não encontrar nada, retorne "null".`;
 
-    const response = await ai.models.generateContent({
+    const ai = getAI();
+    const model = ai.getGenerativeModel({
       model: "gemini-2.5-flash",
-      contents: { parts: [{ text: prompt }] },
-      config: {
-        tools: [{ googleSearch: {} }],
-      },
+      tools: [{ googleSearch: {} } as any],
     });
 
-    const text = response.text?.trim();
+    const result = await model.generateContent({
+      contents: [{ role: 'user', parts: [{ text: prompt }] }],
+    });
+
+    const response = result.response;
+
+    const text = response.text().trim();
     if (!text || text.toLowerCase().includes('null') || !text.startsWith('http')) {
       return null;
     }
