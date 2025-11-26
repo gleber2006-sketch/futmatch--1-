@@ -228,7 +228,7 @@ export const getBotResponse = async (
 
     // Processar fontes do Google Maps se houver
     const candidates = response.candidates;
-    const groundingChunks = candidates?.[0]?.groundingMetadata?.groundingChunks || [];
+    const groundingChunks = (candidates?.[0]?.groundingMetadata as any)?.groundingChunks || [];
     const sources: GroundingSource[] = groundingChunks
       .map((chunk: any) => ({
         uri: chunk.maps?.uri || '',
@@ -318,7 +318,7 @@ export const searchLocalVenues = async (
 
       if (Array.isArray(result)) {
         const candidates = response.candidates;
-        const groundingChunks = candidates?.[0]?.groundingMetadata?.groundingChunks || [];
+        const groundingChunks = (candidates?.[0]?.groundingMetadata as any)?.groundingChunks || [];
         const genericUri = groundingChunks.find((chunk: any) => chunk.maps?.uri)?.maps?.uri;
 
         return result.map((item: any) => ({
