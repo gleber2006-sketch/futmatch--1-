@@ -994,6 +994,15 @@ export default function App() {
         />;
     }
 
+    if (!currentUser) {
+        return (
+            <div className="flex flex-col items-center justify-center min-h-screen bg-gray-900 text-white">
+                <LoadingSpinner size={12} />
+                <p className="mt-4 text-lg">Carregando perfil...</p>
+            </div>
+        );
+    }
+
     return (
         <div className="bg-gray-900 min-h-screen flex flex-col">
             <header className="bg-gray-900/80 backdrop-blur-sm p-4 text-center sticky top-0 z-20 shadow-lg shadow-green-500/10 flex justify-between items-center px-6">
