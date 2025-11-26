@@ -713,6 +713,10 @@ export default function App() {
         if (error) setLoginError(error.message);
     }
 
+    const clearLoginError = useCallback(() => {
+        setLoginError(null);
+    }, []);
+
     const handleRegister = useCallback(async (newUser: NewUserRegistrationData) => {
         setLoginError(null);
         console.log("Iniciando registro para:", newUser.email);
@@ -977,6 +981,14 @@ export default function App() {
                     matches={matches}
                     currentUser={currentUser}
                     joinedMatchIds={joinedMatchIds}
+                    onJoinMatch={handleJoinMatch}
+                    onLeaveMatch={handleLeaveMatch}
+                    onCancelMatch={handleCancelMatch}
+                    onEditMatch={handleStartEditMatch}
+                    onNavigateToCreate={() => setActivePage('create')}
+                    onNavigateBack={() => setActivePage('explore')}
+                    onNavigateToDirectChat={handleNavigateToMatchChat}
+                    onBalanceUpdate={handleBalanceUpdate}
                 />;
             case 'arenas':
                 return <Arenas
@@ -1048,6 +1060,7 @@ export default function App() {
                 onRegister={handleRegister}
                 onGoogleLogin={handleGoogleLogin}
                 loginError={loginError}
+                clearLoginError={clearLoginError}
             />
         );
     }

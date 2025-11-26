@@ -42,10 +42,10 @@ const MatchDetailsModal: React.FC<MatchDetailsModalProps> = ({ match, onClose, o
 
   const confirmedParticipants = Number(match.filled_slots || 0);
   const totalSlots = Number(match.slots || 0);
-  const isCreator = currentUser.id === match.created_by;
+  const isCreator = currentUser?.id === match.created_by;
   const isCanceled = match.status === 'Cancelado';
   const isConfirmed = match.status === 'Confirmado';
-  const hasJoined = joinedMatchIds.has(match.id);
+  const hasJoined = joinedMatchIds?.has(match.id) || false;
   const isFull = totalSlots > 0 && confirmedParticipants >= totalSlots;
 
   const isBoosted = match.is_boosted && match.boost_until && new Date(match.boost_until) > new Date();

@@ -33,11 +33,11 @@ const MatchCard: React.FC<MatchCardProps> = ({ match, onCardClick, onJoinMatch, 
 
     const confirmedParticipants = Number(match.filled_slots || 0);
     const totalSlots = Number(match.slots || 0);
-    const hasJoined = joinedMatchIds.has(match.id);
+    const hasJoined = joinedMatchIds?.has(match.id) || false;
     const isFull = totalSlots > 0 && confirmedParticipants >= totalSlots;
     const isCanceled = match.status === 'Cancelado';
     const isConfirmed = match.status === 'Confirmado';
-    const isCreator = currentUser.id === match.created_by;
+    const isCreator = currentUser?.id === match.created_by;
 
     const isBoosted = match.is_boosted && match.boost_until && new Date(match.boost_until) > new Date();
 
