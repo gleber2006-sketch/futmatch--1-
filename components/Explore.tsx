@@ -250,6 +250,12 @@ const Explore: React.FC<ExploreProps> = ({ matches, platformFeatures, onJoinMatc
             match={match}
             onCardClick={handleCardClick}
             onJoinMatch={onJoinMatch}
+          />
+        ))
+      ) : (
+        <div className="text-center text-gray-400 py-10">
+          <p>Nenhuma partida encontrada com os filtros atuais.</p>
+        </div>
       )}
 
       {selectedMatch && (
@@ -263,6 +269,7 @@ const Explore: React.FC<ExploreProps> = ({ matches, platformFeatures, onJoinMatc
           currentUser={currentUser}
           onEditMatch={onEditMatch}
           onNavigateToDirectChat={onNavigateToDirectChat}
+          onBalanceUpdate={onBalanceUpdate}
         />
       )}
     </div>

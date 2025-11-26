@@ -73,6 +73,7 @@ export default function App() {
     const [editingMatch, setEditingMatch] = useState<Match | null>(null);
     const [draftMatchData, setDraftMatchData] = useState<DraftMatchData | null>(null);
     const [selectedChatMatchId, setSelectedChatMatchId] = useState<number | null>(null);
+    const [profileError, setProfileError] = useState(false);
 
     const isAuthenticated = !!session?.user;
 
@@ -86,9 +87,55 @@ export default function App() {
         }
     }, []);
 
+    // --- Back Button Handling ---
+    const activePageRef = React.useRef(activePage);
+    const lastBackPressTime = React.useRef(0);
+
+    useEffect(() => {
+        activePageRef.current = activePage;
+    }, [activePage]);
+
+    useEffect(() => {
+        // Push initial state to allow interception
+        window.history.pushState(null, '', window.location.pathname);
+
+        const handleBackButton = (event: PopStateEvent) => {
+            const currentTime = new Date().getTime();
+            const timeDiff = currentTime - lastBackPressTime.current;
+
+            if (activePageRef.current !== 'explore') {
+                // If not on home, go back to home
+                event.preventDefault();
+                setActivePage('explore');
+                // Push state again to maintain the "trap"
+                window.history.pushState(null, '', window.location.pathname);
+            } else {
+                // If on home
+                if (timeDiff < 2000) {
+                    // Double press detected - allow exit (do nothing, history already popped)
+                    return;
+                } else {
+                    // First press - show warning and restore state
+                    event.preventDefault();
+                    lastBackPressTime.current = currentTime;
+                    setShowConfirmation("Pressione voltar novamente para sair");
+                    setTimeout(() => setShowConfirmation(null), 2000);
+                    // Push state again to maintain the "trap"
+                    window.history.pushState(null, '', window.location.pathname);
+                }
+            }
+        };
+
+        window.addEventListener('popstate', handleBackButton);
+
+        return () => {
+            window.removeEventListener('popstate', handleBackButton);
+        };
+    }, []);
+
     // Fetch matches function
     const fetchMatches = useCallback(async () => {
-        for (let i = 0; i < 3; i++) {
+        for (let i = 3; i > 0; i--) {
             try {
                 const { data, error } = await supabase
                     .from('matches')
@@ -104,11 +151,11 @@ export default function App() {
             } catch (error: any) {
                 const isNetworkError = error.message?.includes('Failed to fetch') || error.message?.includes('Network request failed') || error.name === 'TypeError';
 
-                if (i === 2 || !isNetworkError) {
+                if (i === 1 || !isNetworkError) {
                     console.error('Error fetching matches:', (error as AuthError)?.message ?? error);
                 } else {
                     // Wait before retrying
-                    await new Promise(r => setTimeout(r, 1000 * (i + 1)));
+                    await new Promise(r => setTimeout(r, 1000));
                 }
             }
         }
@@ -247,6 +294,7 @@ export default function App() {
                 profile = mapProfileData(data, 10);
             } catch (fallbackError) {
                 console.error("Failed to create fallback profile:", fallbackError);
+                setProfileError(true);
                 return null;
             }
         }
@@ -277,6 +325,7 @@ export default function App() {
             }
         }
 
+        setProfileError(false);
         setCurrentUser(profile);
         return profile;
     }, []);
@@ -666,8 +715,8 @@ export default function App() {
 
     const handleRegister = useCallback(async (newUser: NewUserRegistrationData) => {
         setLoginError(null);
+        console.log("Iniciando registro para:", newUser.email);
         try {
-            // Step 1: Sign up user. The database trigger will create the basic profile.
             const { data: authData, error: authError } = await supabase.auth.signUp({
                 email: newUser.email!,
                 password: newUser.password!,
@@ -682,7 +731,16 @@ export default function App() {
             if (authError) throw authError;
             if (!authData.user) throw new Error("Registration failed, user not created.");
 
-            // Step 2: Update the just-created profile with additional details from the form.
+            console.log("Usuário criado:", authData.user.id);
+
+            if (!authData.session) {
+                console.log("Sessão não criada. Provavelmente requer confirmação de e-mail.");
+                alert("Cadastro realizado com sucesso! Verifique seu e-mail para confirmar a conta antes de fazer login.");
+                setActivePage('explore');
+                return;
+            }
+
+            console.log("Atualizando perfil...");
             const profileUpdateData = {
                 date_of_birth: newUser.dateOfBirth,
                 city: newUser.city,
@@ -700,18 +758,19 @@ export default function App() {
 
             if (updateError) {
                 console.warn(`Registration successful, but failed to update profile details: ${updateError.message}`);
+            } else {
+                console.log("Perfil atualizado com sucesso.");
             }
+
             setActivePage('profile');
         } catch (error: any) {
             let message = error.message || 'An unknown registration error occurred.';
-
-            // Translate common registration errors
             if (message.includes('User already registered')) {
                 message = 'Este e-mail já está cadastrado. Tente fazer login.';
             }
-
             setLoginError(message);
             console.error('Registration Error:', error);
+            throw error;
         }
     }, []);
 
@@ -751,6 +810,10 @@ export default function App() {
             throw error;
         }
     }, [session, fetchRankings]);
+
+    const handleBalanceUpdate = useCallback((amount: number) => {
+        setCurrentUser(prev => prev ? ({ ...prev, matchCoins: prev.matchCoins + amount }) : null);
+    }, []);
 
     const handleLogout = useCallback(async () => {
         const { error } = await supabase.auth.signOut();
@@ -851,7 +914,12 @@ export default function App() {
     }, []);
 
     const renderPage = () => {
-        if (!currentUser) return null;
+        if (!currentUser && activePage !== 'explore') {
+            // Allow explore without login, but other pages might require it.
+            // Actually, Home handles login/register.
+            // If activePage is 'explore', we render Explore.
+        }
+
         switch (activePage) {
             case 'explore':
                 return <Explore
@@ -876,6 +944,7 @@ export default function App() {
                     onNavigateToDirectChat={handleNavigateToMatchChat}
                     onNavigateToNotifications={() => setActivePage('notifications')}
                     onNavigateToWallet={() => setActivePage('wallet')}
+                    onBalanceUpdate={handleBalanceUpdate}
                 />;
             case 'create':
                 return <CreateMatchForm
@@ -908,7 +977,8 @@ export default function App() {
                     matches={matches}
                     currentUser={currentUser}
                     joinedMatchIds={joinedMatchIds}
-                    case 'arenas':
+                />;
+            case 'arenas':
                 return <Arenas
                     onNavigateBack={() => setActivePage('explore')}
                     onDraftFromArena={handleDraftMatch}
@@ -929,6 +999,10 @@ export default function App() {
             case 'wallet':
                 return <Wallet
                     currentUser={currentUser}
+                    onNavigateBack={() => setActivePage('explore')}
+                />;
+            case 'community':
+                return <Community
                     onNavigateBack={() => setActivePage('explore')}
                 />;
             default:
@@ -954,69 +1028,71 @@ export default function App() {
                     onNavigateToDirectChat={handleNavigateToMatchChat}
                     onNavigateToNotifications={() => setActivePage('notifications')}
                     onNavigateToWallet={() => setActivePage('wallet')}
+                    onBalanceUpdate={handleBalanceUpdate}
                 />;
         }
     };
 
     if (isLoadingDbCheck) {
-        return (
-            <div className="flex flex-col items-center justify-center min-h-screen bg-gray-900 text-white">
-                <LoadingSpinner size={12} />
-                <p className="mt-4 text-lg">Verificando banco de dados...</p>
-            </div>
-        );
+        return <LoadingSpinner />;
     }
 
     if (dbSetupRequired) {
-        return <DatabaseSetup />;
+        return <DatabaseSetup onSetupComplete={() => setDbSetupRequired(false)} />;
     }
 
     if (!isAuthenticated) {
-        return <Home
-            onLogin={handleLogin}
-            onRegister={handleRegister}
-            onGoogleLogin={handleGoogleLogin}
-            loginError={loginError}
-            clearLoginError={() => setLoginError(null)}
-        />;
-    }
-
-    if (!currentUser) {
         return (
-            <div className="flex flex-col items-center justify-center min-h-screen bg-gray-900 text-white">
-                <LoadingSpinner size={12} />
-                <p className="mt-4 text-lg">Carregando perfil...</p>
-            </div>
+            <Home
+                onLogin={handleLogin}
+                onRegister={handleRegister}
+                onGoogleLogin={handleGoogleLogin}
+                loginError={loginError}
+            />
         );
     }
 
-    return (
-        <div className="bg-gray-900 min-h-screen flex flex-col">
-            <header className="bg-gray-900/80 backdrop-blur-sm p-4 text-center sticky top-0 z-20 shadow-lg shadow-green-500/10 flex justify-between items-center px-6">
-                <div></div>
-                <div>
-                    <h1 className="text-2xl font-bold text-green-500 tracking-wider">
-                        ⚽ FutMatch
-                    </h1>
-                    <p className="text-sm text-gray-400">Seu jogo está a um passo do seu próximo match.</p>
-                </div>
-                <div onClick={() => setActivePage('wallet')} className="cursor-pointer flex flex-col items-center hover:scale-105 transition-transform">
-                    <span className="text-yellow-400 text-xl">⚡</span>
-                    <span className="text-yellow-400 text-xs font-bold">{currentUser.matchCoins}</span>
-                </div>
-            </header>
-
-            <main className="flex-grow p-4 pb-24 overflow-y-auto">
-                {showConfirmation && (
-                    <div className="bg-green-500 text-white p-3 rounded-lg mb-4 text-center font-semibold animate-pulse">
-                        {showConfirmation}
+    if (!currentUser) {
+        if (profileError) {
+            return (
+                <div className="flex flex-col items-center justify-center h-screen bg-gray-900 text-white p-4 text-center">
+                    <p className="text-xl font-bold mb-4">Erro ao carregar perfil</p>
+                    <p className="mb-6 text-gray-400">Não foi possível carregar seus dados. Verifique sua conexão.</p>
+                    <div className="flex gap-4">
+                        <button
+                            onClick={() => window.location.reload()}
+                            className="bg-green-600 px-6 py-2 rounded-lg font-bold hover:bg-green-700 transition-colors"
+                        >
+                            Tentar Novamente
+                        </button>
+                        <button
+                            onClick={handleLogout}
+                            className="bg-red-600 px-6 py-2 rounded-lg font-bold hover:bg-red-700 transition-colors"
+                        >
+                            Sair
+                        </button>
                     </div>
-                )}
-                {renderPage()}
-            </main>
+                </div>
+            );
+        }
+        return <LoadingSpinner />;
+    }
 
-            <ChatBot onDraftMatch={handleDraftMatch} />
-            <BottomNav activePage={activePage === 'my-games' || activePage === 'community' || activePage === 'arenas' || activePage === 'match-chat' || activePage === 'notifications' || activePage === 'wallet' ? 'explore' : activePage} onNavigate={setActivePage} />
+    return (
+        <div className="app-container">
+            {renderPage()}
+            {activePage === 'explore' && (
+                <BottomNav
+                    activePage={activePage}
+                    onNavigate={setActivePage}
+                />
+            )}
+            {showConfirmation && (
+                <div className="confirmation-toast">
+                    {showConfirmation}
+                </div>
+            )}
+            <ChatBot />
         </div>
     );
-};
+}
