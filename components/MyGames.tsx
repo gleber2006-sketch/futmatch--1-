@@ -16,6 +16,7 @@ interface MyGamesProps {
   onNavigateBack: () => void;
   onNavigateToDirectChat?: (matchId: number) => void;
   onCancelMatch: (matchId: number, reason: string) => Promise<void>;
+  onBalanceUpdate?: (amount: number) => void;
 }
 
 const MyGames: React.FC<MyGamesProps> = ({
@@ -28,7 +29,8 @@ const MyGames: React.FC<MyGamesProps> = ({
   onNavigateToCreate,
   onNavigateBack,
   onNavigateToDirectChat,
-  onCancelMatch
+  onCancelMatch,
+  onBalanceUpdate
 }) => {
   const [activeTab, setActiveTab] = useState<'playing' | 'organizing'>('playing');
   const [selectedMatch, setSelectedMatch] = useState<Match | null>(null);
@@ -130,6 +132,7 @@ const MyGames: React.FC<MyGamesProps> = ({
           currentUser={currentUser}
           onEditMatch={onEditMatch}
           onNavigateToDirectChat={onNavigateToDirectChat}
+          onBalanceUpdate={onBalanceUpdate}
         />
       )}
     </div>

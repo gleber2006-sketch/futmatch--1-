@@ -908,20 +908,7 @@ export default function App() {
                     matches={matches}
                     currentUser={currentUser}
                     joinedMatchIds={joinedMatchIds}
-                    onJoinMatch={handleJoinMatch}
-                    onLeaveMatch={handleLeaveMatch}
-                    onEditMatch={handleStartEditMatch}
-                    onNavigateToCreate={() => setActivePage('create')}
-                    onNavigateBack={() => setActivePage('explore')}
-                    onNavigateToDirectChat={handleNavigateToMatchChat}
-                    onCancelMatch={handleCancelMatch}
-                />;
-            case 'community':
-                return <Community
-                    currentUser={currentUser}
-                    onNavigateBack={() => setActivePage('explore')}
-                />;
-            case 'arenas':
+                    case 'arenas':
                 return <Arenas
                     onNavigateBack={() => setActivePage('explore')}
                     onDraftFromArena={handleDraftMatch}

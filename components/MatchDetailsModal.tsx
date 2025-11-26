@@ -17,6 +17,7 @@ interface MatchDetailsModalProps {
   currentUser: Profile;
   onEditMatch: (match: Match) => void;
   onNavigateToDirectChat?: (matchId: number) => void;
+  onBalanceUpdate?: (amount: number) => void;
 }
 
 const StatusBadge: React.FC<{ status: Match['status'] }> = ({ status }) => {
@@ -31,7 +32,7 @@ const StatusBadge: React.FC<{ status: Match['status'] }> = ({ status }) => {
 };
 
 
-const MatchDetailsModal: React.FC<MatchDetailsModalProps> = ({ match, onClose, onJoinMatch, onLeaveMatch, onCancelMatch, onEditMatch, joinedMatchIds, currentUser, onNavigateToDirectChat }) => {
+const MatchDetailsModal: React.FC<MatchDetailsModalProps> = ({ match, onClose, onJoinMatch, onLeaveMatch, onCancelMatch, onEditMatch, joinedMatchIds, currentUser, onNavigateToDirectChat, onBalanceUpdate }) => {
   const mapRef = useRef<HTMLDivElement>(null);
   const mapInstance = useRef<any>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -108,7 +109,6 @@ const MatchDetailsModal: React.FC<MatchDetailsModalProps> = ({ match, onClose, o
   };
 
   const handleCancelConfirm = async () => {
-    console.log("Iniciando handleCancelConfirm...");
     if (!cancelReason.trim()) {
       alert("⚠️ Informe um motivo para o cancelamento.");
       return;
@@ -117,38 +117,39 @@ const MatchDetailsModal: React.FC<MatchDetailsModalProps> = ({ match, onClose, o
     setIsLoading(true);
 
     try {
-      console.log("Verificando participantes para matchId:", match.id);
-      // Verifique no banco de dados se já existem participantes inscritos nessa partida.
+      // Check for participants to determine refund eligibility
       const { count, error } = await supabase
         .from('match_participants')
         .select('*', { count: 'exact', head: true })
         .eq('match_id', match.id);
 
-      if (error) {
-        console.error("Erro ao contar participantes:", error);
-        throw error;
-      }
+      if (error) throw error;
 
-      console.log("Contagem de participantes:", count);
       const hasParticipants = count !== null && count > 0;
+      let confirmed = false;
 
-      // Cenário A (Já tem participantes)
       if (hasParticipants) {
-        console.log("Cenário A: Tem participantes. Exibindo confirm...");
-        const confirmed = window.confirm("Existem jogadores inscritos. Ao cancelar, você não receberá o reembolso dos MatchCoins.");
-        console.log("Confirmação Cenário A:", confirmed);
-        if (!confirmed) {
-          setIsLoading(false);
-          return;
-        }
+        // Scenario A: Participants exist -> No Refund
+        confirmed = window.confirm(
+          "⚠️ ATENÇÃO: Existem jogadores inscritos nesta partida.\n\n" +
+          "Ao cancelar agora, você NÃO receberá o reembolso dos 2 MatchCoins.\n\n" +
+          "Deseja realmente cancelar?"
+        );
+      } else {
+        // Scenario B: No participants -> Refund
+        confirmed = window.confirm(
+          "ℹ️ CONFIRMAÇÃO: Não há jogadores inscritos.\n\n" +
+          "Ao cancelar, você SERÁ REEMBOLSADO em 2 MatchCoins.\n\n" +
+          "Deseja confirmar o cancelamento?"
+        );
       }
-      // Cenário B (Não tem participantes)
-      // Removida confirmação extra para agilizar e evitar confusão.
-      // O usuário já clicou em "Confirmar Cancelamento" no modal.
 
-      console.log("Chamando onCancelMatch...");
+      if (!confirmed) {
+        setIsLoading(false);
+        return;
+      }
+
       await onCancelMatch(match.id, cancelReason.trim());
-      console.log("onCancelMatch concluído.");
       onClose();
 
     } catch (err) {
@@ -196,8 +197,12 @@ const MatchDetailsModal: React.FC<MatchDetailsModalProps> = ({ match, onClose, o
 
       if (updateError) throw updateError;
 
+      // 3. Update Local Balance
+      if (onBalanceUpdate) {
+        onBalanceUpdate(-2);
+      }
+
       alert("BOOST aplicado com sucesso! 🚀");
-      // Close to force refresh in explore
       onClose();
 
     } catch (error: any) {
