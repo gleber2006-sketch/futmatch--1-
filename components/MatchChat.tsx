@@ -233,6 +233,55 @@ const MatchChat: React.FC<MatchChatProps> = ({ currentUser, onNavigateBack, init
     const formatTime = (dateString: string) => {
         const date = new Date(dateString);
         return date.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+    };
+
+    // VIEW: MATCH LIST (LOBBY)
+    if (view === 'list') {
+        return (
+            <div className="bg-gray-900 h-[100dvh] flex flex-col">
+                <div className="flex items-center justify-between bg-gray-800 p-4 shadow-md shrink-0">
+                    <h2 className="text-xl font-bold text-white">Chat das Partidas</h2>
+                    <button
+                        onClick={onNavigateBack}
+                        className="bg-gradient-to-r from-gray-700 to-gray-600 text-white py-1 px-3 rounded-lg text-sm hover:brightness-110 transition-all"
+                    >
+                        Voltar
+                    </button>
+                </div>
+
+                <div className="flex-1 overflow-y-auto px-4 py-3 space-y-3">
+                    {isLoadingMatches ? (
+                        <div className="flex justify-center py-10"><LoadingSpinner /></div>
+                    ) : matches.length === 0 ? (
+                        <div className="text-center py-10 text-gray-500 bg-gray-800 rounded-xl">
+                            <p>Você ainda não participa de nenhuma partida.</p>
+                            <p className="text-sm mt-1">Entre em um jogo para acessar o chat!</p>
+                        </div>
+                    ) : (
+                        matches.map(match => (
+                            <div
+                                key={match.id}
+                                onClick={() => { setActiveMatch(match); setView('room'); }}
+                                className="bg-gray-800 p-4 rounded-xl shadow-md cursor-pointer hover:bg-gray-700 transition-colors flex items-center gap-3"
+                            >
+                                <div className="w-12 h-12 bg-gray-700 rounded-full flex items-center justify-center text-2xl shadow-inner">
+                                    {SPORT_EMOJIS[match.sport] || '⚽'}
+                                </div>
+                                <div className="flex-1">
+                                    <h3 className="font-bold text-white text-sm">{match.name}</h3>
+                                    <div className="flex items-center text-gray-400 text-xs gap-2 mt-1">
+                                        <span className="flex items-center gap-1"><CalendarIcon /> {new Date(match.date).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })}</span>
+                                        <span>•</span>
+                                        <span className="truncate max-w-[120px]">{match.location}</span>
+                                    </div>
+                                </div>
+                                <div className="text-gray-500 text-xl">›</div>
+                            </div>
+                        ))
+                    )}
+                </div>
+            </div>
+        );
     }
 
     // VIEW: CHAT ROOM

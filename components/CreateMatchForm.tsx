@@ -6,7 +6,7 @@ import LoadingSpinner from './LoadingSpinner';
 import { SearchIcon, LocationIcon } from './Icons';
 import { SPORTS_LIST } from '../constants';
 import { supabase } from '../services/supabaseClient';
-import DateTimePicker from './DateTimePicker';
+import ModernDateTimePicker from './ModernDateTimePicker';
 
 interface CreateMatchFormProps {
   onCreateMatch: (match: Omit<Match, 'id' | 'filled_slots' | 'created_by' | 'status' | 'cancellation_reason'>) => Promise<void>;
@@ -333,7 +333,7 @@ const CreateMatchForm: React.FC<CreateMatchFormProps> = ({ onCreateMatch, onUpda
         </div>
 
         <div className="mb-4">
-          <DateTimePicker
+          <ModernDateTimePicker
             selectedDate={date ? new Date(date + 'T12:00:00') : null}
             onDateChange={(newDate) => setDate(newDate.toISOString().split('T')[0])}
             selectedTime={time}
