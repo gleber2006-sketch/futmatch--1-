@@ -297,21 +297,27 @@ const MatchDetailsModal: React.FC<MatchDetailsModalProps> = ({ match, onClose, o
           </div>
 
           <div className="mt-6 space-y-3">
-            {buttonState.text}
-          </button>
+            <button
+              onClick={handleParticipationClick}
+              disabled={buttonState.isDisabled}
+              className={`w-full text-white font-bold py-3 rounded-lg shadow-md transition-all flex items-center justify-center ${buttonState.className}`}
+            >
+              {buttonState.text}
+            </button>
+          </div>
 
           {(hasJoined || isCreator) && onNavigateToDirectChat && (
             <button
               onClick={() => onNavigateToDirectChat(match.id)}
-              className="bg-gradient-to-r from-blue-600 to-blue-400 text-white px-4 rounded-lg shadow-md hover:brightness-110 transition-all flex items-center gap-2 font-bold"
+              className="bg-gradient-to-r from-blue-600 to-blue-400 text-white px-4 rounded-lg shadow-md hover:brightness-110 transition-all flex items-center gap-2 font-bold mt-3 w-full justify-center py-3"
             >
-              <ChatIcon /> <span className="hidden sm:inline">Chat</span>
+              <ChatIcon /> <span className="inline">Chat da Partida</span>
             </button>
           )}
         </div>
 
         {isCreator && !isCanceled && !isConfirmed && (
-          <div className="mt-4 border-t border-gray-700 pt-4">
+          <div className="mt-4 border-t border-gray-700 pt-4 px-6 pb-6">
             <h4 className="text-sm font-bold text-gray-400 mb-3 text-center">AÇÕES DO ORGANIZADOR</h4>
             <div className="space-y-3">
 
@@ -371,12 +377,8 @@ const MatchDetailsModal: React.FC<MatchDetailsModalProps> = ({ match, onClose, o
             </div>
           </div>
         )}
-      </>
-            )}
-    </div>
-        </div >
-      </div >
-  <style>{`
+      </div>
+      <style>{`
           @keyframes fade-in {
             from { opacity: 0; transform: scale(0.95); }
             to { opacity: 1; transform: scale(1); }
@@ -385,7 +387,7 @@ const MatchDetailsModal: React.FC<MatchDetailsModalProps> = ({ match, onClose, o
             animation: fade-in 0.2s ease-out forwards;
           }
         `}</style>
-    </div >
+    </div>
   );
 };
 
