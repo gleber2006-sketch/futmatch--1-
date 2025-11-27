@@ -33,7 +33,7 @@ const MatchCard: React.FC<MatchCardProps> = ({ match, onCardClick, onJoinMatch, 
 
     const confirmedParticipants = Number(match.filled_slots || 0);
     const totalSlots = Number(match.slots || 0);
-    const hasJoined = joinedMatchIds?.has(match.id) || false;
+    const hasJoined = joinedMatchIds?.has(Number(match.id)) || false;
     const isFull = totalSlots > 0 && confirmedParticipants >= totalSlots;
     const isCanceled = match.status === 'Cancelado';
     const isConfirmed = match.status === 'Confirmado';

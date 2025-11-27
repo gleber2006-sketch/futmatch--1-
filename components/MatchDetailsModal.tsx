@@ -46,7 +46,7 @@ const MatchDetailsModal: React.FC<MatchDetailsModalProps> = ({ match, onClose, o
   const isCreator = currentUser?.id === match.created_by;
   const isCanceled = match.status === 'Cancelado';
   const isConfirmed = match.status === 'Confirmado';
-  const hasJoined = joinedMatchIds?.has(match.id) || false;
+  const hasJoined = joinedMatchIds?.has(Number(match.id)) || false;
   const isFull = totalSlots > 0 && confirmedParticipants >= totalSlots;
 
   const isBoosted = match.is_boosted && match.boost_until && new Date(match.boost_until) > new Date();
@@ -297,98 +297,86 @@ const MatchDetailsModal: React.FC<MatchDetailsModalProps> = ({ match, onClose, o
           </div>
 
           <div className="mt-6 space-y-3">
-            {isCanceled ? (
-              <div className="p-4 bg-red-600/10 border border-red-700 rounded-lg text-center">
-                <p className="text-red-400 font-bold">🚫 Esta partida foi cancelada</p>
-              </div>
-            ) : (
-              <>
-                <div className="flex gap-2">
-                  <button
-                    onClick={handleParticipationClick}
-                    disabled={buttonState.isDisabled}
-                    className={`flex-1 text-white font-bold py-3 rounded-lg shadow-md transition-all duration-200 flex justify-center items-center ${buttonState.className}`}
-                  >
-                    {buttonState.text}
-                  </button>
+            {buttonState.text}
+          </button>
 
-                  {(hasJoined || isCreator) && onNavigateToDirectChat && (
-                    <button
-                      onClick={() => onNavigateToDirectChat(match.id)}
-                      className="bg-gradient-to-r from-blue-600 to-blue-400 text-white px-4 rounded-lg shadow-md hover:brightness-110 transition-all flex items-center gap-2 font-bold"
-                    >
-                      <ChatIcon /> <span className="hidden sm:inline">Chat</span>
-                    </button>
-                  )}
-                </div>
-
-                {isCreator && !isCanceled && !isConfirmed && (
-                  <div className="mt-4 border-t border-gray-700 pt-4">
-                    <h4 className="text-sm font-bold text-gray-400 mb-3 text-center">AÇÕES DO ORGANIZADOR</h4>
-                    <div className="space-y-3">
-
-                      {!isBoosted && (
-                        <button
-                          onClick={handleBoostClick}
-                          disabled={isBoosting}
-                          className="w-full bg-gradient-to-r from-yellow-600 to-yellow-500 text-white font-bold py-3 rounded-lg shadow-md hover:brightness-110 transition-all flex items-center justify-center gap-2 border border-yellow-400"
-                        >
-                          {isBoosting ? <LoadingSpinner size={5} /> : '🚀 Dar BOOST (2 MatchCoins)'}
-                        </button>
-                      )}
-
-                      <button
-                        onClick={() => onEditMatch(match)}
-                        disabled={isLoading}
-                        className="w-full bg-gradient-to-r from-blue-600 to-blue-400 text-white font-bold py-3 rounded-lg shadow-md hover:brightness-110 transition-all flex items-center justify-center gap-2"
-                      >
-                        <EditIcon /> Editar Partida
-                      </button>
-                      {!showCancelInput ? (
-                        <button
-                          onClick={handleCancelClick}
-                          disabled={isLoading}
-                          className="w-full bg-gradient-to-r from-red-600 to-red-400 text-white font-bold py-3 rounded-lg shadow-md hover:brightness-110 transition-all"
-                        >
-                          Cancelar Partida
-                        </button>
-                      ) : (
-                        <div className="p-4 bg-gray-900 border border-gray-700 rounded-lg">
-                          <p className="text-white font-bold mb-2">Informe o motivo do cancelamento:</p>
-                          <textarea
-                            value={cancelReason}
-                            onChange={(e) => setCancelReason(e.target.value)}
-                            placeholder="Ex: Chuva forte, falta de jogadores..."
-                            className="w-full p-2 rounded-md bg-gray-800 text-gray-200 border border-gray-600 mb-3"
-                            rows={2}
-                          />
-                          <div className="flex gap-2">
-                            <button
-                              onClick={handleCancelConfirm}
-                              disabled={isLoading}
-                              className="flex-1 bg-gradient-to-r from-red-600 to-red-400 text-white font-bold py-2 rounded-lg hover:brightness-110 transition-all"
-                            >
-                              {isLoading ? <><LoadingSpinner size={5} /><span className="ml-2">Confirmando...</span></> : 'Confirmar Cancelamento'}
-                            </button>
-                            <button
-                              onClick={() => setShowCancelInput(false)}
-                              disabled={isLoading}
-                              className="flex-1 bg-gradient-to-r from-gray-700 to-gray-600 text-white font-bold py-2 rounded-lg hover:brightness-110 transition-all"
-                            >
-                              Voltar
-                            </button>
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                )}
-              </>
-            )}
-          </div>
+          {(hasJoined || isCreator) && onNavigateToDirectChat && (
+            <button
+              onClick={() => onNavigateToDirectChat(match.id)}
+              className="bg-gradient-to-r from-blue-600 to-blue-400 text-white px-4 rounded-lg shadow-md hover:brightness-110 transition-all flex items-center gap-2 font-bold"
+            >
+              <ChatIcon /> <span className="hidden sm:inline">Chat</span>
+            </button>
+          )}
         </div>
-      </div>
-      <style>{`
+
+        {isCreator && !isCanceled && !isConfirmed && (
+          <div className="mt-4 border-t border-gray-700 pt-4">
+            <h4 className="text-sm font-bold text-gray-400 mb-3 text-center">AÇÕES DO ORGANIZADOR</h4>
+            <div className="space-y-3">
+
+              {!isBoosted && (
+                <button
+                  onClick={handleBoostClick}
+                  disabled={isBoosting}
+                  className="w-full bg-gradient-to-r from-yellow-600 to-yellow-500 text-white font-bold py-3 rounded-lg shadow-md hover:brightness-110 transition-all flex items-center justify-center gap-2 border border-yellow-400"
+                >
+                  {isBoosting ? <LoadingSpinner size={5} /> : '🚀 Dar BOOST (2 MatchCoins)'}
+                </button>
+              )}
+
+              <button
+                onClick={() => onEditMatch(match)}
+                disabled={isLoading}
+                className="w-full bg-gradient-to-r from-blue-600 to-blue-400 text-white font-bold py-3 rounded-lg shadow-md hover:brightness-110 transition-all flex items-center justify-center gap-2"
+              >
+                <EditIcon /> Editar Partida
+              </button>
+              {!showCancelInput ? (
+                <button
+                  onClick={handleCancelClick}
+                  disabled={isLoading}
+                  className="w-full bg-gradient-to-r from-red-600 to-red-400 text-white font-bold py-3 rounded-lg shadow-md hover:brightness-110 transition-all"
+                >
+                  Cancelar Partida
+                </button>
+              ) : (
+                <div className="p-4 bg-gray-900 border border-gray-700 rounded-lg">
+                  <p className="text-white font-bold mb-2">Informe o motivo do cancelamento:</p>
+                  <textarea
+                    value={cancelReason}
+                    onChange={(e) => setCancelReason(e.target.value)}
+                    placeholder="Ex: Chuva forte, falta de jogadores..."
+                    className="w-full p-2 rounded-md bg-gray-800 text-gray-200 border border-gray-600 mb-3"
+                    rows={2}
+                  />
+                  <div className="flex gap-2">
+                    <button
+                      onClick={handleCancelConfirm}
+                      disabled={isLoading}
+                      className="flex-1 bg-gradient-to-r from-red-600 to-red-400 text-white font-bold py-2 rounded-lg hover:brightness-110 transition-all"
+                    >
+                      {isLoading ? <><LoadingSpinner size={5} /><span className="ml-2">Confirmando...</span></> : 'Confirmar Cancelamento'}
+                    </button>
+                    <button
+                      onClick={() => setShowCancelInput(false)}
+                      disabled={isLoading}
+                      className="flex-1 bg-gradient-to-r from-gray-700 to-gray-600 text-white font-bold py-2 rounded-lg hover:brightness-110 transition-all"
+                    >
+                      Voltar
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+      </>
+            )}
+    </div>
+        </div >
+      </div >
+  <style>{`
           @keyframes fade-in {
             from { opacity: 0; transform: scale(0.95); }
             to { opacity: 1; transform: scale(1); }
@@ -397,7 +385,7 @@ const MatchDetailsModal: React.FC<MatchDetailsModalProps> = ({ match, onClose, o
             animation: fade-in 0.2s ease-out forwards;
           }
         `}</style>
-    </div>
+    </div >
   );
 };
 

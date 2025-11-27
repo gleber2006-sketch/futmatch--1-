@@ -31,6 +31,9 @@ interface ExploreProps {
   onNavigateToWallet: () => void;
   onBalanceUpdate?: (amount: number) => void;
   onBoostMatch?: (matchId: number) => Promise<boolean>;
+  selectedMatch: Match | null;
+  onSelectMatch: (match: Match | null) => void;
+  onCloseMatchDetails: () => void;
 }
 
 const haversineDistance = (
@@ -53,28 +56,17 @@ const haversineDistance = (
   return R * c;
 };
 
-const Explore: React.FC<ExploreProps> = ({ matches, platformFeatures, onJoinMatch, onLeaveMatch, onCancelMatch, onDeleteCanceledMatches, onEditMatch, joinedMatchIds, currentUser, onNavigateToCreate, onRefreshMatches, onNavigateToProfile, onNavigateToMap, onNavigateToMyGames, onNavigateToRanking, onNavigateToCommunity, onNavigateToArenas, onNavigateToMatchChat, onNavigateToDirectChat, onNavigateToNotifications, onNavigateToWallet, onBalanceUpdate, onBoostMatch }) => {
+const Explore: React.FC<ExploreProps> = ({ matches, platformFeatures, onJoinMatch, onLeaveMatch, onCancelMatch, onDeleteCanceledMatches, onEditMatch, joinedMatchIds, currentUser, onNavigateToCreate, onRefreshMatches, onNavigateToProfile, onNavigateToMap, onNavigateToMyGames, onNavigateToRanking, onNavigateToCommunity, onNavigateToArenas, onNavigateToMatchChat, onNavigateToDirectChat, onNavigateToNotifications, onNavigateToWallet, onBalanceUpdate, onBoostMatch, selectedMatch, onSelectMatch, onCloseMatchDetails }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
   const [locationStatus, setLocationStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
   const [distanceFilter, setDistanceFilter] = useState<number>(Infinity);
   const [statusFilter, setStatusFilter] = useState<Match['status'] | 'all'>('Convocando');
   const [sportFilter, setSportFilter] = useState<string>('all');
-  const [selectedMatch, setSelectedMatch] = useState<Match | null>(null);
 
   const matchesSectionRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    if (selectedMatch) {
-      const updatedMatch = matches.find(m => m.id === selectedMatch.id);
 
-      if (updatedMatch && JSON.stringify(updatedMatch) !== JSON.stringify(selectedMatch)) {
-        setSelectedMatch(updatedMatch);
-      } else if (!updatedMatch) {
-        setSelectedMatch(null);
-      }
-    }
-  }, [matches, selectedMatch]);
 
   useEffect(() => {
     setLocationStatus('loading');
@@ -97,11 +89,7 @@ const Explore: React.FC<ExploreProps> = ({ matches, platformFeatures, onJoinMatc
   }, []);
 
   const handleCardClick = (match: Match) => {
-    setSelectedMatch(match);
-  };
-
-  const handleCloseModal = () => {
-    setSelectedMatch(null);
+    onSelectMatch(match);
   };
 
   const handleFeatureClick = (title: string) => {
@@ -180,7 +168,7 @@ const Explore: React.FC<ExploreProps> = ({ matches, platformFeatures, onJoinMatc
 
       <PlatformFeatures features={platformFeatures} onFeatureClick={handleFeatureClick} />
 
-      <div ref={matchesSectionRef} className="mb-6 bg-gray-900 py-2">
+      <div ref={matchesSectionRef} className="mb-6 bg-gray-900 py-2 max-w-md mx-auto overflow-hidden">
         <h2 className="text-2xl font-bold text-white mb-4 text-center">Partidas Próximas</h2>
         <input
           type="text"
@@ -251,6 +239,11 @@ const Explore: React.FC<ExploreProps> = ({ matches, platformFeatures, onJoinMatc
             match={match}
             onCardClick={handleCardClick}
             onJoinMatch={onJoinMatch}
+            onLeaveMatch={onLeaveMatch}
+            joinedMatchIds={joinedMatchIds}
+            currentUser={currentUser}
+            onEditMatch={onEditMatch}
+            onNavigateToDirectChat={onNavigateToDirectChat}
           />
         ))
       ) : (
@@ -262,7 +255,7 @@ const Explore: React.FC<ExploreProps> = ({ matches, platformFeatures, onJoinMatc
       {selectedMatch && (
         <MatchDetailsModal
           match={selectedMatch}
-          onClose={handleCloseModal}
+          onClose={onCloseMatchDetails}
           onJoinMatch={onJoinMatch}
           onLeaveMatch={onLeaveMatch}
           onCancelMatch={onCancelMatch}

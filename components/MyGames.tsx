@@ -17,6 +17,9 @@ interface MyGamesProps {
   onNavigateToDirectChat?: (matchId: number) => void;
   onCancelMatch: (matchId: number, reason: string) => Promise<void>;
   onBalanceUpdate?: (amount: number) => void;
+  selectedMatch: Match | null;
+  onSelectMatch: (match: Match | null) => void;
+  onCloseMatchDetails: () => void;
 }
 
 const MyGames: React.FC<MyGamesProps> = ({
@@ -30,10 +33,12 @@ const MyGames: React.FC<MyGamesProps> = ({
   onNavigateBack,
   onNavigateToDirectChat,
   onCancelMatch,
-  onBalanceUpdate
+  onBalanceUpdate,
+  selectedMatch,
+  onSelectMatch,
+  onCloseMatchDetails
 }) => {
   const [activeTab, setActiveTab] = useState<'playing' | 'organizing'>('playing');
-  const [selectedMatch, setSelectedMatch] = useState<Match | null>(null);
 
   const myOrganizedMatches = matches.filter(match => match.created_by === currentUser?.id);
 
@@ -96,7 +101,7 @@ const MyGames: React.FC<MyGamesProps> = ({
             <MatchCard
               key={match.id}
               match={match}
-              onCardClick={setSelectedMatch}
+              onCardClick={onSelectMatch}
               onJoinMatch={onJoinMatch}
               onLeaveMatch={onLeaveMatch}
               joinedMatchIds={joinedMatchIds}
@@ -124,7 +129,7 @@ const MyGames: React.FC<MyGamesProps> = ({
       {selectedMatch && (
         <MatchDetailsModal
           match={selectedMatch}
-          onClose={() => setSelectedMatch(null)}
+          onClose={onCloseMatchDetails}
           onJoinMatch={onJoinMatch}
           onLeaveMatch={onLeaveMatch}
           onCancelMatch={onCancelMatch}
