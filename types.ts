@@ -40,26 +40,26 @@ export interface Match {
 }
 
 export interface MatchMessage {
-    id: string;
-    match_id: number;
-    sender_id: string;
-    message: string;
-    sent_at: string;
-    profiles?: {
-        name: string;
-        photo_url: string;
-    };
+  id: string;
+  match_id: number;
+  sender_id: string;
+  message: string;
+  sent_at: string;
+  profiles?: {
+    name: string;
+    photo_url: string;
+  };
 }
 
 export interface Notification {
-    id: number;
-    user_id: string;
-    type: string;
-    title: string;
-    body: string;
-    data: any;
-    is_read: boolean;
-    created_at: string;
+  id: number;
+  user_id: string;
+  type: string;
+  title: string;
+  body: string;
+  data: any;
+  is_read: boolean;
+  created_at: string;
 }
 
 export interface Arena {
@@ -86,22 +86,22 @@ export interface Ranking {
   user: Pick<Profile, 'name' | 'photoUrl' | 'id'>;
   points: number;
   stats?: {
-      created: number;
-      played: number;
+    created: number;
+    played: number;
   };
 }
 
 export interface ChatMessage {
-    id: string;
-    text: string;
-    sender: 'user' | 'bot';
-    sources?: GroundingSource[];
+  id: string;
+  text: string;
+  sender: 'user' | 'bot';
+  sources?: GroundingSource[];
 }
 
 export interface GroundingSource {
-    uri: string;
-    title: string;
-    description?: string;
+  uri: string;
+  title: string;
+  description?: string;
 }
 
 export interface Feature {
@@ -111,21 +111,21 @@ export interface Feature {
 }
 
 export interface VenueLocation {
-    name: string;
-    address: string;
-    lat: number;
-    lng: number;
-    uri?: string;
+  name: string;
+  address: string;
+  lat: number;
+  lng: number;
+  uri?: string;
 }
 
 export interface DraftMatchData {
-    name?: string;
-    sport?: string;
-    location?: string;
-    date?: string;
-    time?: string;
-    slots?: number;
-    rules?: string;
+  name?: string;
+  sport?: string;
+  location?: string;
+  date?: string;
+  time?: string;
+  slots?: number;
+  rules?: string;
 }
 
 export interface Post {
@@ -138,19 +138,21 @@ export interface Post {
   created_at: string;
   user_has_liked?: boolean;
   profiles?: {
-      name: string;
-      photo_url: string;
+    name: string;
+    photo_url: string;
   };
 }
 
 export interface Comment {
-    id: string;
-    post_id: string;
-    user_id: string;
-    content: string;
-    created_at: string;
-    profiles?: {
-        name: string;
-        photo_url: string;
-    };
+  id: string;
+  post_id: string;
+  user_id: string;
+  content: string;
+  created_at: string;
+  profiles?: {
+    name: string;
+    photo_url: string;
+  };
 }
+
+export type NewUserRegistrationData = Omit<Profile, 'id' | 'points' | 'matchesPlayed' | 'reputation' | 'matchCoins'> & { password?: string };
