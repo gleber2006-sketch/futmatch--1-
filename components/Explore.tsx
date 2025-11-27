@@ -169,10 +169,10 @@ const Explore: React.FC<ExploreProps> = ({ matches, platformFeatures, onJoinMatc
 
   return (
     <div>
-      <div className="flex justify-end mb-2">
+      <div className="fixed top-4 right-4 z-50">
         <button
           onClick={onNavigateToWallet}
-          className="bg-gray-800 text-yellow-400 px-3 py-1 rounded-full text-xs font-bold border border-yellow-600/30 hover:bg-gray-700 transition-colors flex items-center gap-1"
+          className="bg-gray-900/90 backdrop-blur-sm text-yellow-400 px-4 py-2 rounded-full text-sm font-bold border border-yellow-500/50 shadow-lg hover:bg-gray-800 transition-all flex items-center gap-2 animate-fade-in"
         >
           ⚡ {currentUser.matchCoins} <span className="hidden sm:inline">MatchCoins</span>
         </button>
@@ -189,14 +189,14 @@ const Explore: React.FC<ExploreProps> = ({ matches, platformFeatures, onJoinMatc
           onChange={(e) => setSearchTerm(e.target.value)}
           className="w-full bg-gray-700 text-white p-3 rounded-lg border border-gray-600 focus:outline-none focus:ring-2 focus:ring-green-500 transition-all duration-200"
         />
-        <div className="mt-4 flex flex-col sm:flex-row gap-4 items-center justify-between">
-          <div className="flex flex-wrap gap-4 items-center">
-            <div>
-              <label className="text-sm text-gray-400 mr-2">Distância:</label>
+        <div className="mt-4 flex flex-col gap-4">
+          <div className="grid grid-cols-2 sm:flex sm:flex-wrap gap-3 items-end">
+            <div className="flex flex-col">
+              <label className="text-xs text-gray-400 mb-1 ml-1">Distância</label>
               <select
                 value={distanceFilter}
                 onChange={e => setDistanceFilter(Number(e.target.value))}
-                className="bg-gray-700 text-white p-2 rounded-lg border border-gray-600 focus:outline-none focus:ring-2 focus:ring-green-500"
+                className="bg-gray-700 text-white p-2 rounded-lg border border-gray-600 focus:outline-none focus:ring-2 focus:ring-green-500 w-full"
               >
                 <option value="Infinity">Qualquer</option>
                 <option value="1">1 km</option>
@@ -205,12 +205,12 @@ const Explore: React.FC<ExploreProps> = ({ matches, platformFeatures, onJoinMatc
                 <option value="20">20 km</option>
               </select>
             </div>
-            <div>
-              <label className="text-sm text-gray-400 mr-2">Status:</label>
+            <div className="flex flex-col">
+              <label className="text-xs text-gray-400 mb-1 ml-1">Status</label>
               <select
                 value={statusFilter}
                 onChange={e => setStatusFilter(e.target.value as Match['status'] | 'all')}
-                className="bg-gray-700 text-white p-2 rounded-lg border border-gray-600 focus:outline-none focus:ring-2 focus:ring-green-500"
+                className="bg-gray-700 text-white p-2 rounded-lg border border-gray-600 focus:outline-none focus:ring-2 focus:ring-green-500 w-full"
               >
                 <option value="Convocando">Convocando</option>
                 <option value="Confirmado">Confirmado</option>
@@ -218,12 +218,12 @@ const Explore: React.FC<ExploreProps> = ({ matches, platformFeatures, onJoinMatc
                 <option value="all">Todos</option>
               </select>
             </div>
-            <div>
-              <label className="text-sm text-gray-400 mr-2">Modalidade:</label>
+            <div className="flex flex-col col-span-2 sm:col-span-1">
+              <label className="text-xs text-gray-400 mb-1 ml-1">Modalidade</label>
               <select
                 value={sportFilter}
                 onChange={e => setSportFilter(e.target.value)}
-                className="bg-gray-700 text-white p-2 rounded-lg border border-gray-600 focus:outline-none focus:ring-2 focus:ring-green-500"
+                className="bg-gray-700 text-white p-2 rounded-lg border border-gray-600 focus:outline-none focus:ring-2 focus:ring-green-500 w-full"
               >
                 <option value="all">Todas</option>
                 {SPORTS_LIST.map(sport => (
@@ -234,9 +234,9 @@ const Explore: React.FC<ExploreProps> = ({ matches, platformFeatures, onJoinMatc
           </div>
           <button
             onClick={onDeleteCanceledMatches}
-            className="bg-gradient-to-r from-red-600 to-red-400 text-white py-2 px-4 rounded-lg text-sm font-bold hover:brightness-110 transition-all"
+            className="w-full sm:w-auto bg-gradient-to-r from-red-600 to-red-400 text-white py-2 px-4 rounded-lg text-sm font-bold hover:brightness-110 transition-all shadow-md"
           >
-            Excluir Partidas Canceladas
+            Limpar Canceladas
           </button>
         </div>
       </div>

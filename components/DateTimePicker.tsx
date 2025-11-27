@@ -1,6 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { format, addDays, isSameDay, startOfToday, parseISO } from 'date-fns';
-import { ptBR } from 'date-fns/locale';
+import React, { useState } from 'react';
+import { format, parseISO } from 'date-fns';
 
 interface DateTimePickerProps {
     selectedDate: Date | null;
@@ -21,22 +20,22 @@ const DateTimePicker: React.FC<DateTimePickerProps> = ({
     selectedTime,
     onTimeChange,
 }) => {
-    const [dates, setDates] = useState<Date[]>([]);
     const [showCustomTime, setShowCustomTime] = useState(false);
-
-    useEffect(() => {
-        const today = startOfToday();
-        const nextDays = Array.from({ length: 14 }, (_, i) => addDays(today, i));
-        setDates(nextDays);
-    }, []);
-
-    const handleDateClick = (date: Date) => {
-        onDateChange(date);
-    };
 
     const handleTimeClick = (time: string) => {
         onTimeChange(time);
         setShowCustomTime(false);
+    };
+
+    // Helper to safely format date for input value (YYYY-MM-DD)
+    const inputValue = selectedDate ? format(selectedDate, 'yyyy-MM-dd') : '';
+
+    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        if (e.target.value) {
+            // Create date at noon to avoid timezone issues with simple date picking
+            const newDate = parseISO(e.target.value);
+            onDateChange(newDate);
+        }
     };
 
     return (
@@ -44,36 +43,17 @@ const DateTimePicker: React.FC<DateTimePickerProps> = ({
             {/* Date Selection */}
             <div>
                 <label className="block text-sm font-medium text-gray-300 mb-2">Data</label>
-                <div className="flex overflow-x-auto pb-2 gap-2 scrollbar-hide">
-                    {dates.map((date) => {
-                        const isSelected = selectedDate && isSameDay(date, selectedDate);
-                        const isToday = isSameDay(date, new Date());
 
-                        return (
-                            <button
-                                key={date.toISOString()}
-                                type="button"
-                                onClick={() => handleDateClick(date)}
-                                className={`
-                  flex-shrink-0 flex flex-col items-center justify-center w-16 h-20 rounded-xl border transition-all
-                  ${isSelected
-                                        ? 'bg-green-600 border-green-500 text-white shadow-lg scale-105'
-                                        : 'bg-gray-700 border-gray-600 text-gray-300 hover:bg-gray-600'
-                                    }
-                `}
-                            >
-                                <span className="text-xs font-medium uppercase">
-                                    {isToday ? 'Hoje' : format(date, 'EEE', { locale: ptBR })}
-                                </span>
-                                <span className="text-xl font-bold">
-                                    {format(date, 'd')}
-                                </span>
-                                <span className="text-xs opacity-75">
-                                    {format(date, 'MMM', { locale: ptBR })}
-                                </span>
-                            </button>
-                        );
-                    })}
+                <div className="relative">
+                    <input
+                        type="date"
+                        value={inputValue}
+                        onChange={handleInputChange}
+                        className="w-full bg-gray-700 text-white p-3 rounded-lg border border-gray-600 focus:outline-none focus:ring-2 focus:ring-green-500 transition-all"
+                    />
+                    <div className="absolute right-3 top-3 pointer-events-none text-gray-400">
+                        📅
+                    </div>
                 </div>
             </div>
 
