@@ -18,6 +18,7 @@ interface MatchDetailsModalProps {
   onEditMatch: (match: Match) => void;
   onNavigateToDirectChat?: (matchId: number) => void;
   onBalanceUpdate?: (amount: number) => void;
+  onBoostMatch?: (matchId: number) => Promise<boolean>;
 }
 
 const StatusBadge: React.FC<{ status: Match['status'] }> = ({ status }) => {

@@ -164,48 +164,37 @@ export default function App() {
     useEffect(() => {
         const checkDb = async () => {
             try {
-                // Check for 'profiles' table
-                const { error: profilesError } = await supabase
-                    .from('profiles')
-                    .select('id')
-                    .limit(0);
-
-                // Check for 'matches' table
-                const { error: matchesError } = await supabase
-                    .from('matches')
-                    .select('id')
-                    .limit(0);
-
-                // Check for 'match_participants' table
-                const { error: participantsError } = await supabase
-                    .from('match_participants')
-                    .select('match_id')
-                    .limit(0);
-
-                // Check for 'tokens' table (New)
-                const { error: tokensError } = await supabase
-                    .from('tokens')
-                    .select('user_id')
-                    .limit(0);
-
-                // CRITICAL: Check if the RPC function 'join_match_with_token' exists.
-                let functionMissing = false;
-                try {
-                    // Attempt to call the function with dummy data to check existence
-                    const { error: rpcError } = await supabase.rpc('join_match_with_token', {
-                        p_match_id: 0
-                    });
-
-                    if (rpcError) {
-                        const msg = rpcError.message?.toLowerCase() || '';
-                        // PostgreSQL error code 42883 is undefined_function
-                        if ((msg.includes('function') && msg.includes('does not exist')) || rpcError.code === '42883' || msg.includes('could not find the function')) {
-                            functionMissing = true;
+                // Parallelize all checks
+                const [
+                    { error: profilesError },
+                    { error: matchesError },
+                    { error: participantsError },
+                    { error: tokensError },
+                    rpcResult
+                ] = await Promise.all([
+                    supabase.from('profiles').select('id').limit(0),
+                    supabase.from('matches').select('id').limit(0),
+                    supabase.from('match_participants').select('match_id').limit(0),
+                    supabase.from('tokens').select('user_id').limit(0),
+                    // Check RPC function
+                    (async () => {
+                        try {
+                            const { error: rpcError } = await supabase.rpc('join_match_with_token', { p_match_id: 0 });
+                            if (rpcError) {
+                                const msg = rpcError.message?.toLowerCase() || '';
+                                if ((msg.includes('function') && msg.includes('does not exist')) || rpcError.code === '42883' || msg.includes('could not find the function')) {
+                                    return true; // functionMissing = true
+                                }
+                            }
+                            return false;
+                        } catch (e) {
+                            console.warn("Error checking RPC:", e);
+                            return false; // Assume not missing if error is unrelated to existence
                         }
-                    }
-                } catch (e) {
-                    console.warn("Error checking RPC:", e);
-                }
+                    })()
+                ]);
+
+                const functionMissing = rpcResult;
 
                 // If any check fails due to a missing table or column OR missing function, require setup.
                 if (isSchemaMismatchError(profilesError) || isSchemaMismatchError(matchesError) || isSchemaMismatchError(participantsError) || isSchemaMismatchError(tokensError) || functionMissing) {
@@ -684,6 +673,70 @@ export default function App() {
         );
     }, [currentUser]);
 
+    const handleBoostMatch = useCallback(async (matchId: number) => {
+        if (!currentUser) return false;
+
+        try {
+            // 1. Deduct tokens
+            const { data: rpcData, error: rpcError } = await supabase.rpc('spend_tokens', {
+                p_user_id: currentUser.id,
+                amount: 2
+            });
+
+            if (rpcError) throw rpcError;
+            if (rpcData === 'INSUFFICIENT_FUNDS') {
+                alert("Saldo insuficiente de MatchCoins. Você precisa de 2 tokens.");
+                return false;
+            }
+
+            // 2. Calculate boost_until
+            const boostUntil = new Date();
+            boostUntil.setHours(boostUntil.getHours() + 12);
+
+            // 3. Update database
+            const { error: updateError } = await supabase
+                .from('matches')
+                .update({
+                    is_boosted: true,
+                    boost_until: boostUntil.toISOString()
+                })
+                .eq('id', matchId);
+
+            if (updateError) throw updateError;
+
+            // 4. Update local state IMMEDIATELY
+            setMatches(prevMatches => {
+                const updated = prevMatches.map(m =>
+                    m.id === matchId
+                        ? { ...m, is_boosted: true, boost_until: boostUntil.toISOString() }
+                        : m
+                );
+
+                // Reorder: boosted matches first, then by date
+                return updated.sort((a, b) => {
+                    const aIsBoosted = a.is_boosted && a.boost_until && new Date(a.boost_until) > new Date();
+                    const bIsBoosted = b.is_boosted && b.boost_until && new Date(b.boost_until) > new Date();
+
+                    if (aIsBoosted && !bIsBoosted) return -1;
+                    if (!aIsBoosted && bIsBoosted) return 1;
+                    return a.date.getTime() - b.date.getTime();
+                });
+            });
+
+            // 5. Update user balance
+            setCurrentUser(prev => prev ? ({ ...prev, matchCoins: Math.max(0, prev.matchCoins - 2) }) : null);
+
+            setShowConfirmation("BOOST aplicado com sucesso! 🚀");
+            setTimeout(() => setShowConfirmation(null), 3000);
+            return true;
+
+        } catch (error: any) {
+            console.error("Error boosting match:", error.message);
+            alert("Erro ao aplicar Boost.");
+            return false;
+        }
+    }, [currentUser]);
+
     const handleLogin = useCallback(async (email?: string, password?: string) => {
         if (!email || !password) return;
         setLoginError(null);
@@ -949,6 +1002,7 @@ export default function App() {
                     onNavigateToNotifications={() => setActivePage('notifications')}
                     onNavigateToWallet={() => setActivePage('wallet')}
                     onBalanceUpdate={handleBalanceUpdate}
+                    onBoostMatch={handleBoostMatch}
                 />;
             case 'create':
                 return <CreateMatchForm

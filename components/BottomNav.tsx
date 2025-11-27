@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Page } from '../types';
 import { ExploreIcon, CreateIcon, RankingIcon, ProfileIcon } from './Icons';
 
@@ -16,7 +16,7 @@ const NavItem: React.FC<{
 }> = ({ label, icon, isActive, onClick }) => {
   const activeClasses = 'text-green-500';
   const inactiveClasses = 'text-gray-400 hover:text-white';
-  
+
   return (
     <button
       onClick={onClick}
@@ -29,8 +29,30 @@ const NavItem: React.FC<{
 };
 
 const BottomNav: React.FC<BottomNavProps> = ({ activePage, onNavigate }) => {
+  const [isVisible, setIsVisible] = useState(true);
+  const [lastScrollY, setLastScrollY] = useState(0);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      const currentScrollY = window.scrollY;
+
+      // Hide when scrolling down, show when scrolling up
+      if (currentScrollY > lastScrollY && currentScrollY > 50) {
+        setIsVisible(false);
+      } else {
+        setIsVisible(true);
+      }
+
+      setLastScrollY(currentScrollY);
+    };
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, [lastScrollY]);
+
   return (
-    <nav className="fixed bottom-0 left-0 right-0 bg-gray-900/80 backdrop-blur-sm border-t border-gray-700 h-20 flex justify-around items-center z-50">
+    <nav className={`fixed bottom-0 left-0 right-0 bg-gray-900/95 backdrop-blur-sm border-t border-gray-700 h-20 flex justify-around items-center z-50 transition-transform duration-300 ${isVisible ? 'translate-y-0' : 'translate-y-full'
+      }`}>
       <NavItem
         label="Explorar"
         icon={<ExploreIcon />}

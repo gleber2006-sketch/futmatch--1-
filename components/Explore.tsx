@@ -30,6 +30,7 @@ interface ExploreProps {
   onNavigateToNotifications: () => void;
   onNavigateToWallet: () => void;
   onBalanceUpdate?: (amount: number) => void;
+  onBoostMatch?: (matchId: number) => Promise<boolean>;
 }
 
 const haversineDistance = (
@@ -52,7 +53,7 @@ const haversineDistance = (
   return R * c;
 };
 
-const Explore: React.FC<ExploreProps> = ({ matches, platformFeatures, onJoinMatch, onLeaveMatch, onCancelMatch, onDeleteCanceledMatches, onEditMatch, joinedMatchIds, currentUser, onNavigateToCreate, onRefreshMatches, onNavigateToProfile, onNavigateToMap, onNavigateToMyGames, onNavigateToRanking, onNavigateToCommunity, onNavigateToArenas, onNavigateToMatchChat, onNavigateToDirectChat, onNavigateToNotifications, onNavigateToWallet, onBalanceUpdate }) => {
+const Explore: React.FC<ExploreProps> = ({ matches, platformFeatures, onJoinMatch, onLeaveMatch, onCancelMatch, onDeleteCanceledMatches, onEditMatch, joinedMatchIds, currentUser, onNavigateToCreate, onRefreshMatches, onNavigateToProfile, onNavigateToMap, onNavigateToMyGames, onNavigateToRanking, onNavigateToCommunity, onNavigateToArenas, onNavigateToMatchChat, onNavigateToDirectChat, onNavigateToNotifications, onNavigateToWallet, onBalanceUpdate, onBoostMatch }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
   const [locationStatus, setLocationStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
@@ -179,7 +180,7 @@ const Explore: React.FC<ExploreProps> = ({ matches, platformFeatures, onJoinMatc
 
       <PlatformFeatures features={platformFeatures} onFeatureClick={handleFeatureClick} />
 
-      <div ref={matchesSectionRef} className="mb-6 sticky top-[88px] z-10 bg-gray-900 py-2">
+      <div ref={matchesSectionRef} className="mb-6 bg-gray-900 py-2">
         <h2 className="text-2xl font-bold text-white mb-4 text-center">Partidas Próximas</h2>
         <input
           type="text"
@@ -270,6 +271,7 @@ const Explore: React.FC<ExploreProps> = ({ matches, platformFeatures, onJoinMatc
           onEditMatch={onEditMatch}
           onNavigateToDirectChat={onNavigateToDirectChat}
           onBalanceUpdate={onBalanceUpdate}
+          onBoostMatch={onBoostMatch}
         />
       )}
     </div>
