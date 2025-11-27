@@ -6,6 +6,7 @@ import LoadingSpinner from './LoadingSpinner';
 import { SearchIcon, LocationIcon } from './Icons';
 import { SPORTS_LIST } from '../constants';
 import { supabase } from '../services/supabaseClient';
+import DateTimePicker from './DateTimePicker';
 
 interface CreateMatchFormProps {
   onCreateMatch: (match: Omit<Match, 'id' | 'filled_slots' | 'created_by' | 'status' | 'cancellation_reason'>) => Promise<void>;
@@ -331,15 +332,13 @@ const CreateMatchForm: React.FC<CreateMatchFormProps> = ({ onCreateMatch, onUpda
           )}
         </div>
 
-        <div className="flex gap-4">
-          <div className="flex-1">
-            <label className="block text-sm font-medium text-gray-300 mb-1">Data</label>
-            <input type="date" value={date} onChange={e => setDate(e.target.value)} className={inputClasses} required />
-          </div>
-          <div className="flex-1">
-            <label className="block text-sm font-medium text-gray-300 mb-1">Horário</label>
-            <input type="time" value={time} onChange={e => setTime(e.target.value)} className={inputClasses} required />
-          </div>
+        <div className="mb-4">
+          <DateTimePicker
+            selectedDate={date ? new Date(date + 'T12:00:00') : null}
+            onDateChange={(newDate) => setDate(newDate.toISOString().split('T')[0])}
+            selectedTime={time}
+            onTimeChange={setTime}
+          />
         </div>
         <div>
           <label className="block text-sm font-medium text-gray-300 mb-1">Número de Jogadores</label>
