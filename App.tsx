@@ -92,7 +92,19 @@ const App: React.FC = () => {
                 ...m,
                 date: new Date(m.date)
             })) || [];
-            setMatches(parsedMatches);
+
+            // Initial sort to respect boost
+            const sortedMatches = parsedMatches.sort((a, b) => {
+                const now = new Date();
+                const aIsBoosted = a.is_boosted && a.boost_until && new Date(a.boost_until) > now;
+                const bIsBoosted = b.is_boosted && b.boost_until && new Date(b.boost_until) > now;
+
+                if (aIsBoosted && !bIsBoosted) return -1;
+                if (!aIsBoosted && bIsBoosted) return 1;
+                return a.date.getTime() - b.date.getTime();
+            });
+
+            setMatches(sortedMatches);
         } catch (error: any) {
             console.error('Error fetching matches:', error.message);
         }
@@ -319,15 +331,34 @@ const App: React.FC = () => {
                 { event: '*', schema: 'public', table: 'matches' },
                 (payload) => {
                     console.log('Real-time change received:', payload);
-                    if (payload.eventType === 'INSERT') {
-                        const newMatch = { ...payload.new, date: new Date(payload.new.date) } as Match;
-                        setMatches(prev => [...prev, newMatch]);
-                    } else if (payload.eventType === 'UPDATE') {
-                        const updatedMatch = { ...payload.new, date: new Date(payload.new.date) } as Match;
-                        setMatches(prev => prev.map(m => m.id === updatedMatch.id ? updatedMatch : m));
-                    } else if (payload.eventType === 'DELETE') {
-                        setMatches(prev => prev.filter(m => m.id !== payload.old.id));
-                    }
+
+                    setMatches(prev => {
+                        let updatedMatches = [...prev];
+
+                        if (payload.eventType === 'INSERT') {
+                            const newMatch = { ...payload.new, date: new Date(payload.new.date) } as Match;
+                            // Avoid duplicates if insert happens twice or locally first
+                            if (!updatedMatches.find(m => m.id === newMatch.id)) {
+                                updatedMatches.push(newMatch);
+                            }
+                        } else if (payload.eventType === 'UPDATE') {
+                            const updatedMatch = { ...payload.new, date: new Date(payload.new.date) } as Match;
+                            updatedMatches = updatedMatches.map(m => m.id === updatedMatch.id ? updatedMatch : m);
+                        } else if (payload.eventType === 'DELETE') {
+                            updatedMatches = updatedMatches.filter(m => m.id !== payload.old.id);
+                        }
+
+                        // Always re-sort after any change
+                        return updatedMatches.sort((a, b) => {
+                            const now = new Date();
+                            const aIsBoosted = a.is_boosted && a.boost_until && new Date(a.boost_until) > now;
+                            const bIsBoosted = b.is_boosted && b.boost_until && new Date(b.boost_until) > now;
+
+                            if (aIsBoosted && !bIsBoosted) return -1;
+                            if (!aIsBoosted && bIsBoosted) return 1;
+                            return a.date.getTime() - b.date.getTime();
+                        });
+                    });
                 }
             )
             .subscribe();
@@ -691,8 +722,9 @@ const App: React.FC = () => {
 
                 // Reorder: boosted matches first, then by date
                 return updated.sort((a, b) => {
-                    const aIsBoosted = a.is_boosted && a.boost_until && new Date(a.boost_until) > new Date();
-                    const bIsBoosted = b.is_boosted && b.boost_until && new Date(b.boost_until) > new Date();
+                    const now = new Date();
+                    const aIsBoosted = a.is_boosted && a.boost_until && new Date(a.boost_until) > now;
+                    const bIsBoosted = b.is_boosted && b.boost_until && new Date(b.boost_until) > now;
 
                     if (aIsBoosted && !bIsBoosted) return -1;
                     if (!aIsBoosted && bIsBoosted) return 1;
