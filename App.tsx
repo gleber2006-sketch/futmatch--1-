@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useEffect } from 'react';
+import React, { useState, useCallback, useEffect, useRef } from 'react';
 import BottomNav from './components/BottomNav';
 import Explore from './components/Explore';
 import CreateMatchForm from './components/CreateMatchForm';
@@ -19,6 +19,7 @@ import { initGemini } from './services/geminiService';
 import { AuthError, Session, User } from '@supabase/supabase-js';
 import DatabaseSetup from './components/DatabaseSetup';
 import LoadingSpinner from './components/LoadingSpinner';
+import Toast from './components/Toast';
 
 
 const platformFeatures: Feature[] = [
@@ -64,6 +65,9 @@ const App: React.FC = () => {
     const [selectedMatch, setSelectedMatch] = useState<Match | null>(null);
     const [selectedChatMatchId, setSelectedChatMatchId] = useState<number | null>(null);
     const [editingMatch, setEditingMatch] = useState<Match | null>(null);
+    const [showExitToast, setShowExitToast] = useState(false);
+    const exitAttemptRef = useRef(false);
+    const isPopping = useRef(false);
 
     const isAuthenticated = !!currentUser;
 
@@ -93,6 +97,52 @@ const App: React.FC = () => {
             console.error('Error fetching matches:', error.message);
         }
     }, []);
+
+    // Back Button & Navigation Handler
+    useEffect(() => {
+        const handlePopState = (event: PopStateEvent) => {
+            // Prevent default pushState in the effect
+            isPopping.current = true;
+
+            if (activePage === 'explore') {
+                // We are at root, trying to go back
+                if (exitAttemptRef.current) {
+                    console.log('[Telemetry] double_back_exit_attempt: success');
+                    // Allow exit. We are currently at the state BEFORE the guard.
+                    window.history.back();
+                } else {
+                    console.log('[Telemetry] double_back_exit_attempt: first_press');
+                    exitAttemptRef.current = true;
+                    setShowExitToast(true);
+                    // Restore the guard state so we stay "in app" logically
+                    window.history.pushState({ page: 'explore' }, '');
+
+                    setTimeout(() => {
+                        exitAttemptRef.current = false;
+                        console.log('[Telemetry] double_back_exit_attempt: timeout');
+                    }, 2000);
+                }
+            } else {
+                // Normal navigation back
+                const targetPage = event.state?.page || 'explore';
+                setActivePage(targetPage);
+            }
+        };
+
+        window.addEventListener('popstate', handlePopState);
+        return () => window.removeEventListener('popstate', handlePopState);
+    }, [activePage]);
+
+    // Push state on navigation
+    useEffect(() => {
+        if (isPopping.current) {
+            isPopping.current = false;
+            return;
+        }
+
+        // Push state to record history
+        window.history.pushState({ page: activePage }, '');
+    }, [activePage]);
 
     useEffect(() => {
         const checkDb = async () => {
@@ -221,7 +271,6 @@ const App: React.FC = () => {
         return profile;
     }, []);
 
-
     // Listen to auth state changes
     useEffect(() => {
         if (isLoadingDbCheck || dbSetupRequired) return;
@@ -261,7 +310,32 @@ const App: React.FC = () => {
                 setJoinedMatchIds(new Set<number>());
             }
         });
-        return () => subscription.unsubscribe();
+
+        // Real-time subscription for matches
+        const matchesSubscription = supabase
+            .channel('public:matches')
+            .on(
+                'postgres_changes',
+                { event: '*', schema: 'public', table: 'matches' },
+                (payload) => {
+                    console.log('Real-time change received:', payload);
+                    if (payload.eventType === 'INSERT') {
+                        const newMatch = { ...payload.new, date: new Date(payload.new.date) } as Match;
+                        setMatches(prev => [...prev, newMatch]);
+                    } else if (payload.eventType === 'UPDATE') {
+                        const updatedMatch = { ...payload.new, date: new Date(payload.new.date) } as Match;
+                        setMatches(prev => prev.map(m => m.id === updatedMatch.id ? updatedMatch : m));
+                    } else if (payload.eventType === 'DELETE') {
+                        setMatches(prev => prev.filter(m => m.id !== payload.old.id));
+                    }
+                }
+            )
+            .subscribe();
+
+        return () => {
+            subscription.unsubscribe();
+            matchesSubscription.unsubscribe();
+        };
     }, [isLoadingDbCheck, dbSetupRequired, fetchUserProfile]);
 
     const fetchRankings = useCallback(async () => {
@@ -273,6 +347,7 @@ const App: React.FC = () => {
                     .select('id, name, photo_url');
 
                 if (profilesError) throw profilesError;
+
 
                 const { data: matchesData, error: matchesError } = await supabase
                     .from('matches')
@@ -1071,6 +1146,12 @@ const App: React.FC = () => {
                     {showConfirmation}
                 </div>
             )}
+            <Toast
+                message="Pressione novamente para sair"
+                isVisible={showExitToast}
+                onClose={() => setShowExitToast(false)}
+                duration={2000}
+            />
             <ChatBot />
         </div>
     );

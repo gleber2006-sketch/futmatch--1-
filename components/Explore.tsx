@@ -141,7 +141,14 @@ const Explore: React.FC<ExploreProps> = ({ matches, platformFeatures, onJoinMatc
       return matchesSearch && matchesDistance && matchesStatus && matchesSport;
     })
     .sort((a, b) => {
-      // 1. Priority: Status
+      // 1. Priority: Boosted (Active)
+      const aIsBoosted = a.is_boosted && a.boost_until && new Date(a.boost_until) > new Date();
+      const bIsBoosted = b.is_boosted && b.boost_until && new Date(b.boost_until) > new Date();
+
+      if (aIsBoosted && !bIsBoosted) return -1;
+      if (!aIsBoosted && bIsBoosted) return 1;
+
+      // 2. Priority: Status
       const statusOrder: { [key in Match['status']]: number } = {
         'Convocando': 1,
         'Confirmado': 2,
@@ -151,7 +158,7 @@ const Explore: React.FC<ExploreProps> = ({ matches, platformFeatures, onJoinMatc
         return statusOrder[a.status] - statusOrder[b.status];
       }
 
-      // 2. Priority: Distance
+      // 3. Priority: Distance
       return a.distance - b.distance;
     });
 
