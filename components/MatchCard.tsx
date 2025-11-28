@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Match, Profile } from '../types';
 import { LocationIcon, CalendarIcon, UsersIcon, EditIcon, ChatIcon } from './Icons';
@@ -14,8 +13,10 @@ interface MatchCardProps {
     currentUser: Profile;
     onEditMatch: (match: Match) => void;
     onNavigateToDirectChat?: (matchId: number) => void;
+    className?: string;
 }
 
+/** Badge que indica o status da partida (Convocando, Confirmada ou Cancelada) */
 const StatusBadge: React.FC<{ status: Match['status'] }> = ({ status }) => {
     const statusMap = {
         Convocando: { text: 'Convocando', style: 'bg-yellow-500/20 text-yellow-300 border border-yellow-500' },
@@ -24,11 +25,24 @@ const StatusBadge: React.FC<{ status: Match['status'] }> = ({ status }) => {
     };
     const currentStatus = statusMap[status] || statusMap.Convocando;
 
-    return <span className={`text-xs font-semibold px-2.5 py-1 rounded-full ${currentStatus.style}`}>{currentStatus.text}</span>;
+    return (
+        <span className={`text-xs font-semibold px-2.5 py-1 rounded-full ${currentStatus.style}`}>
+            {currentStatus.text}
+        </span>
+    );
 };
 
-
-const MatchCard: React.FC<MatchCardProps> = ({ match, onCardClick, onJoinMatch, onLeaveMatch, joinedMatchIds, currentUser, onEditMatch, onNavigateToDirectChat }) => {
+const MatchCard: React.FC<MatchCardProps> = ({
+    match,
+    onCardClick,
+    onJoinMatch,
+    onLeaveMatch,
+    joinedMatchIds,
+    currentUser,
+    onEditMatch,
+    onNavigateToDirectChat,
+    className = '',
+}) => {
     const [isLoading, setIsLoading] = useState(false);
 
     const confirmedParticipants = Number(match.filled_slots || 0);
@@ -46,7 +60,7 @@ const MatchCard: React.FC<MatchCardProps> = ({ match, onCardClick, onJoinMatch, 
 
     const formattedDate = new Intl.DateTimeFormat('pt-BR', {
         dateStyle: 'medium',
-        timeStyle: 'short'
+        timeStyle: 'short',
     }).format(match.date);
 
     const handleParticipationClick = async (e: React.MouseEvent) => {
@@ -67,26 +81,51 @@ const MatchCard: React.FC<MatchCardProps> = ({ match, onCardClick, onJoinMatch, 
 
     const getButtonState = () => {
         if (isCanceled) {
-            return { text: 'Partida Cancelada ❌', isDisabled: true, className: 'bg-gradient-to-r from-gray-700 to-gray-600 opacity-50 cursor-not-allowed' };
+            return {
+                text: 'Partida Cancelada ❌',
+                isDisabled: true,
+                className: 'bg-gradient-to-r from-gray-700 to-gray-600 opacity-50 cursor-not-allowed',
+            };
         }
         if (isConfirmed) {
-            return { text: 'Presenças Encerradas ✅', isDisabled: true, className: 'bg-gradient-to-r from-gray-700 to-gray-600 opacity-50 cursor-not-allowed' };
+            return {
+                text: 'Presenças Encerradas ✅',
+                isDisabled: true,
+                className: 'bg-gradient-to-r from-gray-700 to-gray-600 opacity-50 cursor-not-allowed',
+            };
         }
         if (isLoading) {
             const loadingText = hasJoined ? 'Cancelando...' : 'Confirmando...';
             return {
-                text: <><LoadingSpinner size={5} /><span className="ml-2">{loadingText}</span></>,
+                text: (
+                    <>
+                        <LoadingSpinner size={5} />
+                        <span className="ml-2">{loadingText}</span>
+                    </>
+                ),
                 isDisabled: true,
-                className: 'bg-gradient-to-r from-gray-700 to-gray-600 cursor-wait'
+                className: 'bg-gradient-to-r from-gray-700 to-gray-600 cursor-wait',
             };
         }
         if (hasJoined) {
-            return { text: 'Sair da Partida', isDisabled: false, className: 'bg-gradient-to-r from-red-600 to-red-400 hover:brightness-110' };
+            return {
+                text: 'Sair da Partida',
+                isDisabled: false,
+                className: 'bg-gradient-to-r from-red-600 to-red-400 hover:brightness-110',
+            };
         }
         if (isFull) {
-            return { text: 'Lotado ✅', isDisabled: true, className: 'bg-gradient-to-r from-gray-700 to-gray-600 opacity-50 cursor-not-allowed' };
+            return {
+                text: 'Lotado ✅',
+                isDisabled: true,
+                className: 'bg-gradient-to-r from-gray-700 to-gray-600 opacity-50 cursor-not-allowed',
+            };
         }
-        return { text: 'Confirmar presença', isDisabled: false, className: 'bg-gradient-to-r from-green-600 to-green-400 hover:brightness-110' };
+        return {
+            text: 'Confirmar presença',
+            isDisabled: false,
+            className: 'bg-gradient-to-r from-green-600 to-green-400 hover:brightness-110',
+        };
     };
 
     const buttonState = getButtonState();
@@ -94,37 +133,41 @@ const MatchCard: React.FC<MatchCardProps> = ({ match, onCardClick, onJoinMatch, 
     return (
         <div
             onClick={() => !isCanceled && onCardClick(match)}
-            className={`
-            relative bg-gray-800 rounded-xl shadow-lg overflow-hidden mb-6 transition-all duration-300 
-            ${isCanceled ? 'opacity-60 grayscale-[50%]' : 'transform hover:scale-[1.02] cursor-pointer'}
-            ${isBoosted && !isCanceled ? 'border-2 border-yellow-400 shadow-[0_0_15px_rgba(250,204,21,0.3)]' : ''}
-        `}
+            className={`relative bg-gray-800 rounded-xl shadow-lg overflow-hidden mb-4 transition-all duration-300 w-full ${className}
+        ${isCanceled ? 'opacity-60 grayscale-[50%]' : 'transform hover:scale-[1.02] cursor-pointer'}
+        ${isBoosted && !isCanceled ? 'border-2 border-yellow-400 shadow-[0_0_15px_rgba(250,204,21,0.3)]' : ''}`}
             aria-disabled={isCanceled}
         >
+            {/* Badge de destaque (booster) */}
             {isBoosted && !isCanceled && (
-                <div className="absolute top-0 right-0 bg-gradient-to-r from-yellow-500 to-orange-500 text-white text-xs font-bold px-3 py-1 rounded-bl-lg z-10 flex items-center gap-1 shadow-sm">
+                <div className="absolute top-0 right-0 bg-gradient-to-r from-yellow-500 to-orange-500 text-white text-[0.6rem] font-bold px-1 py-0.5 rounded-bl-lg z-10 flex items-center gap-0.5 shadow-sm max-w-[120px] overflow-hidden whitespace-nowrap">
                     <span>🔥 Destaque</span>
                 </div>
             )}
 
+            {/* Overlay quando a partida está cancelada */}
             {isCanceled && (
                 <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/60 z-10 p-4 text-center">
                     <span className="text-red-400 font-bold text-lg">🚫 Cancelada</span>
                     {match.cancellation_reason && (
-                        <p className="text-sm text-red-300 italic mt-1">"{match.cancellation_reason}"</p>
+                        <p className="text-sm text-red-300 italic mt-1">{match.cancellation_reason}</p>
                     )}
                 </div>
             )}
-            <div className="p-5">
+
+            <div className="p-4">
                 <div className="flex justify-between items-start">
-                    <div className="flex-grow">
-                        <p className="text-sm font-semibold text-green-400 mb-1">{sportEmoji} {match.sport}</p>
-                        <h3 className="text-xl font-bold text-white mt-1">{match.name}</h3>
+                    <div className="flex-grow pr-2">
+                        <p className="text-xs font-semibold text-green-400 mb-1">
+                            {sportEmoji} {match.sport}
+                        </p>
+                        <h3 className="text-lg font-bold text-white mt-1 leading-tight">{match.name}</h3>
                     </div>
-                    <div className="flex items-start gap-2 ml-2 pt-4">
+
+                    <div className="flex items-start gap-2 pt-2 flex-shrink-0">
                         {isCreator && !isCanceled && !isConfirmed && (
                             <button
-                                onClick={(e) => {
+                                onClick={e => {
                                     e.stopPropagation();
                                     onEditMatch(match);
                                 }}
@@ -143,10 +186,10 @@ const MatchCard: React.FC<MatchCardProps> = ({ match, onCardClick, onJoinMatch, 
                     </div>
                 </div>
 
-                <div className="mt-4 space-y-3 text-gray-300">
+                <div className="mt-3 space-y-2 text-gray-300 text-sm">
                     <div className="flex items-center">
                         <LocationIcon />
-                        <span className="ml-2">{match.location}</span>
+                        <span className="ml-2 truncate">{match.location}</span>
                     </div>
                     <div className="flex items-center">
                         <CalendarIcon />
@@ -154,25 +197,25 @@ const MatchCard: React.FC<MatchCardProps> = ({ match, onCardClick, onJoinMatch, 
                     </div>
                     <div className="flex items-center">
                         <UsersIcon />
-                        <span className="ml-2 italic">"{match.rules}"</span>
+                        <span className="ml-2 italic truncate">"{match.rules}"</span>
                     </div>
                 </div>
-
             </div>
-            <div className="px-5 pb-5 mt-2">
+
+            <div className="px-4 pb-4">
                 {!isCanceled && (
                     <div className="flex gap-2">
                         <button
                             onClick={handleParticipationClick}
                             disabled={buttonState.isDisabled}
-                            className={`flex-1 text-white font-bold py-3 rounded-lg shadow-md transition-all duration-200 flex justify-center items-center ${buttonState.className}`}
+                            className={`flex-1 text-white font-bold py-2.5 rounded-lg shadow-md transition-all duration-200 flex justify-center items-center text-sm ${buttonState.className}`}
                         >
                             {buttonState.text}
                         </button>
 
                         {(hasJoined || isCreator) && onNavigateToDirectChat && (
                             <button
-                                onClick={(e) => {
+                                onClick={e => {
                                     e.stopPropagation();
                                     onNavigateToDirectChat(match.id);
                                 }}

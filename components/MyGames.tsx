@@ -108,6 +108,7 @@ const MyGames: React.FC<MyGamesProps> = ({
               currentUser={currentUser}
               onEditMatch={onEditMatch}
               onNavigateToDirectChat={onNavigateToDirectChat}
+              className="max-w-md mx-auto"
             />
           ))
         ) : (

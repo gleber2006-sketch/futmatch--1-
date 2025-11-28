@@ -168,7 +168,7 @@ const Explore: React.FC<ExploreProps> = ({ matches, platformFeatures, onJoinMatc
 
       <PlatformFeatures features={platformFeatures} onFeatureClick={handleFeatureClick} />
 
-      <div ref={matchesSectionRef} className="mb-6 bg-gray-900 py-2 max-w-md mx-auto overflow-hidden">
+      <div ref={matchesSectionRef} className="mb-6 bg-gray-900 py-2 max-w-md mx-auto md:max-w-7xl overflow-hidden">
         <h2 className="text-2xl font-bold text-white mb-4 text-center">Partidas Próximas</h2>
         <input
           type="text"
@@ -230,27 +230,32 @@ const Explore: React.FC<ExploreProps> = ({ matches, platformFeatures, onJoinMatc
       </div>
 
       {locationStatus === 'loading' && <div className="flex justify-center items-center p-4"><LoadingSpinner /> <span className="ml-2">Buscando sua localização...</span></div>}
-      {locationStatus === 'error' && <div className="bg-yellow-500/20 text-yellow-300 p-3 rounded-lg mb-4 text-center">Não foi possível obter sua localização. Mostrando todos os jogos.</div>}
+      {locationStatus === 'error' && <div className="bg-yellow-500/20 text-yellow-300 p-3 rounded-lg mb-4 text-center max-w-md mx-auto">Não foi possível obter sua localização. Mostrando todos os jogos.</div>}
 
-      {sortedAndFilteredMatches.length > 0 ? (
-        sortedAndFilteredMatches.map(match => (
-          <MatchCard
-            key={match.id}
-            match={match}
-            onCardClick={handleCardClick}
-            onJoinMatch={onJoinMatch}
-            onLeaveMatch={onLeaveMatch}
-            joinedMatchIds={joinedMatchIds}
-            currentUser={currentUser}
-            onEditMatch={onEditMatch}
-            onNavigateToDirectChat={onNavigateToDirectChat}
-          />
-        ))
-      ) : (
-        <div className="text-center text-gray-400 py-10">
-          <p>Nenhuma partida encontrada com os filtros atuais.</p>
-        </div>
-      )}
+      <div className="max-w-md mx-auto md:max-w-7xl px-4">
+        {sortedAndFilteredMatches.length > 0 ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {sortedAndFilteredMatches.map(match => (
+              <MatchCard
+                key={match.id}
+                match={match}
+                onCardClick={handleCardClick}
+                onJoinMatch={onJoinMatch}
+                onLeaveMatch={onLeaveMatch}
+                joinedMatchIds={joinedMatchIds}
+                currentUser={currentUser}
+                onEditMatch={onEditMatch}
+                onNavigateToDirectChat={onNavigateToDirectChat}
+                className="h-full"
+              />
+            ))}
+          </div>
+        ) : (
+          <div className="text-center text-gray-400 py-10">
+            <p>Nenhuma partida encontrada com os filtros atuais.</p>
+          </div>
+        )}
+      </div>
 
       {selectedMatch && (
         <MatchDetailsModal
