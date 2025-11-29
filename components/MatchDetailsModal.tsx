@@ -28,9 +28,7 @@ const StatusBadge: React.FC<{ status: Match['status'] }> = ({ status }) => {
     Cancelado: { text: 'Cancelada', style: 'bg-red-500/20 text-red-300 border border-red-500' },
   };
   const current = statusMap[status] || statusMap.Convocando;
-  return (
-    <span className={`text-xs font-semibold px-2.5 py-1 rounded-full ${current.style}`}> {current.text} </span>
-  );
+  return <span className={`text-xs font-semibold px-2.5 py-1 rounded-full ${current.style}`}>{current.text}</span>;
 };
 
 const MatchDetailsModal: React.FC<MatchDetailsModalProps> = ({
@@ -113,9 +111,7 @@ const MatchDetailsModal: React.FC<MatchDetailsModalProps> = ({
     }
   };
 
-  const handleCancelClick = () => {
-    setShowCancelInput(true);
-  };
+  const handleCancelClick = () => setShowCancelInput(true);
 
   const handleCancelConfirm = async () => {
     if (!cancelReason.trim()) {
@@ -162,10 +158,8 @@ const MatchDetailsModal: React.FC<MatchDetailsModalProps> = ({
     try {
       if (onBoostMatch) {
         const success = await onBoostMatch(match.id);
-        if (!success) {
-          // onBoostMatch already handles alerts on failure
-          return;
-        }
+        if (!success) return;
+        onClose();
       }
     } catch (e) {
       console.error('Erro ao aplicar boost:', e);
@@ -174,20 +168,11 @@ const MatchDetailsModal: React.FC<MatchDetailsModalProps> = ({
     }
   };
 
-  // Determine button state for participation
   const getButtonState = () => {
-    if (isCanceled) {
-      return { text: 'Partida Cancelada', isDisabled: true, className: 'bg-gray-700 cursor-not-allowed' };
-    }
-    if (isConfirmed) {
-      return { text: 'Partida Confirmada', isDisabled: true, className: 'bg-gray-700 cursor-not-allowed' };
-    }
-    if (hasJoined) {
-      return { text: 'Sair da Partida', isDisabled: false, className: 'bg-red-600 hover:brightness-110' };
-    }
-    if (isFull) {
-      return { text: 'Lotado ✅', isDisabled: true, className: 'bg-gray-700 opacity-50 cursor-not-allowed' };
-    }
+    if (isCanceled) return { text: 'Partida Cancelada', isDisabled: true, className: 'bg-gray-700 cursor-not-allowed' };
+    if (isConfirmed) return { text: 'Partida Confirmada', isDisabled: true, className: 'bg-gray-700 cursor-not-allowed' };
+    if (hasJoined) return { text: 'Sair da Partida', isDisabled: false, className: 'bg-red-600 hover:brightness-110' };
+    if (isFull) return { text: 'Lotado ✅', isDisabled: true, className: 'bg-gray-700 opacity-50 cursor-not-allowed' };
     return { text: 'Confirmar presença', isDisabled: false, className: 'bg-green-600 hover:brightness-110' };
   };
 
@@ -203,7 +188,7 @@ const MatchDetailsModal: React.FC<MatchDetailsModalProps> = ({
     >
       <div
         className="bg-gray-800 rounded-xl shadow-2xl w-full max-w-md max-h-[90vh] overflow-y-auto relative flex flex-col"
-        onClick={(e) => e.stopPropagation()}
+        onClick={e => e.stopPropagation()}
       >
         <button onClick={onClose} className="absolute top-3 right-3 text-gray-400 hover:text-white z-10 p-1 bg-gray-900/50 rounded-full" aria-label="Fechar modal">
           <CloseIcon />
@@ -267,7 +252,7 @@ const MatchDetailsModal: React.FC<MatchDetailsModalProps> = ({
             </button>
           </div>
           {(hasJoined || isCreator) && (
-            <div className="mt-4 border-t border-gray-700 pt-4 px-6 pb-6">
+            <div className="mt-4 border-t border-gray-700 pt-4">
               <h4 className="text-sm font-bold text-gray-400 mb-3 text-center">AÇÕES DO ORGANIZADOR</h4>
               <div className="space-y-3">
                 {!isBoosted && (
@@ -299,7 +284,7 @@ const MatchDetailsModal: React.FC<MatchDetailsModalProps> = ({
                     <p className="text-white font-bold mb-2">Informe o motivo do cancelamento:</p>
                     <textarea
                       value={cancelReason}
-                      onChange={(e) => setCancelReason(e.target.value)}
+                      onChange={e => setCancelReason(e.target.value)}
                       placeholder="Ex: Chuva forte, falta de jogadores..."
                       className="w-full p-2 rounded-md bg-gray-800 text-gray-200 border border-gray-600 mb-3"
                       rows={2}
@@ -333,16 +318,16 @@ const MatchDetailsModal: React.FC<MatchDetailsModalProps> = ({
             </div>
           )}
           <div className="mt-4">
-            <button onClick={onNavigateToDirectChat ? () => onNavigateToDirectChat(match.id) : undefined} className="w-full bg-gradient-to-r from-blue-600 to-blue-400 text-white font-bold py-3 rounded-lg shadow-md hover:brightness-110 transition-all flex items-center justify-center gap-2 mt-3">
+            <button
+              onClick={onNavigateToDirectChat ? () => onNavigateToDirectChat(match.id) : undefined}
+              className="w-full bg-gradient-to-r from-blue-600 to-blue-400 text-white font-bold py-3 rounded-lg shadow-md hover:brightness-110 transition-all flex items-center justify-center gap-2 mt-3"
+            >
               <ChatIcon /> <span className="inline">Chat da Partida</span>
             </button>
           </div>
         </div>
         <style>{`
-          @keyframes fade-in {
-            from { opacity: 0; transform: scale(0.95); }
-            to { opacity: 1; transform: scale(1); }
-          }
+          @keyframes fade-in { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
           .animate-fade-in { animation: fade-in 0.2s ease-out forwards; }
         `}</style>
       </div>
