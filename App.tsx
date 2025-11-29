@@ -330,7 +330,16 @@ const App: React.FC = () => {
                 'postgres_changes',
                 { event: '*', schema: 'public', table: 'matches' },
                 (payload) => {
-                    console.log('Real-time change received:', payload);
+                    const timestamp = new Date().toLocaleTimeString('pt-BR');
+                    console.log(`\n🔔 [${timestamp}] Real-time event:`, payload.eventType);
+
+                    // Log boost-related changes for UPDATE events
+                    if (payload.eventType === 'UPDATE' && (payload.old.is_boosted !== payload.new.is_boosted || payload.old.boost_until !== payload.new.boost_until)) {
+                        console.log('🚀 BOOST UPDATE:');
+                        console.log('  Match ID:', payload.new.id);
+                        console.log('  is_boosted:', payload.old.is_boosted, '→', payload.new.is_boosted);
+                        console.log('  boost_until:', payload.old.boost_until, '→', payload.new.boost_until);
+                    }
 
                     setMatches(prev => {
                         let updatedMatches = [...prev];
