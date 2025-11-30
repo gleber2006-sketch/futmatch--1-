@@ -41,7 +41,7 @@ END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
 -- Step 3: Grant execute permission to authenticated users
-GRANT EXECUTE ON FUNCTION finalize_expired_matches() TO authenticated;
+GRANT EXECUTE ON FUNCTION finalize_expired_matches() TO authenticated, anon, service_role;
 
 -- Step 4: Create a function that can be called periodically (optional, for manual testing)
 COMMENT ON FUNCTION finalize_expired_matches() IS 'Finalizes all matches whose date has passed. Returns the number of matches finalized.';
