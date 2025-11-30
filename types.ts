@@ -33,7 +33,7 @@ export interface Match {
   filled_slots: number;
   rules: string;
   created_by: string;
-  status: 'Convocando' | 'Confirmado' | 'Cancelado';
+  status: 'Convocando' | 'Confirmado' | 'Cancelado' | 'Finalizada';
   cancellation_reason: string | null;
   is_boosted?: boolean;
   boost_until?: string;

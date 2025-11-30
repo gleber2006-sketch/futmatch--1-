@@ -1139,6 +1139,27 @@ const App: React.FC = () => {
         }
     };
 
+    // Periodically check for expired matches and finalize them
+    useEffect(() => {
+        const finalizeMatches = async () => {
+            try {
+                const { error } = await supabase.rpc('finalize_expired_matches');
+                if (error) {
+                    // Ignore error if function doesn't exist yet (migration not run)
+                    if (error.code !== '42883') {
+                        console.error('Error finalizing matches:', error);
+                    }
+                }
+            } catch (err) {
+                console.error('Exception finalizing matches:', err);
+            }
+        };
+
+        finalizeMatches();
+        const interval = setInterval(finalizeMatches, 60000); // Check every minute
+        return () => clearInterval(interval);
+    }, []);
+
     if (isLoadingDbCheck) {
         return <LoadingSpinner />;
     }
