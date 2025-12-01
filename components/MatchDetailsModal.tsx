@@ -220,6 +220,12 @@ const MatchDetailsModal: React.FC<MatchDetailsModalProps> = ({
     }
   };
 
+  const handleShareClick = () => {
+    const message = `Venha jogar no ${match.name}! ⚽\n📅 ${formattedDate}\n📍 ${match.location}\n\nParticipe pelo App FutMatch!`;
+    const url = `https://wa.me/?text=${encodeURIComponent(message)}`;
+    window.open(url, '_blank');
+  };
+
   return (
     <div
       className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-[100] p-4 animate-fade-in"
@@ -377,6 +383,15 @@ const MatchDetailsModal: React.FC<MatchDetailsModalProps> = ({
                 className="w-full bg-gradient-to-r from-blue-600 to-blue-400 text-white font-bold py-3 rounded-lg shadow-md hover:brightness-110 transition-all flex items-center justify-center gap-2 mt-3"
               >
                 <ChatIcon /> <span className="inline">Chat da Partida</span>
+              </button>
+            </div>
+
+            <div className="mt-3">
+              <button
+                onClick={handleShareClick}
+                className="w-full bg-green-500 text-white font-bold py-3 rounded-lg shadow-md hover:brightness-110 transition-all flex items-center justify-center gap-2"
+              >
+                <span className="text-xl">📱</span> <span className="inline">Compartilhar no WhatsApp</span>
               </button>
             </div>
 
