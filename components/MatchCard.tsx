@@ -181,6 +181,27 @@ const MatchCard: React.FC<MatchCardProps> = ({
                             <div className={`text-white px-3 py-1 rounded-full text-sm font-bold ${slotsColor}`}>
                                 {confirmedParticipants} / {totalSlots}
                             </div>
+
+                            {/* Avatar Stack */}
+                            {match.match_participants && match.match_participants.length > 0 && (
+                                <div className="flex -space-x-2 overflow-hidden">
+                                    {match.match_participants.slice(0, 3).map((p, i) => (
+                                        <img
+                                            key={p.user_id || i}
+                                            className="inline-block h-6 w-6 rounded-full ring-2 ring-gray-800"
+                                            src={p.profile?.photo_url || `https://ui-avatars.com/api/?name=${p.profile?.name || 'User'}`}
+                                            alt={p.profile?.name}
+                                            title={p.profile?.name}
+                                        />
+                                    ))}
+                                    {match.match_participants.length > 3 && (
+                                        <div className="flex items-center justify-center h-6 w-6 rounded-full ring-2 ring-gray-800 bg-gray-600 text-[10px] text-white font-bold">
+                                            +{match.match_participants.length - 3}
+                                        </div>
+                                    )}
+                                </div>
+                            )}
+
                             <StatusBadge status={match.status} />
                         </div>
                     </div>

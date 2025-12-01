@@ -4,6 +4,7 @@ import { Match, Profile } from '../types';
 import { LocationIcon, CalendarIcon, UsersIcon, CloseIcon, EditIcon, ChatIcon } from './Icons';
 import LoadingSpinner from './LoadingSpinner';
 import { supabase } from '../services/supabaseClient';
+import MatchParticipantsModal from './MatchParticipantsModal';
 
 declare var L: any;
 
@@ -19,6 +20,10 @@ interface MatchDetailsModalProps {
   onNavigateToDirectChat?: (matchId: number) => void;
   onBalanceUpdate?: (amount: number) => void;
   onBoostMatch?: (matchId: number) => Promise<boolean>;
+  onApproveParticipant?: (matchId: number, userId: string) => Promise<void>;
+  onDeclineParticipant?: (matchId: number, userId: string) => Promise<void>;
+  onRemoveParticipant?: (matchId: number, userId: string) => Promise<void>;
+  onPromoteFromWaitlist?: (matchId: number, userId: string) => Promise<void>;
 }
 
 const StatusBadge: React.FC<{ status: Match['status'] }> = ({ status }) => {
@@ -45,6 +50,10 @@ const MatchDetailsModal: React.FC<MatchDetailsModalProps> = ({
   onNavigateToDirectChat,
   onBalanceUpdate,
   onBoostMatch,
+  onApproveParticipant,
+  onDeclineParticipant,
+  onRemoveParticipant,
+  onPromoteFromWaitlist,
 }) => {
   const mapRef = useRef<HTMLDivElement>(null);
   const mapInstance = useRef<any>(null);
@@ -52,6 +61,7 @@ const MatchDetailsModal: React.FC<MatchDetailsModalProps> = ({
   const [showCancelInput, setShowCancelInput] = useState(false);
   const [cancelReason, setCancelReason] = useState('');
   const [isBoosting, setIsBoosting] = useState(false);
+  const [showParticipantsModal, setShowParticipantsModal] = useState(false);
 
   const confirmedParticipants = Number(match.filled_slots || 0);
   const totalSlots = Number(match.slots || 0);
@@ -333,6 +343,12 @@ const MatchDetailsModal: React.FC<MatchDetailsModalProps> = ({
             </div>
           )}
           <div className="mt-4">
+            <button
+              onClick={() => setShowParticipantsModal(true)}
+              className="w-full bg-gradient-to-r from-purple-600 to-purple-400 text-white font-bold py-3 rounded-lg shadow-md hover:brightness-110 transition-all flex items-center justify-center gap-2"
+            >
+              <UsersIcon /> <span className="inline">Ver Participantes ({match.filled_slots})</span>
+            </button>
             <button onClick={onNavigateToDirectChat ? () => onNavigateToDirectChat(match.id) : undefined} className="w-full bg-gradient-to-r from-blue-600 to-blue-400 text-white font-bold py-3 rounded-lg shadow-md hover:brightness-110 transition-all flex items-center justify-center gap-2 mt-3">
               <ChatIcon /> <span className="inline">Chat da Partida</span>
             </button>
@@ -345,6 +361,19 @@ const MatchDetailsModal: React.FC<MatchDetailsModalProps> = ({
           }
           .animate-fade-in { animation: fade-in 0.2s ease-out forwards; }
         `}</style>
+        {/* Modal de Participantes */}
+        {showParticipantsModal && (
+          <MatchParticipantsModal
+            match={match}
+            currentUser={currentUser}
+            onClose={() => setShowParticipantsModal(false)}
+            onApproveParticipant={onApproveParticipant}
+            onDeclineParticipant={onDeclineParticipant}
+            onRemoveParticipant={onRemoveParticipant}
+            onPromoteFromWaitlist={onPromoteFromWaitlist}
+          />
+        )}
+
       </div>
     </div>
   );

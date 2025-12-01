@@ -37,6 +37,13 @@ export interface Match {
   cancellation_reason: string | null;
   is_boosted?: boolean;
   boost_until?: string;
+  match_participants?: {
+    user_id: string;
+    profile: {
+      photo_url: string;
+      name: string;
+    };
+  }[];
 }
 
 export interface MatchMessage {
@@ -156,3 +163,14 @@ export interface Comment {
 }
 
 export type NewUserRegistrationData = Omit<Profile, 'id' | 'points' | 'matchesPlayed' | 'reputation' | 'matchCoins'> & { password?: string };
+
+export type ParticipantStatus = 'confirmed' | 'pending' | 'waitlist' | 'declined';
+
+export interface MatchParticipant {
+  match_id: number;
+  user_id: string;
+  joined_at: string;
+  status: ParticipantStatus;
+  waitlist_position?: number;
+  profile: Pick<Profile, 'name' | 'photoUrl' | 'reputation'>;
+}

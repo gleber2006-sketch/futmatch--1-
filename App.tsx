@@ -75,7 +75,7 @@ const App: React.FC = () => {
         try {
             const { data, error } = await supabase
                 .from('matches')
-                .select('*')
+                .select('*, match_participants(user_id, status, joined_at, waitlist_position, profiles(photo_url, name))')
                 .neq('status', 'Cancelado')
                 .order('date', { ascending: true });
 
@@ -746,6 +746,126 @@ const App: React.FC = () => {
         }
     }, [currentUser]);
 
+    // --- Participant Management Handlers ---
+
+    const handleApproveParticipant = useCallback(async (matchId: number, userId: string) => {
+        if (!currentUser) return;
+        try {
+            const { error } = await supabase
+                .from('match_participants')
+                .update({ status: 'confirmed' })
+                .eq('match_id', matchId)
+                .eq('user_id', userId);
+
+            if (error) throw error;
+
+            // Update local state
+            setMatches(prev => prev.map(m => {
+                if (m.id !== matchId) return m;
+                const updatedParticipants = m.match_participants?.map(p =>
+                    p.user_id === userId ? { ...p, status: 'confirmed' } : p
+                );
+                return { ...m, match_participants: updatedParticipants, filled_slots: m.filled_slots + 1 };
+            }));
+
+            alert("Participante aprovado!");
+        } catch (error: any) {
+            console.error("Error approving participant:", error);
+            alert("Erro ao aprovar participante.");
+        }
+    }, [currentUser]);
+
+    const handleDeclineParticipant = useCallback(async (matchId: number, userId: string) => {
+        if (!currentUser) return;
+        try {
+            const { error } = await supabase
+                .from('match_participants')
+                .delete()
+                .eq('match_id', matchId)
+                .eq('user_id', userId);
+
+            if (error) throw error;
+
+            // Update local state
+            setMatches(prev => prev.map(m => {
+                if (m.id !== matchId) return m;
+                const updatedParticipants = m.match_participants?.filter(p => p.user_id !== userId);
+                return { ...m, match_participants: updatedParticipants };
+            }));
+
+            alert("Participante recusado/removido.");
+        } catch (error: any) {
+            console.error("Error declining participant:", error);
+            alert("Erro ao recusar participante.");
+        }
+    }, [currentUser]);
+
+    const handleRemoveParticipant = useCallback(async (matchId: number, userId: string) => {
+        if (!currentUser) return;
+        if (!window.confirm("Tem certeza que deseja remover este jogador?")) return;
+
+        try {
+            // We use the same logic as decline, but maybe we want to refund?
+            // For now, let's assume manual removal by host might imply refund or not.
+            // Let's use the simple delete for now, similar to decline.
+            // Ideally, we should use an RPC if we want to handle refunds safely.
+            // But for MVP, direct delete is fine, assuming no automatic refund for forced removal (or maybe yes).
+            // Let's stick to simple delete for consistency with 'decline'.
+
+            const { error } = await supabase
+                .from('match_participants')
+                .delete()
+                .eq('match_id', matchId)
+                .eq('user_id', userId);
+
+            if (error) throw error;
+
+            setMatches(prev => prev.map(m => {
+                if (m.id !== matchId) return m;
+                const updatedParticipants = m.match_participants?.filter(p => p.user_id !== userId);
+                return { ...m, match_participants: updatedParticipants, filled_slots: Math.max(0, m.filled_slots - 1) };
+            }));
+
+            alert("Participante removido.");
+        } catch (error: any) {
+            console.error("Error removing participant:", error);
+            alert("Erro ao remover participante.");
+        }
+    }, [currentUser]);
+
+    const handlePromoteFromWaitlist = useCallback(async (matchId: number, userId: string) => {
+        if (!currentUser) return;
+        try {
+            // Check slots first (optimistic check)
+            const match = matches.find(m => m.id === matchId);
+            if (match && match.filled_slots >= match.slots) {
+                alert("A partida já está cheia!");
+                return;
+            }
+
+            const { error } = await supabase
+                .from('match_participants')
+                .update({ status: 'confirmed', waitlist_position: null })
+                .eq('match_id', matchId)
+                .eq('user_id', userId);
+
+            if (error) throw error;
+
+            setMatches(prev => prev.map(m => {
+                if (m.id !== matchId) return m;
+                const updatedParticipants = m.match_participants?.map(p =>
+                    p.user_id === userId ? { ...p, status: 'confirmed', waitlist_position: null } : p
+                );
+                return { ...m, match_participants: updatedParticipants, filled_slots: m.filled_slots + 1 };
+            }));
+
+            alert("Participante promovido da lista de espera!");
+        } catch (error: any) {
+            console.error("Error promoting participant:", error);
+            alert("Erro ao promover participante.");
+        }
+    }, [currentUser, matches]);
+
     const handleLogin = useCallback(async (email?: string, password?: string) => {
         if (!email || !password) return;
         setLoginError(null);
@@ -1020,77 +1140,6 @@ const App: React.FC = () => {
                 return <CreateMatchForm
                     onCreateMatch={handleCreateMatch}
                     onUpdateMatch={handleUpdateMatch}
-                    matchToEdit={editingMatch}
-                    onCancelEdit={handleCancelEdit}
-                    initialData={draftMatchData}
-                    onNavigateBack={handleCancelEdit}
-                />;
-            case 'profile':
-                return <UserProfile
-                    user={currentUser}
-                    onUpdateUser={handleUpdateUser}
-                    onLogout={handleLogout}
-                    onNavigateBack={() => setActivePage('explore')}
-                />;
-            case 'ranking':
-                return <RankingList
-                    rankings={rankings}
-                    onNavigateBack={() => setActivePage('explore')}
-                />;
-            case 'map':
-                return <MatchesMap
-                    matches={matches}
-                    onNavigateBack={() => setActivePage('explore')}
-                />;
-            case 'my-games':
-                return <MyGames
-                    matches={matches}
-                    currentUser={currentUser}
-                    joinedMatchIds={joinedMatchIds}
-                    onJoinMatch={handleJoinMatch}
-                    onLeaveMatch={handleLeaveMatch}
-                    onCancelMatch={handleCancelMatch}
-                    onEditMatch={handleStartEditMatch}
-                    onNavigateToCreate={() => setActivePage('create')}
-                    onNavigateBack={() => setActivePage('explore')}
-                    onNavigateToDirectChat={handleNavigateToMatchChat}
-                    onBalanceUpdate={handleBalanceUpdate}
-                    selectedMatch={selectedMatch}
-                    onSelectMatch={setSelectedMatch}
-                    onCloseMatchDetails={() => setSelectedMatch(null)}
-                />;
-            case 'arenas':
-                return <Arenas
-                    onNavigateBack={() => setActivePage('explore')}
-                    onDraftFromArena={handleDraftMatch}
-                />;
-            case 'match-chat':
-                return <MatchChat
-                    currentUser={currentUser}
-                    onNavigateBack={() => setActivePage('explore')}
-                    initialMatchId={selectedChatMatchId}
-                />;
-            case 'notifications':
-                return <Notifications
-                    currentUser={currentUser}
-                    onNavigateBack={() => setActivePage('explore')}
-                    onNavigateToDirectChat={handleNavigateToMatchChat}
-                    onNavigateToCommunity={() => setActivePage('community')}
-                />;
-            case 'wallet':
-                return <Wallet
-                    currentUser={currentUser}
-                    onNavigateBack={() => setActivePage('explore')}
-                />;
-            case 'community':
-                return <Community
-                    onNavigateBack={() => setActivePage('explore')}
-                />;
-            default:
-                return <Explore
-                    matches={matches}
-                    platformFeatures={platformFeatures}
-                    onJoinMatch={handleJoinMatch}
                     onLeaveMatch={handleLeaveMatch}
                     joinedMatchIds={joinedMatchIds}
                     currentUser={currentUser}
