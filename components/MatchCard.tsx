@@ -22,6 +22,7 @@ const StatusBadge: React.FC<{ status: Match['status'] }> = ({ status }) => {
         Convocando: { text: 'Convocando', style: 'bg-yellow-500/20 text-yellow-300 border border-yellow-500' },
         Confirmado: { text: 'Confirmada', style: 'bg-green-500/20 text-green-300 border border-green-500' },
         Cancelado: { text: 'Cancelada', style: 'bg-red-500/20 text-red-300 border border-red-500' },
+        Finalizada: { text: 'Finalizada', style: 'bg-blue-500/20 text-blue-300 border border-blue-500' },
     };
     const currentStatus = statusMap[status] || statusMap.Convocando;
 
@@ -51,6 +52,7 @@ const MatchCard: React.FC<MatchCardProps> = ({
     const isFull = totalSlots > 0 && confirmedParticipants >= totalSlots;
     const isCanceled = match.status === 'Cancelado';
     const isConfirmed = match.status === 'Confirmado';
+    const isFinalized = match.status === 'Finalizada';
     const isCreator = currentUser?.id === match.created_by;
 
     const isBoosted = match.is_boosted && match.boost_until && new Date(match.boost_until) > new Date();
@@ -65,7 +67,7 @@ const MatchCard: React.FC<MatchCardProps> = ({
 
     const handleParticipationClick = async (e: React.MouseEvent) => {
         e.stopPropagation();
-        if (isCanceled || isConfirmed || isLoading) return;
+        if (isCanceled || isConfirmed || isFinalized || isLoading) return;
 
         setIsLoading(true);
         try {
@@ -90,6 +92,13 @@ const MatchCard: React.FC<MatchCardProps> = ({
         if (isConfirmed) {
             return {
                 text: 'Presenças Encerradas ✅',
+                isDisabled: true,
+                className: 'bg-gradient-to-r from-gray-700 to-gray-600 opacity-50 cursor-not-allowed',
+            };
+        }
+        if (isFinalized) {
+            return {
+                text: 'Partida Finalizada 🏁',
                 isDisabled: true,
                 className: 'bg-gradient-to-r from-gray-700 to-gray-600 opacity-50 cursor-not-allowed',
             };

@@ -330,7 +330,16 @@ const App: React.FC = () => {
                 'postgres_changes',
                 { event: '*', schema: 'public', table: 'matches' },
                 (payload) => {
-                    console.log('Real-time change received:', payload);
+                    const timestamp = new Date().toLocaleTimeString('pt-BR');
+                    console.log(`\n🔔 [${timestamp}] Real-time event:`, payload.eventType);
+
+                    // Log boost-related changes for UPDATE events
+                    if (payload.eventType === 'UPDATE' && (payload.old.is_boosted !== payload.new.is_boosted || payload.old.boost_until !== payload.new.boost_until)) {
+                        console.log('🚀 BOOST UPDATE:');
+                        console.log('  Match ID:', payload.new.id);
+                        console.log('  is_boosted:', payload.old.is_boosted, '→', payload.new.is_boosted);
+                        console.log('  boost_until:', payload.old.boost_until, '→', payload.new.boost_until);
+                    }
 
                     setMatches(prev => {
                         let updatedMatches = [...prev];
@@ -342,20 +351,32 @@ const App: React.FC = () => {
                                 updatedMatches.push(newMatch);
                             }
                         } else if (payload.eventType === 'UPDATE') {
-                            const updatedMatch = { ...payload.new, date: new Date(payload.new.date) } as Match;
-                            updatedMatches = updatedMatches.map(m => m.id === updatedMatch.id ? updatedMatch : m);
+                            // Merge strategy: maintain existing object reference/props, overwrite with new data
+                            updatedMatches = updatedMatches.map(m => {
+                                if (m.id === payload.new.id) {
+                                    // CRITICAL FIX: If payload.new.date is missing (partial update), keep existing date.
+                                    // Otherwise new Date(undefined) -> Invalid Date -> NaN sort -> broken list.
+                                    const newDate = payload.new.date ? new Date(payload.new.date) : m.date;
+                                    return { ...m, ...payload.new, date: newDate };
+                                }
+                                return m;
+                            });
                         } else if (payload.eventType === 'DELETE') {
                             updatedMatches = updatedMatches.filter(m => m.id !== payload.old.id);
                         }
 
-                        // Always re-sort after any change
+                        // Always re-sort after any change to ensure boosted matches jump to top
                         return updatedMatches.sort((a, b) => {
                             const now = new Date();
+                            // Check for active boost
                             const aIsBoosted = a.is_boosted && a.boost_until && new Date(a.boost_until) > now;
                             const bIsBoosted = b.is_boosted && b.boost_until && new Date(b.boost_until) > now;
 
+                            // 1. Priority: Boosted (Active)
                             if (aIsBoosted && !bIsBoosted) return -1;
                             if (!aIsBoosted && bIsBoosted) return 1;
+
+                            // 2. Priority: Date (Soonest first)
                             return a.date.getTime() - b.date.getTime();
                         });
                     });
@@ -712,7 +733,7 @@ const App: React.FC = () => {
 
             if (updateError) throw updateError;
 
-            // 4. Update local state IMMEDIATELY
+            // 4. Update local state
             setMatches(prevMatches => {
                 const updated = prevMatches.map(m =>
                     m.id === matchId
@@ -732,16 +753,16 @@ const App: React.FC = () => {
                 });
             });
 
-            // 5. Update user balance
-            setCurrentUser(prev => prev ? ({ ...prev, matchCoins: Math.max(0, prev.matchCoins - 2) }) : null);
+            // 5. Update user balance locally
+            setCurrentUser(prev => prev ? ({ ...prev, matchCoins: prev.matchCoins - 2 }) : null);
 
-            setShowConfirmation("BOOST aplicado com sucesso! 🚀");
+            setShowConfirmation("🚀 Partida impulsionada com sucesso!");
             setTimeout(() => setShowConfirmation(null), 3000);
             return true;
 
-        } catch (error: any) {
-            console.error("Error boosting match:", error.message);
-            alert("Erro ao aplicar Boost.");
+        } catch (error) {
+            console.error('Error boosting match:', error);
+            alert('Erro ao impulsionar partida.');
             return false;
         }
     }, [currentUser]);
@@ -1166,6 +1187,27 @@ const App: React.FC = () => {
                 />;
         }
     };
+
+    // Periodically check for expired matches and finalize them
+    useEffect(() => {
+        const finalizeMatches = async () => {
+            try {
+                const { error } = await supabase.rpc('finalize_expired_matches');
+                if (error) {
+                    // Ignore error if function doesn't exist yet (migration not run)
+                    if (error.code !== '42883') {
+                        console.error('Error finalizing matches:', error);
+                    }
+                }
+            } catch (err) {
+                console.error('Exception finalizing matches:', err);
+            }
+        };
+
+        finalizeMatches();
+        const interval = setInterval(finalizeMatches, 60000); // Check every minute
+        return () => clearInterval(interval);
+    }, []);
 
     if (isLoadingDbCheck) {
         return <LoadingSpinner />;

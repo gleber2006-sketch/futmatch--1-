@@ -153,6 +153,7 @@ const Explore: React.FC<ExploreProps> = ({ matches, platformFeatures, onJoinMatc
         'Convocando': 1,
         'Confirmado': 2,
         'Cancelado': 3,
+        'Finalizada': 4,
       };
       if (statusOrder[a.status] !== statusOrder[b.status]) {
         return statusOrder[a.status] - statusOrder[b.status];
@@ -210,6 +211,7 @@ const Explore: React.FC<ExploreProps> = ({ matches, platformFeatures, onJoinMatc
                 <option value="Convocando">Convocando</option>
                 <option value="Confirmado">Confirmado</option>
                 <option value="Cancelado">Cancelado</option>
+                <option value="Finalizada">Finalizadas</option>
                 <option value="all">Todos</option>
               </select>
             </div>

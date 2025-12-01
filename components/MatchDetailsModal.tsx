@@ -1,4 +1,3 @@
-// MatchDetailsModal.tsx
 import React, { useEffect, useRef, useState } from 'react';
 import { Match, Profile } from '../types';
 import { LocationIcon, CalendarIcon, UsersIcon, CloseIcon, EditIcon, ChatIcon } from './Icons';
@@ -18,7 +17,7 @@ interface MatchDetailsModalProps {
   currentUser: Profile;
   onEditMatch: (match: Match) => void;
   onNavigateToDirectChat?: (matchId: number) => void;
-  onBalanceUpdate?: (amount: number) => void;
+  onBalanceUpdate?: () => void;
   onBoostMatch?: (matchId: number) => Promise<boolean>;
   onApproveParticipant?: (matchId: number, userId: string) => Promise<void>;
   onDeclineParticipant?: (matchId: number, userId: string) => Promise<void>;
@@ -31,10 +30,15 @@ const StatusBadge: React.FC<{ status: Match['status'] }> = ({ status }) => {
     Convocando: { text: 'Convocando', style: 'bg-yellow-500/20 text-yellow-300 border border-yellow-500' },
     Confirmado: { text: 'Confirmada', style: 'bg-green-500/20 text-green-300 border border-green-500' },
     Cancelado: { text: 'Cancelada', style: 'bg-red-500/20 text-red-300 border border-red-500' },
+    Finalizada: { text: 'Finalizada', style: 'bg-blue-500/20 text-blue-300 border border-blue-500' },
   };
-  const current = statusMap[status] || statusMap.Convocando;
+
+  const currentStatus = statusMap[status] || statusMap.Convocando;
+
   return (
-    <span className={`text-xs font-semibold px-2.5 py-1 rounded-full ${current.style}`}> {current.text} </span>
+    <span className={`text-xs font-semibold px-2.5 py-1 rounded-full ${currentStatus.style}`}>
+      {currentStatus.text}
+    </span>
   );
 };
 
@@ -63,38 +67,36 @@ const MatchDetailsModal: React.FC<MatchDetailsModalProps> = ({
   const [isBoosting, setIsBoosting] = useState(false);
   const [showParticipantsModal, setShowParticipantsModal] = useState(false);
 
-  const confirmedParticipants = Number(match.filled_slots || 0);
-  const totalSlots = Number(match.slots || 0);
-  const isCreator = currentUser?.id === match.created_by;
-  const isCanceled = match.status === 'Cancelado';
-  const isConfirmed = match.status === 'Confirmado';
-  const hasJoined = joinedMatchIds?.has(Number(match.id)) ?? false;
-  const isFull = totalSlots > 0 && confirmedParticipants >= totalSlots;
-  const isBoosted = match.is_boosted && match.boost_until && new Date(match.boost_until) > new Date();
-
-  // Initialize Leaflet map
   useEffect(() => {
     if (typeof L === 'undefined' || !mapRef.current || !match.lat || !match.lng) return;
+
     const timer = setTimeout(() => {
       if (!mapRef.current) return;
+
       if (mapInstance.current) {
         mapInstance.current.remove();
       }
+
       try {
         const position: [number, number] = [match.lat, match.lng];
         const map = L.map(mapRef.current).setView(position, 15);
         mapInstance.current = map;
+
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
           maxZoom: 19,
           attribution: '© OpenStreetMap contributors',
         }).addTo(map);
+
         const marker = L.marker(position).addTo(map);
         marker.bindPopup(`<b>${match.name}</b>`).openPopup();
+
+        // Force a resize to prevent gray tiles
         map.invalidateSize();
       } catch (e) {
         console.error('Leaflet initialization failed:', e);
       }
     }, 10);
+
     return () => {
       clearTimeout(timer);
       if (mapInstance.current) {
@@ -104,18 +106,44 @@ const MatchDetailsModal: React.FC<MatchDetailsModalProps> = ({
     };
   }, [match]);
 
-  const formattedDate = new Intl.DateTimeFormat('pt-BR', {
-    dateStyle: 'full',
-    timeStyle: 'short',
-  }).format(match.date);
+  const isCreator = currentUser?.id === match.created_by;
+  const hasJoined = joinedMatchIds?.has(Number(match.id)) ?? false;
+  const isFull = match.filled_slots >= match.slots;
+  const isCanceled = match.status === 'Cancelado';
+  const isConfirmed = match.status === 'Confirmado';
+  const isFinalized = match.status === 'Finalizada';
+  const confirmedParticipants = match.filled_slots || 0;
+  const totalSlots = match.slots;
+
+  const formattedDate = new Date(match.date).toLocaleString('pt-BR', {
+    weekday: 'long',
+    day: '2-digit',
+    month: 'long',
+    hour: '2-digit',
+    minute: '2-digit',
+  });
+
+  const isBoosted = match.is_boosted && match.boost_until && new Date(match.boost_until) > new Date();
+
+  const getButtonState = () => {
+    if (isCanceled) return { text: 'Partida Cancelada', isDisabled: true, className: 'bg-gray-700 cursor-not-allowed' };
+    if (isConfirmed) return { text: 'Partida Confirmada', isDisabled: true, className: 'bg-gray-700 cursor-not-allowed' };
+    if (isFinalized) return { text: 'Partida Finalizada', isDisabled: true, className: 'bg-gray-700 cursor-not-allowed' };
+    if (hasJoined) return { text: 'Sair da Partida', isDisabled: false, className: 'bg-red-600 hover:brightness-110' };
+    if (isFull) return { text: 'Lotado ✅', isDisabled: true, className: 'bg-gray-700 opacity-50 cursor-not-allowed' };
+    return { text: 'Confirmar presença', isDisabled: false, className: 'bg-green-600 hover:brightness-110' };
+  };
+
+  const buttonState = getButtonState();
 
   const handleParticipationClick = async () => {
-    if (isCanceled || isConfirmed || isLoading) return;
+    if (isCanceled || isConfirmed || isFinalized || isLoading) return;
+
     setIsLoading(true);
     try {
       if (hasJoined) {
         await onLeaveMatch(match.id);
-      } else if (!isFull) {
+      } else {
         await onJoinMatch(match.id);
       }
     } finally {
@@ -123,23 +151,26 @@ const MatchDetailsModal: React.FC<MatchDetailsModalProps> = ({
     }
   };
 
-  const handleCancelClick = () => {
-    setShowCancelInput(true);
-  };
+  const handleCancelClick = () => setShowCancelInput(true);
 
   const handleCancelConfirm = async () => {
     if (!cancelReason.trim()) {
       alert('⚠️ Informe um motivo para o cancelamento.');
       return;
     }
+
     setIsLoading(true);
     try {
+      // Check for participants before cancelling
       const { count, error } = await supabase
         .from('match_participants')
         .select('*', { count: 'exact', head: true })
         .eq('match_id', match.id);
+
       if (error) throw error;
+
       const hasParticipants = count !== null && count > 0;
+
       const confirmed = hasParticipants
         ? window.confirm(
           '⚠️ ATENÇÃO: Existem jogadores inscritos nesta partida.\n\n' +
@@ -151,7 +182,9 @@ const MatchDetailsModal: React.FC<MatchDetailsModalProps> = ({
           'Ao cancelar, você SERÁ REEMBOLSADO em 2 MatchCoins.\n\n' +
           'Deseja confirmar o cancelamento?',
         );
+
       if (!confirmed) return;
+
       await onCancelMatch(match.id, cancelReason.trim());
       onClose();
     } catch (err) {
@@ -164,44 +197,28 @@ const MatchDetailsModal: React.FC<MatchDetailsModalProps> = ({
 
   const handleBoostClick = async () => {
     if (isBoosted || isBoosting) return;
+
     const confirmBoost = window.confirm(
       'Dar BOOST custa 2 MatchCoins e destaca sua partida por 12h. Deseja continuar?',
     );
+
     if (!confirmBoost) return;
+
     setIsBoosting(true);
     try {
       if (onBoostMatch) {
         const success = await onBoostMatch(match.id);
-        if (!success) {
-          // onBoostMatch already handles alerts on failure
-          return;
-        }
+        if (!success) return; // If failed (e.g. insufficient funds), stop here
+        // If success, maybe close modal or just update UI?
+        // For now, let's close to refresh list or keep open if updated via realtime
+        onClose();
       }
     } catch (e) {
-      console.error('Erro ao aplicar boost:', e);
+      console.error("Boost error", e);
     } finally {
       setIsBoosting(false);
     }
   };
-
-  // Determine button state for participation
-  const getButtonState = () => {
-    if (isCanceled) {
-      return { text: 'Partida Cancelada', isDisabled: true, className: 'bg-gray-700 cursor-not-allowed' };
-    }
-    if (isConfirmed) {
-      return { text: 'Partida Confirmada', isDisabled: true, className: 'bg-gray-700 cursor-not-allowed' };
-    }
-    if (hasJoined) {
-      return { text: 'Sair da Partida', isDisabled: false, className: 'bg-red-600 hover:brightness-110' };
-    }
-    if (isFull) {
-      return { text: 'Lotado ✅', isDisabled: true, className: 'bg-gray-700 opacity-50 cursor-not-allowed' };
-    }
-    return { text: 'Confirmar presença', isDisabled: false, className: 'bg-green-600 hover:brightness-110' };
-  };
-
-  const buttonState = getButtonState();
 
   return (
     <div
@@ -213,11 +230,12 @@ const MatchDetailsModal: React.FC<MatchDetailsModalProps> = ({
     >
       <div
         className="bg-gray-800 rounded-xl shadow-2xl w-full max-w-md max-h-[90vh] overflow-y-auto relative flex flex-col"
-        onClick={(e) => e.stopPropagation()}
+        onClick={e => e.stopPropagation()}
       >
         <button onClick={onClose} className="absolute top-3 right-3 text-gray-400 hover:text-white z-10 p-1 bg-gray-900/50 rounded-full" aria-label="Fechar modal">
           <CloseIcon />
         </button>
+
         {match.lat && match.lng ? (
           <div ref={mapRef} className="w-full h-56 bg-gray-700 rounded-t-xl flex-shrink-0" />
         ) : (
@@ -225,6 +243,7 @@ const MatchDetailsModal: React.FC<MatchDetailsModalProps> = ({
             <p className="text-gray-400">Localização não disponível no mapa.</p>
           </div>
         )}
+
         <div className="p-6">
           <div className="flex justify-between items-start">
             <div>
@@ -240,12 +259,14 @@ const MatchDetailsModal: React.FC<MatchDetailsModalProps> = ({
               <StatusBadge status={match.status} />
             </div>
           </div>
+
           {isCanceled && match.cancellation_reason && (
             <div className="mt-4 bg-red-500/10 p-3 rounded-lg border border-red-500/30">
               <p className="font-bold text-red-300">Motivo do Cancelamento:</p>
               <p className="text-red-400 italic">{match.cancellation_reason}</p>
             </div>
           )}
+
           <div className="mt-4 space-y-3 text-gray-300">
             <div className="flex items-center">
               <LocationIcon />
@@ -260,6 +281,7 @@ const MatchDetailsModal: React.FC<MatchDetailsModalProps> = ({
               <span className="ml-2 italic">{match.rules || 'Sem regras específicas.'}</span>
             </div>
           </div>
+
           <div className="mt-6 space-y-3">
             <button
               onClick={handleParticipationClick}
@@ -275,12 +297,11 @@ const MatchDetailsModal: React.FC<MatchDetailsModalProps> = ({
                 buttonState.text
               )}
             </button>
-          </div>
-          {(hasJoined || isCreator) && (
-            <div className="mt-4 border-t border-gray-700 pt-4 px-6 pb-6">
-              <h4 className="text-sm font-bold text-gray-400 mb-3 text-center">AÇÕES DO ORGANIZADOR</h4>
-              <div className="space-y-3">
-                {!isBoosted && (
+
+            {/* Organizer Actions */}
+            {(hasJoined || isCreator) && !isFinalized && (
+              <div className="mt-4 border-t border-gray-700 pt-4">
+                {isCreator && !isCanceled && !isConfirmed && (
                   <button
                     onClick={handleBoostClick}
                     disabled={isBoosting}
@@ -289,76 +310,89 @@ const MatchDetailsModal: React.FC<MatchDetailsModalProps> = ({
                     {isBoosting ? <LoadingSpinner size={5} /> : '🚀 Dar BOOST (2 MatchCoins)'}
                   </button>
                 )}
-                <button
-                  onClick={() => onEditMatch(match)}
-                  disabled={isLoading}
-                  className="w-full bg-gradient-to-r from-blue-600 to-blue-400 text-white font-bold py-3 rounded-lg shadow-md hover:brightness-110 transition-all flex items-center justify-center gap-2"
-                >
-                  <EditIcon /> Editar Partida
-                </button>
-                {!showCancelInput ? (
+
+                {isCreator && (
                   <button
-                    onClick={handleCancelClick}
+                    onClick={() => onEditMatch(match)}
                     disabled={isLoading}
-                    className="w-full bg-gradient-to-r from-red-600 to-red-400 text-white font-bold py-3 rounded-lg shadow-md hover:brightness-110 transition-all"
+                    className="w-full bg-gradient-to-r from-blue-600 to-blue-400 text-white font-bold py-3 rounded-lg shadow-md hover:brightness-110 transition-all flex items-center justify-center gap-2 mt-3"
                   >
-                    Cancelar Partida
+                    <EditIcon /> Editar Partida
                   </button>
-                ) : (
-                  <div className="p-4 bg-gray-900 border border-gray-700 rounded-lg">
-                    <p className="text-white font-bold mb-2">Informe o motivo do cancelamento:</p>
-                    <textarea
-                      value={cancelReason}
-                      onChange={(e) => setCancelReason(e.target.value)}
-                      placeholder="Ex: Chuva forte, falta de jogadores..."
-                      className="w-full p-2 rounded-md bg-gray-800 text-gray-200 border border-gray-600 mb-3"
-                      rows={2}
-                    />
-                    <div className="flex gap-2">
+                )}
+
+                {isCreator && !isCanceled && !isConfirmed && (
+                  <div className="mt-3">
+                    {!showCancelInput ? (
                       <button
-                        onClick={handleCancelConfirm}
+                        onClick={handleCancelClick}
                         disabled={isLoading}
-                        className="flex-1 bg-gradient-to-r from-red-600 to-red-400 text-white font-bold py-2 rounded-lg hover:brightness-110 transition-all"
+                        className="w-full bg-gradient-to-r from-red-600 to-red-400 text-white font-bold py-3 rounded-lg shadow-md hover:brightness-110 transition-all"
                       >
-                        {isLoading ? (
-                          <>
-                            <LoadingSpinner size={5} />
-                            <span className="ml-2">Confirmando...</span>
-                          </>
-                        ) : (
-                          'Confirmar Cancelamento'
-                        )}
+                        Cancelar Partida
                       </button>
-                      <button
-                        onClick={() => setShowCancelInput(false)}
-                        disabled={isLoading}
-                        className="flex-1 bg-gradient-to-r from-gray-700 to-gray-600 text-white font-bold py-2 rounded-lg hover:brightness-110 transition-all"
-                      >
-                        Voltar
-                      </button>
-                    </div>
+                    ) : (
+                      <div className="p-4 bg-gray-900 border border-gray-700 rounded-lg">
+                        <p className="text-white font-bold mb-2">Informe o motivo do cancelamento:</p>
+                        <textarea
+                          value={cancelReason}
+                          onChange={e => setCancelReason(e.target.value)}
+                          placeholder="Ex: Chuva forte, falta de jogadores..."
+                          className="w-full p-2 rounded-md bg-gray-800 text-gray-200 border border-gray-600 mb-3"
+                          rows={2}
+                        />
+                        <div className="flex gap-2">
+                          <button
+                            onClick={handleCancelConfirm}
+                            disabled={isLoading}
+                            className="flex-1 bg-gradient-to-r from-red-600 to-red-400 text-white font-bold py-2 rounded-lg hover:brightness-110 transition-all"
+                          >
+                            {isLoading ? (
+                              <>
+                                <LoadingSpinner size={5} />
+                                <span className="ml-2">Confirmando...</span>
+                              </>
+                            ) : (
+                              'Confirmar Cancelamento'
+                            )}
+                          </button>
+                          <button
+                            onClick={() => setShowCancelInput(false)}
+                            disabled={isLoading}
+                            className="flex-1 bg-gradient-to-r from-gray-700 to-gray-600 text-white font-bold py-2 rounded-lg hover:brightness-110 transition-all"
+                          >
+                            Voltar
+                          </button>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 )}
               </div>
+            )}
+
+            <div className="mt-4">
+              <button
+                onClick={onNavigateToDirectChat ? () => onNavigateToDirectChat(match.id) : undefined}
+                className="w-full bg-gradient-to-r from-blue-600 to-blue-400 text-white font-bold py-3 rounded-lg shadow-md hover:brightness-110 transition-all flex items-center justify-center gap-2 mt-3"
+              >
+                <ChatIcon /> <span className="inline">Chat da Partida</span>
+              </button>
             </div>
-          )}
-          <div className="mt-4">
-            <button
-              onClick={() => setShowParticipantsModal(true)}
-              className="w-full bg-gradient-to-r from-purple-600 to-purple-400 text-white font-bold py-3 rounded-lg shadow-md hover:brightness-110 transition-all flex items-center justify-center gap-2"
-            >
-              <UsersIcon /> <span className="inline">Ver Participantes ({match.filled_slots})</span>
-            </button>
-            <button onClick={onNavigateToDirectChat ? () => onNavigateToDirectChat(match.id) : undefined} className="w-full bg-gradient-to-r from-blue-600 to-blue-400 text-white font-bold py-3 rounded-lg shadow-md hover:brightness-110 transition-all flex items-center justify-center gap-2 mt-3">
-              <ChatIcon /> <span className="inline">Chat da Partida</span>
-            </button>
+
+            <div className="mt-4">
+              <button
+                onClick={() => setShowParticipantsModal(true)}
+                className="w-full bg-gradient-to-r from-purple-600 to-purple-400 text-white font-bold py-3 rounded-lg shadow-md hover:brightness-110 transition-all flex items-center justify-center gap-2"
+              >
+                <UsersIcon /> <span className="inline">Ver Participantes ({match.filled_slots})</span>
+              </button>
+            </div>
           </div>
         </div>
+
         <style>{`
-          @keyframes fade-in {
-            from { opacity: 0; transform: scale(0.95); }
-            to { opacity: 1; transform: scale(1); }
-          }
+          @keyframes fade-in { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
           .animate-fade-in { animation: fade-in 0.2s ease-out forwards; }
         `}</style>
         {/* Modal de Participantes */}
