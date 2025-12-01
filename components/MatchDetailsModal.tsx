@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Match, Profile } from '../types';
-import { LocationIcon, CalendarIcon, UsersIcon, CloseIcon, EditIcon, ChatIcon } from './Icons';
+import { LocationIcon, CalendarIcon, UsersIcon, CloseIcon, EditIcon, ChatIcon, ShareIcon } from './Icons';
 import LoadingSpinner from './LoadingSpinner';
 import { supabase } from '../services/supabaseClient';
 import MatchParticipantsModal from './MatchParticipantsModal';
@@ -221,7 +221,7 @@ const MatchDetailsModal: React.FC<MatchDetailsModalProps> = ({
   };
 
   const handleShareClick = () => {
-    const message = `Venha jogar no ${match.name}! ⚽\n📅 ${formattedDate}\n📍 ${match.location}\n\nParticipe pelo App FutMatch!`;
+    const message = `Venha jogar no ${match.name}! ⚽\n📅 ${formattedDate}\n📍 ${match.location}\n\nLink: ${window.location.origin}\n\nParticipe pelo App FutMatch!`;
     const url = `https://wa.me/?text=${encodeURIComponent(message)}`;
     window.open(url, '_blank');
   };
@@ -391,7 +391,7 @@ const MatchDetailsModal: React.FC<MatchDetailsModalProps> = ({
                 onClick={handleShareClick}
                 className="w-full bg-green-500 text-white font-bold py-3 rounded-lg shadow-md hover:brightness-110 transition-all flex items-center justify-center gap-2"
               >
-                <span className="text-xl">📱</span> <span className="inline">Compartilhar no WhatsApp</span>
+                <ShareIcon /> <span className="inline">Compartilhar no WhatsApp</span>
               </button>
             </div>
 

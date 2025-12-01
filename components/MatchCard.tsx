@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Match, Profile } from '../types';
-import { LocationIcon, CalendarIcon, UsersIcon, EditIcon, ChatIcon } from './Icons';
+import { LocationIcon, CalendarIcon, UsersIcon, EditIcon, ChatIcon, ShareIcon } from './Icons';
 import LoadingSpinner from './LoadingSpinner';
 import { SPORT_EMOJIS } from '../constants';
 
@@ -79,6 +79,17 @@ const MatchCard: React.FC<MatchCardProps> = ({
         } finally {
             setIsLoading(false);
         }
+    };
+
+    const handleShareClick = (e: React.MouseEvent) => {
+        e.stopPropagation();
+        const formattedDate = new Intl.DateTimeFormat('pt-BR', {
+            dateStyle: 'medium',
+            timeStyle: 'short',
+        }).format(match.date);
+        const message = `Venha jogar no ${match.name}! ⚽\n📅 ${formattedDate}\n📍 ${match.location}\n\nLink: ${window.location.origin}\n\nParticipe pelo App FutMatch!`;
+        const url = `https://wa.me/?text=${encodeURIComponent(message)}`;
+        window.open(url, '_blank');
     };
 
     const getButtonState = () => {
@@ -255,6 +266,14 @@ const MatchCard: React.FC<MatchCardProps> = ({
                                 <ChatIcon />
                             </button>
                         )}
+
+                        <button
+                            onClick={handleShareClick}
+                            className="bg-green-500 text-white p-3 rounded-lg shadow-md hover:brightness-110 transition-all"
+                            title="Compartilhar no WhatsApp"
+                        >
+                            <ShareIcon />
+                        </button>
                     </div>
                 )}
                 {isCreator && !isCanceled && (
