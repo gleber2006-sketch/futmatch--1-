@@ -135,27 +135,27 @@ const MatchChat: React.FC<MatchChatProps> = ({ currentUser, onNavigateBack, init
     const fetchUserMatches = async () => {
         setIsLoadingMatches(true);
         try {
-            // Get IDs of matches I joined
-            const { data: participationData } = await supabase
-                .from('match_participants')
-                .select('match_id')
-                .eq('user_id', currentUser.id);
-
-            const joinedIds = participationData?.map(p => p.match_id) || [];
-
-            // Get matches I created OR joined
+            // Optimized: Single query to get all matches where user is creator or participant
             const { data: matchesData, error } = await supabase
                 .from('matches')
-                .select('*')
-                .or(`id.in.(${joinedIds.join(',')}),created_by.eq.${currentUser.id}`)
+                .select(`
+                    *,
+                    match_participants!inner(user_id)
+                `)
+                .or(`created_by.eq.${currentUser.id},match_participants.user_id.eq.${currentUser.id}`)
                 .neq('status', 'Cancelado')
                 .order('date', { ascending: false });
 
             if (error) throw error;
 
-            // Format dates
-            const formattedMatches = (matchesData || []).map(m => ({ ...m, date: new Date(m.date) }));
-            setMatches(formattedMatches);
+            // Format dates and remove duplicates (in case user is both creator and participant)
+            const uniqueMatches = new Map();
+            (matchesData || []).forEach(m => {
+                if (!uniqueMatches.has(m.id)) {
+                    uniqueMatches.set(m.id, { ...m, date: new Date(m.date) });
+                }
+            });
+            setMatches(Array.from(uniqueMatches.values()));
 
         } catch (error) {
             console.error("Error fetching chat matches:", error);
@@ -286,9 +286,9 @@ const MatchChat: React.FC<MatchChatProps> = ({ currentUser, onNavigateBack, init
 
     // VIEW: CHAT ROOM
     return (
-        <div className="bg-gray-900 flex flex-col h-[100dvh] relative">
+        <div className="bg-gray-900 flex flex-col h-[100dvh]">
             {/* Header */}
-            <div className="flex items-center bg-gray-800 p-4 shadow-md z-20 shrink-0">
+            <div className="flex items-center bg-gray-800 p-4 shadow-md shrink-0">
                 <button
                     onClick={() => {
                         if (initialMatchId) {
@@ -310,7 +310,7 @@ const MatchChat: React.FC<MatchChatProps> = ({ currentUser, onNavigateBack, init
             </div>
 
             {/* Messages Area */}
-            <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-900 pb-24">
+            <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-900">
                 {isLoadingMessages ? (
                     <div className="flex justify-center py-10"><LoadingSpinner /></div>
                 ) : messages.length === 0 ? (
@@ -343,8 +343,8 @@ const MatchChat: React.FC<MatchChatProps> = ({ currentUser, onNavigateBack, init
                 <div ref={messagesEndRef} />
             </div>
 
-            {/* Input Area */}
-            <div className="absolute bottom-0 left-0 right-0 bg-gray-800 border-t border-gray-700 p-3 z-20 pb-safe">
+            {/* Input Area - Fixed at bottom */}
+            <div className="bg-gray-800 border-t border-gray-700 p-3 shrink-0" style={{ paddingBottom: 'max(0.75rem, env(safe-area-inset-bottom))' }}>
                 <div className="flex items-center gap-2 max-w-4xl mx-auto">
                     <input
                         type="text"
@@ -352,12 +352,12 @@ const MatchChat: React.FC<MatchChatProps> = ({ currentUser, onNavigateBack, init
                         onChange={(e) => setNewMessage(e.target.value)}
                         onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
                         placeholder="Escreva uma mensagem..."
-                        className="flex-1 bg-gray-700 text-white rounded-full px-4 py-3 focus:outline-none focus:ring-2 focus:ring-green-500 border border-gray-600"
+                        className="flex-1 bg-gray-700 text-white rounded-full px-4 py-3 focus:outline-none focus:ring-2 focus:ring-green-500 border border-gray-600 min-w-0"
                     />
                     <button
                         onClick={handleSendMessage}
                         disabled={isSending || !newMessage.trim()}
-                        className="bg-green-500 hover:bg-green-600 text-white p-3 rounded-full shadow-lg disabled:opacity-50 transition-transform active:scale-95"
+                        className="bg-green-500 hover:bg-green-600 text-white p-3 rounded-full shadow-lg disabled:opacity-50 transition-transform active:scale-95 shrink-0"
                     >
                         {isSending ? <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div> : <SendIcon />}
                     </button>
