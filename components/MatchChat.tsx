@@ -135,27 +135,46 @@ const MatchChat: React.FC<MatchChatProps> = ({ currentUser, onNavigateBack, init
     const fetchUserMatches = async () => {
         setIsLoadingMatches(true);
         try {
-            // Optimized: Single query to get all matches where user is creator or participant
-            const { data: matchesData, error } = await supabase
+            // Get matches where user is creator
+            const { data: createdMatches, error: createdError } = await supabase
                 .from('matches')
-                .select(`
-                    *,
-                    match_participants!inner(user_id)
-                `)
-                .or(`created_by.eq.${currentUser.id},match_participants.user_id.eq.${currentUser.id}`)
-                .neq('status', 'Cancelado')
-                .order('date', { ascending: false });
+                .select('*')
+                .eq('created_by', currentUser.id)
+                .neq('status', 'Cancelado');
 
-            if (error) throw error;
+            if (createdError) throw createdError;
 
-            // Format dates and remove duplicates (in case user is both creator and participant)
-            const uniqueMatches = new Map();
-            (matchesData || []).forEach(m => {
-                if (!uniqueMatches.has(m.id)) {
-                    uniqueMatches.set(m.id, { ...m, date: new Date(m.date) });
-                }
-            });
-            setMatches(Array.from(uniqueMatches.values()));
+            // Get IDs of matches where user is participant
+            const { data: participationData, error: participationError } = await supabase
+                .from('match_participants')
+                .select('match_id')
+                .eq('user_id', currentUser.id);
+
+            if (participationError) throw participationError;
+
+            const participantMatchIds = participationData?.map(p => p.match_id) || [];
+
+            // Get matches where user is participant (but not creator to avoid duplicates)
+            let participatedMatches: any[] = [];
+            if (participantMatchIds.length > 0) {
+                const { data, error } = await supabase
+                    .from('matches')
+                    .select('*')
+                    .in('id', participantMatchIds)
+                    .neq('created_by', currentUser.id)
+                    .neq('status', 'Cancelado');
+
+                if (error) throw error;
+                participatedMatches = data || [];
+            }
+
+            // Combine and format
+            const allMatches = [...(createdMatches || []), ...participatedMatches];
+            const formattedMatches = allMatches
+                .map(m => ({ ...m, date: new Date(m.date) }))
+                .sort((a, b) => b.date.getTime() - a.date.getTime());
+
+            setMatches(formattedMatches);
 
         } catch (error) {
             console.error("Error fetching chat matches:", error);
