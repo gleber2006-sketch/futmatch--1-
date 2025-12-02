@@ -539,7 +539,7 @@ const App: React.FC = () => {
                 return;
             }
 
-            if (status === 'OK') {
+            if (status === 'OK' || status === 'confirmed') {
                 // Success: Update local state optimistically
                 setJoinedMatchIds(prev => new Set(prev).add(matchId));
                 setMatches(prevMatches => prevMatches.map(m =>
