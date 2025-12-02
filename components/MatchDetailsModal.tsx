@@ -115,6 +115,11 @@ const MatchDetailsModal: React.FC<MatchDetailsModalProps> = ({
   const confirmedParticipants = match.filled_slots || 0;
   const totalSlots = match.slots;
 
+  // Track participant count changes
+  useEffect(() => {
+    console.log('👥 MatchDetailsModal: filled_slots updated to', match.filled_slots);
+  }, [match.filled_slots]);
+
   const formattedDate = new Date(match.date).toLocaleString('pt-BR', {
     weekday: 'long',
     day: '2-digit',
@@ -238,7 +243,7 @@ const MatchDetailsModal: React.FC<MatchDetailsModalProps> = ({
         className="bg-gray-800 rounded-xl shadow-2xl w-full max-w-md max-h-[90vh] overflow-y-auto relative flex flex-col"
         onClick={e => e.stopPropagation()}
       >
-        <button onClick={onClose} className="absolute top-3 right-3 text-gray-400 hover:text-white z-10 p-1 bg-gray-900/50 rounded-full" aria-label="Fechar modal">
+        <button onClick={onClose} className="absolute top-3 right-3 text-white hover:text-red-500 z-[110] p-2 bg-gray-900/90 hover:bg-gray-900 rounded-full transition-all duration-200 shadow-lg" aria-label="Fechar modal">
           <CloseIcon />
         </button>
 
