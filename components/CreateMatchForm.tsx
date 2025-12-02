@@ -290,9 +290,12 @@ const CreateMatchForm: React.FC<CreateMatchFormProps> = ({ onCreateMatch, onUpda
               <ul>
                 {venueCandidates.map((venue, index) => (
                   <li key={index} className="border-b border-gray-600 last:border-0">
-                    <div className="p-3 hover:bg-gray-600 transition-colors flex justify-between items-center">
-                      <div className="flex-1 mr-2">
-                        <p className="font-bold text-white text-sm">{venue.name}</p>
+                    <div
+                      className="p-3 hover:bg-gray-600 active:bg-gray-500 transition-colors flex justify-between items-center cursor-pointer"
+                      onClick={() => selectVenue(venue)}
+                    >
+                      <div className="flex-1 mr-2 min-w-0">
+                        <p className="font-bold text-white text-sm truncate">{venue.name}</p>
                         <p className="text-xs text-gray-400 truncate">{venue.address}</p>
                         {venue.uri && (
                           <a
@@ -308,8 +311,8 @@ const CreateMatchForm: React.FC<CreateMatchFormProps> = ({ onCreateMatch, onUpda
                       </div>
                       <button
                         type="button"
-                        onClick={() => selectVenue(venue)}
-                        className="bg-gradient-to-r from-green-600 to-green-400 text-white px-3 py-1 rounded-lg text-xs font-bold shadow-md hover:brightness-110 transition-all"
+                        onClick={(e) => { e.stopPropagation(); selectVenue(venue); }}
+                        className="bg-gradient-to-r from-green-600 to-green-400 text-white px-3 py-1 rounded-lg text-xs font-bold shadow-md hover:brightness-110 transition-all shrink-0"
                       >
                         Selecionar
                       </button>
