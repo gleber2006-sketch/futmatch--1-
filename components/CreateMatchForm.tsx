@@ -89,7 +89,7 @@ const CreateMatchForm: React.FC<CreateMatchFormProps> = ({ onCreateMatch, onUpda
       if (location && location.length > 3 && !searchedLat) {
         handleManualSearch();
       }
-    }, 1500); // 1.5s debounce to avoid spamming AI
+    }, 800); // 800ms debounce for faster response
 
     return () => clearTimeout(timer);
   }, [location, searchedLat]);
