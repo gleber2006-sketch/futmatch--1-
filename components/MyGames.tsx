@@ -127,20 +127,26 @@ const MyGames: React.FC<MyGamesProps> = ({
         )}
       </div>
 
-      {selectedMatch && (
-        <MatchDetailsModal
-          match={selectedMatch}
-          onClose={onCloseMatchDetails}
-          onJoinMatch={onJoinMatch}
-          onLeaveMatch={onLeaveMatch}
-          onCancelMatch={onCancelMatch}
-          joinedMatchIds={joinedMatchIds}
-          currentUser={currentUser}
-          onEditMatch={onEditMatch}
-          onNavigateToDirectChat={onNavigateToDirectChat}
-          onBalanceUpdate={onBalanceUpdate}
-        />
-      )}
+      {selectedMatch && (() => {
+        // Always get the latest match data from the matches array
+        const currentMatch = matches.find(m => m.id === selectedMatch.id);
+        if (!currentMatch) return null;
+
+        return (
+          <MatchDetailsModal
+            match={currentMatch}
+            onClose={onCloseMatchDetails}
+            onJoinMatch={onJoinMatch}
+            onLeaveMatch={onLeaveMatch}
+            onCancelMatch={onCancelMatch}
+            joinedMatchIds={joinedMatchIds}
+            currentUser={currentUser}
+            onEditMatch={onEditMatch}
+            onNavigateToDirectChat={onNavigateToDirectChat}
+            onBalanceUpdate={onBalanceUpdate}
+          />
+        );
+      })()}
     </div>
   );
 };
