@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useEffect, useRef } from 'react';
+﻿import React, { useState, useCallback, useEffect, useRef } from 'react';
 import BottomNav from './components/BottomNav';
 import Explore from './components/Explore';
 import CreateMatchForm from './components/CreateMatchForm';
@@ -1182,6 +1182,111 @@ const App: React.FC = () => {
                 return <CreateMatchForm
                     onCreateMatch={handleCreateMatch}
                     onUpdateMatch={handleUpdateMatch}
+                    onLeaveMatch={handleLeaveMatch}
+                    joinedMatchIds={joinedMatchIds}
+                    currentUser={currentUser}
+                    onCancelMatch={handleCancelMatch}
+                    onDeleteCanceledMatches={handleDeleteCanceledMatches}
+                    onEditMatch={handleStartEditMatch}
+                    onNavigateToCreate={() => setActivePage('create')}
+                    onRefreshMatches={fetchMatches}
+                    onNavigateToProfile={() => setActivePage('profile')}
+                    onNavigateToMap={() => setActivePage('map')}
+                    onNavigateToMyGames={() => setActivePage('my-games')}
+                    onNavigateToRanking={() => setActivePage('ranking')}
+                    onNavigateToCommunity={() => setActivePage('community')}
+                    onNavigateToArenas={() => setActivePage('arenas')}
+                    onNavigateToMatchChat={() => setActivePage('match-chat')}
+                    onNavigateToDirectChat={handleNavigateToMatchChat}
+                    onNavigateToNotifications={() => setActivePage('notifications')}
+                    onNavigateToWallet={() => setActivePage('wallet')}
+                    onBalanceUpdate={handleBalanceUpdate}
+                    onBoostMatch={handleBoostMatch}
+                    selectedMatch={selectedMatch}
+                    onSelectMatch={setSelectedMatch}
+                    onCloseMatchDetails={() => setSelectedMatch(null)}
+                />;
+            case 'my-games':
+                return <MyGames
+                    matches={matches}
+                    onJoinMatch={handleJoinMatch}
+                    onLeaveMatch={handleLeaveMatch}
+                    joinedMatchIds={joinedMatchIds}
+                    currentUser={currentUser}
+                    onCancelMatch={handleCancelMatch}
+                    onDeleteCanceledMatches={handleDeleteCanceledMatches}
+                    onEditMatch={handleStartEditMatch}
+                    onNavigateBack={() => setActivePage('explore')}
+                    onBalanceUpdate={handleBalanceUpdate}
+                    onBoostMatch={handleBoostMatch}
+                    onNavigateToDirectChat={handleNavigateToMatchChat}
+                    onApproveParticipant={handleApproveParticipant}
+                    onDeclineParticipant={handleDeclineParticipant}
+                    onRemoveParticipant={handleRemoveParticipant}
+                    onPromoteFromWaitlist={handlePromoteFromWaitlist}
+                />;
+            case 'match-chat':
+                return <MatchChat
+                    currentUser={currentUser!}
+                    onNavigateBack={() => {
+                        setSelectedChatMatchId(null);
+                        setActivePage('explore');
+                    }}
+                    initialMatchId={selectedChatMatchId}
+                />;
+            case 'profile':
+                return <UserProfile
+                    user={currentUser!}
+                    onUpdateUser={handleUpdateUser}
+                    onLogout={handleLogout}
+                    onNavigateBack={() => setActivePage('explore')}
+                />;
+            case 'ranking':
+                return <RankingList
+                    rankings={rankings}
+                    currentUser={currentUser}
+                    onNavigateBack={() => setActivePage('explore')}
+                />;
+            case 'community':
+                return <Community
+                    currentUser={currentUser!}
+                    onNavigateBack={() => setActivePage('explore')}
+                />;
+            case 'arenas':
+                return <Arenas
+                    currentUser={currentUser!}
+                    onNavigateBack={() => setActivePage('explore')}
+                />;
+            case 'notifications':
+                return <Notifications
+                    currentUser={currentUser!}
+                    onNavigateBack={() => setActivePage('explore')}
+                />;
+            case 'wallet':
+                return <Wallet
+                    currentUser={currentUser!}
+                    onNavigateBack={() => setActivePage('explore')}
+                    onBalanceUpdate={handleBalanceUpdate}
+                />;
+            case 'map':
+                return <MatchesMap
+                    matches={matches}
+                    onJoinMatch={handleJoinMatch}
+                    onLeaveMatch={handleLeaveMatch}
+                    joinedMatchIds={joinedMatchIds}
+                    currentUser={currentUser}
+                    onCancelMatch={handleCancelMatch}
+                    onEditMatch={handleStartEditMatch}
+                    onNavigateBack={() => setActivePage('explore')}
+                    onBalanceUpdate={handleBalanceUpdate}
+                    onBoostMatch={handleBoostMatch}
+                    onNavigateToDirectChat={handleNavigateToMatchChat}
+                />;
+            default:
+                return <Explore
+                    matches={matches}
+                    platformFeatures={platformFeatures}
+                    onJoinMatch={handleJoinMatch}
                     onLeaveMatch={handleLeaveMatch}
                     joinedMatchIds={joinedMatchIds}
                     currentUser={currentUser}
