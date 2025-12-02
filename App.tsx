@@ -1182,29 +1182,10 @@ const App: React.FC = () => {
                 return <CreateMatchForm
                     onCreateMatch={handleCreateMatch}
                     onUpdateMatch={handleUpdateMatch}
-                    onLeaveMatch={handleLeaveMatch}
-                    joinedMatchIds={joinedMatchIds}
-                    currentUser={currentUser}
-                    onCancelMatch={handleCancelMatch}
-                    onDeleteCanceledMatches={handleDeleteCanceledMatches}
-                    onEditMatch={handleStartEditMatch}
-                    onNavigateToCreate={() => setActivePage('create')}
-                    onRefreshMatches={fetchMatches}
-                    onNavigateToProfile={() => setActivePage('profile')}
-                    onNavigateToMap={() => setActivePage('map')}
-                    onNavigateToMyGames={() => setActivePage('my-games')}
-                    onNavigateToRanking={() => setActivePage('ranking')}
-                    onNavigateToCommunity={() => setActivePage('community')}
-                    onNavigateToArenas={() => setActivePage('arenas')}
-                    onNavigateToMatchChat={() => setActivePage('match-chat')}
-                    onNavigateToDirectChat={handleNavigateToMatchChat}
-                    onNavigateToNotifications={() => setActivePage('notifications')}
-                    onNavigateToWallet={() => setActivePage('wallet')}
-                    onBalanceUpdate={handleBalanceUpdate}
-                    onBoostMatch={handleBoostMatch}
-                    selectedMatch={selectedMatch}
-                    onSelectMatch={setSelectedMatch}
-                    onCloseMatchDetails={() => setSelectedMatch(null)}
+                    onCancelEdit={handleCancelEdit}
+                    matchToEdit={editingMatch}
+                    initialData={draftMatchData}
+                    onNavigateBack={handleCancelEdit}
                 />;
             case 'my-games':
                 return <MyGames
