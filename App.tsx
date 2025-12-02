@@ -567,9 +567,7 @@ const App: React.FC = () => {
             if (status === 'OK' || status === 'confirmed') {
                 // Success: Update local state optimistically
                 setJoinedMatchIds(prev => new Set(prev).add(matchId));
-                setMatches(prevMatches => prevMatches.map(m =>
-                    m.id === matchId ? { ...m, filled_slots: m.filled_slots + 1 } : m
-                ));
+                // NOTE: filled_slots is updated via realtime subscription to avoid double counting
 
                 setCurrentUser(prev => prev ? ({
                     ...prev,
@@ -628,9 +626,7 @@ const App: React.FC = () => {
                     newSet.delete(matchId);
                     return newSet;
                 });
-                setMatches(prevMatches => prevMatches.map(m =>
-                    m.id === matchId ? { ...m, filled_slots: Math.max(0, m.filled_slots - 1) } : m
-                ));
+                // NOTE: filled_slots is updated via realtime subscription to avoid double counting
 
                 setCurrentUser(prev => prev ? ({
                     ...prev,
