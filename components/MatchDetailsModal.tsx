@@ -226,7 +226,7 @@ const MatchDetailsModal: React.FC<MatchDetailsModalProps> = ({
   };
 
   const handleShareClick = () => {
-    const message = `Venha jogar no ${match.name}! ⚽\n📅 ${formattedDate}\n📍 ${match.location}\n\nLink: ${window.location.origin}\n\nParticipe pelo App FutMatch!`;
+    const message = `Venha jogar no ${match.name}! ⚽\n📅 ${formattedDate}\n📍 ${match.location}\n\nLink: ${window.location.origin}?match=${match.id}\n\nParticipe pelo App FutMatch!`;
     const url = `https://wa.me/?text=${encodeURIComponent(message)}`;
     window.open(url, '_blank');
   };
@@ -243,6 +243,9 @@ const MatchDetailsModal: React.FC<MatchDetailsModalProps> = ({
         className="bg-gray-800 rounded-xl shadow-2xl w-full max-w-md max-h-[90vh] overflow-y-auto relative flex flex-col"
         onClick={e => e.stopPropagation()}
       >
+        <button onClick={onClose} className="absolute top-3 left-3 text-white hover:text-green-400 z-[110] px-3 py-2 bg-gray-900/90 hover:bg-gray-900 rounded-lg transition-all duration-200 shadow-lg flex items-center gap-1 text-sm font-medium" aria-label="Voltar">
+          <span>←</span> Voltar
+        </button>
         <button onClick={onClose} className="absolute top-3 right-3 text-white hover:text-red-500 z-[110] p-2 bg-gray-900/90 hover:bg-gray-900 rounded-full transition-all duration-200 shadow-lg" aria-label="Fechar modal">
           <CloseIcon />
         </button>

@@ -1,32 +1,60 @@
-
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>FutMatch</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;700&display=swap" rel="stylesheet">
-    
-    <!-- Leaflet CSS -->
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
 
-    <style>
-      body {
-        font-family: 'Poppins', sans-serif;
-      }
-    </style>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FutMatch</title>
 
-<link rel="stylesheet" href="/index.css">
+  <!-- Favicon -->
+  <link rel="icon" type="image/jpeg" href="/logo.jpg" />
+  <link rel="apple-touch-icon" href="/logo.jpg" />
+
+  <!-- Meta Tags -->
+  <meta name="description"
+    content="FutMatch - Conecte-se com jogadores, crie partidas e jogue! Encontre e organize partidas esportivas perto de você." />
+  <meta name="theme-color" content="#10b981" />
+
+  <!-- Open Graph / Facebook -->
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://futmatch.vercel.app/" />
+  <meta property="og:title" content="FutMatch - Encontre e Organize Partidas" />
+  <meta property="og:description"
+    content="Conecte-se com jogadores, crie partidas e jogue! Seu jogo está a um passo do seu próximo match." />
+  <meta property="og:image" content="https://futmatch.vercel.app/logo.jpg" />
+
+  <!-- Twitter -->
+  <meta property="twitter:card" content="summary_large_image" />
+  <meta property="twitter:url" content="https://futmatch.vercel.app/" />
+  <meta property="twitter:title" content="FutMatch - Encontre e Organize Partidas" />
+  <meta property="twitter:description" content="Conecte-se com jogadores, crie partidas e jogue!" />
+  <meta property="twitter:image" content="https://futmatch.vercel.app/logo.jpg" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;700&display=swap" rel="stylesheet">
+
+  <!-- Leaflet CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+
+  <style>
+    body {
+      font-family: 'Poppins', sans-serif;
+    }
+  </style>
+
+  <link rel="stylesheet" href="/index.css">
 </head>
-  <body class="bg-gray-900 text-white">
-    <div id="root"></div>
-    
-    <!-- Leaflet JS -->
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
-    
-    <script type="module" src="/index.tsx"></script>
-  </body>
+
+<body class="bg-gray-900 text-white">
+  <div id="root"></div>
+
+  <!-- Leaflet JS -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+    integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+
+  <script type="module" src="/index.tsx"></script>
+</body>
+
 </html>

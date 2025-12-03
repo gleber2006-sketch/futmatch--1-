@@ -499,6 +499,23 @@ const App: React.FC = () => {
         fetchRankings();
     }, [isLoadingDbCheck, dbSetupRequired, isAuthenticated, fetchMatches, fetchRankings]);
 
+    // Deep linking: Abrir partida específica via URL
+    useEffect(() => {
+        if (!isAuthenticated || matches.length === 0) return;
+
+        const urlParams = new URLSearchParams(window.location.search);
+        const matchId = urlParams.get('match');
+
+        if (matchId) {
+            const match = matches.find(m => m.id === Number(matchId));
+            if (match) {
+                setSelectedMatch(match);
+                // Limpar o parâmetro da URL
+                window.history.replaceState({}, '', window.location.pathname);
+            }
+        }
+    }, [isAuthenticated, matches]);
+
     const handleCreateMatch = useCallback(async (newMatch: Omit<Match, 'id' | 'filled_slots' | 'created_by' | 'status' | 'cancellation_reason'>) => {
         if (!currentUser) return;
         try {

@@ -87,7 +87,7 @@ const MatchCard: React.FC<MatchCardProps> = ({
             dateStyle: 'medium',
             timeStyle: 'short',
         }).format(match.date);
-        const message = `Venha jogar no ${match.name}! ⚽\n📅 ${formattedDate}\n📍 ${match.location}\n\nLink: ${window.location.origin}\n\nParticipe pelo App FutMatch!`;
+        const message = `Venha jogar no ${match.name}! ⚽\n📅 ${formattedDate}\n📍 ${match.location}\n\nLink: ${window.location.origin}?match=${match.id}\n\nParticipe pelo App FutMatch!`;
         const url = `https://wa.me/?text=${encodeURIComponent(message)}`;
         window.open(url, '_blank');
     };
