@@ -81,13 +81,43 @@ const MatchCard: React.FC<MatchCardProps> = ({
         }
     };
 
-    const handleShareClick = (e: React.MouseEvent) => {
+    const handleShareClick = async (e: React.MouseEvent) => {
         e.stopPropagation();
-        const formattedDate = new Intl.DateTimeFormat('pt-BR', {
-            dateStyle: 'medium',
-            timeStyle: 'short',
-        }).format(match.date);
-        const message = `Venha jogar no ${match.name}! ⚽\n📅 ${formattedDate}\n📍 ${match.location}\n\nLink: ${window.location.origin}?match=${match.id}\n\nParticipe pelo App FutMatch!`;
+        const formattedDate = new Date(match.date).toLocaleString('pt-BR', {
+            weekday: 'long',
+            day: '2-digit',
+            month: 'long',
+            hour: '2-digit',
+            minute: '2-digit',
+        });
+        const message = `⚽ *Convite para Partida no FutMatch* ⚽
+
+*${match.name}*
+🏆 Esporte: ${match.sport}
+📅 Data: ${formattedDate}
+📍 Local: ${match.location}
+👥 Vagas: ${match.filled_slots}/${match.slots}
+
+🔗 *Participe aqui:* ${window.location.origin}?match=${match.id}
+
+Bora jogar? 🚀`;
+
+        // Tenta usar a API de compartilhamento nativa (permite escolher entre WhatsApp Pessoal/Business)
+        if (navigator.share) {
+            try {
+                await navigator.share({
+                    title: 'Convite FutMatch',
+                    text: message,
+                });
+                return;
+            } catch (error) {
+                // Se o usuário cancelou, não faz nada. Se for outro erro, tenta o fallback.
+                if ((error as Error).name === 'AbortError') return;
+                console.error('Erro no compartilhamento nativo:', error);
+            }
+        }
+
+        // Fallback padrão
         const url = `https://wa.me/?text=${encodeURIComponent(message)}`;
         window.open(url, '_blank');
     };
