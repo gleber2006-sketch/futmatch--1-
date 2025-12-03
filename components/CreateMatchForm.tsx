@@ -27,6 +27,7 @@ const CreateMatchForm: React.FC<CreateMatchFormProps> = ({ onCreateMatch, onUpda
   const [time, setTime] = useState('');
   const [slots, setSlots] = useState(10);
   const [rules, setRules] = useState('');
+  const [isPrivate, setIsPrivate] = useState(false);
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSearching, setIsSearching] = useState(false);
@@ -54,6 +55,7 @@ const CreateMatchForm: React.FC<CreateMatchFormProps> = ({ onCreateMatch, onUpda
 
       setSlots(matchToEdit.slots);
       setRules(matchToEdit.rules || '');
+      setIsPrivate(matchToEdit.is_private || false);
     } else if (initialData) {
       if (initialData.name) setName(initialData.name);
       if (initialData.sport && SPORTS_LIST.includes(initialData.sport)) setSport(initialData.sport);
@@ -198,6 +200,7 @@ const CreateMatchForm: React.FC<CreateMatchFormProps> = ({ onCreateMatch, onUpda
         date: combinedDate,
         slots: Number(slots),
         rules,
+        is_private: isPrivate,
       };
 
       if (isEditMode && onUpdateMatch && matchToEdit) {
@@ -350,6 +353,44 @@ const CreateMatchForm: React.FC<CreateMatchFormProps> = ({ onCreateMatch, onUpda
         <div>
           <label className="block text-sm font-medium text-gray-300 mb-1">Regras (opcional)</label>
           <input type="text" value={rules} onChange={e => setRules(e.target.value)} className={inputClasses} placeholder="Ex: 7x7, 10 min por tempo" />
+        </div>
+
+        {/* Privacy Toggle */}
+        <div>
+          <label className="block text-sm font-medium text-gray-300 mb-2">Visibilidade da Partida</label>
+          <div className="flex gap-3">
+            <button
+              type="button"
+              onClick={() => setIsPrivate(false)}
+              className={`flex-1 py-3 px-4 rounded-lg font-semibold transition-all duration-200 ${!isPrivate
+                  ? 'bg-gradient-to-r from-green-600 to-green-500 text-white shadow-lg'
+                  : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                }`}
+            >
+              <div className="flex flex-col items-center">
+                <span className="text-xl mb-1">🌍</span>
+                <span>Pública</span>
+              </div>
+            </button>
+            <button
+              type="button"
+              onClick={() => setIsPrivate(true)}
+              className={`flex-1 py-3 px-4 rounded-lg font-semibold transition-all duration-200 ${isPrivate
+                  ? 'bg-gradient-to-r from-purple-600 to-purple-500 text-white shadow-lg'
+                  : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                }`}
+            >
+              <div className="flex-col items-center">
+                <span className="text-xl mb-1">🔒</span>
+                <span>Privada</span>
+              </div>
+            </button>
+          </div>
+          {isPrivate && (
+            <p className="text-xs text-purple-300 mt-2 bg-purple-500/10 p-2 rounded border border-purple-500/30">
+              ℹ️ Partidas privadas só aparecem para quem tiver o link de convite.
+            </p>
+          )}
         </div>
         <div className="flex gap-4 pt-4">
           {isEditMode && onCancelEdit && (

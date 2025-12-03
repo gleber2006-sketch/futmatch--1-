@@ -122,6 +122,7 @@ const Explore: React.FC<ExploreProps> = ({ matches, platformFeatures, onJoinMatc
   };
 
   const sortedAndFilteredMatches = matches
+    .filter(match => !match.is_private) // Filter out private matches
     .map(match => {
       const distance = userLocation && match.lat != null && match.lng != null ? haversineDistance(userLocation, { lat: match.lat, lng: match.lng }) : Infinity;
       return { ...match, distance };

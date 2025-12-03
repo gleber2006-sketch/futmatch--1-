@@ -20,6 +20,7 @@ import { AuthError, Session, User } from '@supabase/supabase-js';
 import DatabaseSetup from './components/DatabaseSetup';
 import LoadingSpinner from './components/LoadingSpinner';
 import Toast from './components/Toast';
+import { generateInviteCode } from './utils/inviteCode';
 
 
 const platformFeatures: Feature[] = [
@@ -73,10 +74,12 @@ const App: React.FC = () => {
 
     const fetchMatches = useCallback(async () => {
         try {
+            // Fetch public matches
             const { data, error } = await supabase
                 .from('matches')
                 .select('*, match_participants(user_id, status, joined_at, waitlist_position, profiles(photo_url, name))')
                 .neq('status', 'Cancelado')
+                .eq('is_private', false) // Only public matches
                 .order('date', { ascending: true });
 
             if (error) {
@@ -499,32 +502,84 @@ const App: React.FC = () => {
         fetchRankings();
     }, [isLoadingDbCheck, dbSetupRequired, isAuthenticated, fetchMatches, fetchRankings]);
 
-    // Deep linking: Abrir partida específica via URL
+    // Deep linking: Abrir partida específica via URL ou Invite Code
     useEffect(() => {
-        if (!isAuthenticated || matches.length === 0) return;
+        const handleDeepLink = async () => {
+            if (!isAuthenticated) return;
 
-        const urlParams = new URLSearchParams(window.location.search);
-        const matchId = urlParams.get('match');
+            const urlParams = new URLSearchParams(window.location.search);
+            const matchId = urlParams.get('match');
+            const inviteCode = urlParams.get('invite');
 
-        if (matchId) {
-            const match = matches.find(m => m.id === Number(matchId));
-            if (match) {
-                setSelectedMatch(match);
-                // Limpar o parâmetro da URL
-                window.history.replaceState({}, '', window.location.pathname);
+            if (matchId) {
+                // Check if match is already in the list (public matches)
+                const match = matches.find(m => m.id === Number(matchId));
+                if (match) {
+                    setSelectedMatch(match);
+                    window.history.replaceState({}, '', window.location.pathname);
+                } else {
+                    // Try to fetch it specifically (could be private or not loaded yet)
+                    const { data, error } = await supabase
+                        .from('matches')
+                        .select('*, match_participants(user_id, status, joined_at, waitlist_position, profiles(photo_url, name))')
+                        .eq('id', matchId)
+                        .single();
+
+                    if (data && !error) {
+                        const parsedMatch = { ...data, date: new Date(data.date) };
+                        setSelectedMatch(parsedMatch);
+                        window.history.replaceState({}, '', window.location.pathname);
+                    }
+                }
+            } else if (inviteCode) {
+                // Handle Invite Code
+                const { data, error } = await supabase
+                    .from('matches')
+                    .select('*, match_participants(user_id, status, joined_at, waitlist_position, profiles(photo_url, name))')
+                    .eq('invite_code', inviteCode)
+                    .single();
+
+                if (data && !error) {
+                    const parsedMatch = { ...data, date: new Date(data.date) };
+                    setSelectedMatch(parsedMatch);
+                    // Add to matches list temporarily so it doesn't disappear if we close modal? 
+                    // Or just let it be selected. 
+                    // Better to add it to local state if it's not there, so UI doesn't break.
+                    setMatches(prev => {
+                        if (!prev.find(m => m.id === parsedMatch.id)) {
+                            return [...prev, parsedMatch];
+                        }
+                        return prev;
+                    });
+
+                    window.history.replaceState({}, '', window.location.pathname);
+                    setShowConfirmation("Partida encontrada via convite! 🎟️");
+                    setTimeout(() => setShowConfirmation(null), 3000);
+                } else {
+                    alert("Convite inválido ou expirado.");
+                    window.history.replaceState({}, '', window.location.pathname);
+                }
             }
-        }
+        };
+
+        handleDeepLink();
     }, [isAuthenticated, matches]);
 
     const handleCreateMatch = useCallback(async (newMatch: Omit<Match, 'id' | 'filled_slots' | 'created_by' | 'status' | 'cancellation_reason'>) => {
         if (!currentUser) return;
         try {
+            // Generate invite code for private matches
+            let invite_code = null;
+            if (newMatch.is_private) {
+                invite_code = generateInviteCode();
+            }
 
             const matchPayload = {
                 ...newMatch,
                 date: newMatch.date.toISOString(),
                 created_by: currentUser.id,
-                filled_slots: 0
+                filled_slots: 0,
+                invite_code
             };
 
             const { data, error } = await supabase

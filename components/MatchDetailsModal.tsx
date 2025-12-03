@@ -225,7 +225,23 @@ const MatchDetailsModal: React.FC<MatchDetailsModalProps> = ({
     }
   };
 
+  const copyInviteLink = () => {
+    if (match.invite_code) {
+      const link = `${window.location.origin}?invite=${match.invite_code}`;
+      navigator.clipboard.writeText(link);
+      alert("Link de convite copiado! 📋");
+    }
+  };
+
   const handleShareClick = async () => {
+    let shareUrl = `${window.location.origin}?match=${match.id}`;
+    let shareText = `🔗 *Participe aqui:* ${shareUrl}`;
+
+    if (match.is_private && match.invite_code) {
+      shareUrl = `${window.location.origin}?invite=${match.invite_code}`;
+      shareText = `🔒 *Partida Privada! Use este link para entrar:* ${shareUrl}`;
+    }
+
     const message = `⚽ *Convite para Partida no FutMatch* ⚽
 
 *${match.name}*
@@ -234,7 +250,7 @@ const MatchDetailsModal: React.FC<MatchDetailsModalProps> = ({
 📍 Local: ${match.location}
 👥 Vagas: ${match.filled_slots}/${match.slots}
 
-🔗 *Participe aqui:* ${window.location.origin}?match=${match.id}
+${shareText}
 
 Bora jogar? 🚀`;
 
@@ -244,6 +260,7 @@ Bora jogar? 🚀`;
         await navigator.share({
           title: 'Convite FutMatch',
           text: message,
+          url: shareUrl
         });
         return;
       } catch (error) {
@@ -420,6 +437,27 @@ Bora jogar? 🚀`;
                 <ChatIcon /> <span className="inline">Chat da Partida</span>
               </button>
             </div>
+
+            {match.is_private && match.invite_code && (hasJoined || isCreator) && (
+              <div className="mt-4 bg-purple-500/10 p-3 rounded-lg border border-purple-500/30">
+                <p className="text-sm text-purple-300 font-bold mb-1">🔒 Link de Convite (Privado)</p>
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    readOnly
+                    value={`${window.location.origin}?invite=${match.invite_code}`}
+                    className="flex-1 bg-gray-900 text-gray-300 text-xs p-2 rounded border border-gray-700 select-all"
+                  />
+                  <button
+                    onClick={copyInviteLink}
+                    className="bg-purple-600 hover:bg-purple-500 text-white px-3 py-1 rounded text-sm font-bold transition-colors"
+                  >
+                    Copiar
+                  </button>
+                </div>
+                <p className="text-xs text-gray-400 mt-1">Compartilhe apenas com quem você quer convidar.</p>
+              </div>
+            )}
 
             <div className="mt-3">
               <button

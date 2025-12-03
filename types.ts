@@ -19,6 +19,8 @@ export interface Profile {
   favoriteTeam?: string | null;
   favoriteTeamLogoUrl?: string | null;
   matchCoins: number;
+  referred_by?: string | null;
+  signup_bonus_claimed?: boolean;
 }
 
 export interface Match {
@@ -37,6 +39,8 @@ export interface Match {
   cancellation_reason: string | null;
   is_boosted?: boolean;
   boost_until?: string;
+  is_private?: boolean;
+  invite_code?: string | null;
   match_participants?: {
     user_id: string;
     profile: {
