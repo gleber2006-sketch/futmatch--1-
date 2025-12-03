@@ -281,27 +281,47 @@ export const searchLocalVenues = async (
   location: { latitude: number; longitude: number }
 ): Promise<VenueLocation[]> => {
   try {
-    const prompt = `Encontre até 3 locais esportivos (como quadras, ginásios ou campos) que melhor correspondam à busca por "${query}", perto da latitude ${location.latitude} e longitude ${location.longitude}.
+    const prompt = `Você é um assistente especializado em encontrar locais esportivos.
     
-    Retorne um ARRAY JSON contendo as sugestões encontradas. Cada objeto do array deve ter:
-    - "name": O nome oficial do local.
-    - "address": O endereço completo.
-    - "lat": A latitude (number).
-    - "lng": A longitude (number).
-    - "uri": O link do Google Maps para o local (se disponível pela ferramenta).
-
-    Se nenhum local for encontrado, retorne um array vazio [].
-    Não inclua markdown (\`\`\`json). Apenas o JSON puro.`;
+    TAREFA: Encontre até 3 locais esportivos reais (quadras, ginásios, campos, arenas) que correspondam à busca: "${query}"
+    
+    LOCALIZAÇÃO BASE: Latitude ${location.latitude}, Longitude ${location.longitude}
+    
+    CRITÉRIOS:
+    - Priorize locais próximos às coordenadas fornecidas
+    - Busque locais que realmente existam e sejam adequados para práticas esportivas
+    - Se a busca mencionar um esporte específico (futebol, vôlei, etc.), priorize locais que ofereçam essa modalidade
+    
+    FORMATO DE RESPOSTA:
+    Retorne APENAS um array JSON válido (sem markdown, sem \`\`\`json). Cada objeto deve ter:
+    - "name": Nome oficial e completo do local
+    - "address": Endereço completo com rua, número, bairro e cidade
+    - "lat": Latitude em formato numérico
+    - "lng": Longitude em formato numérico
+    - "uri": Link do Google Maps (obrigatório)
+    
+    Se não encontrar nenhum local relevante, retorne: []
+    
+    EXEMPLO DE RESPOSTA VÁLIDA:
+    [{"name":"Quadra Poliesportiva do Parque","address":"Rua das Flores, 123 - Centro, São Paulo - SP","lat":-23.5505,"lng":-46.6333,"uri":"https://maps.google.com/?q=-23.5505,-46.6333"}]`;
 
     const ai = getAI();
     const model = ai.getGenerativeModel({
       model: "gemini-2.5-flash",
-      tools: [{ googleSearch: {} } as any], // Cast to any if googleSearch is not in types yet, or use googleMaps if intended
+      tools: [{ googleMaps: {} } as any],
+      toolConfig: {
+        // @ts-ignore
+        retrievalConfig: {
+          latLng: {
+            latitude: location.latitude,
+            longitude: location.longitude,
+          }
+        }
+      }
     });
 
     const result = await model.generateContent({
       contents: [{ role: 'user', parts: [{ text: prompt }] }],
-      // tools config if needed
     });
 
     const response = result.response;
