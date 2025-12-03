@@ -1112,6 +1112,13 @@ const App: React.FC = () => {
     }, []);
 
     const handleUpdateMatch = useCallback(async (updatedMatch: Match) => {
+        // Optimistic Update: Update UI immediately
+        const previousMatches = matches;
+        setMatches(prev => prev.map(m => m.id === updatedMatch.id ? updatedMatch : m));
+        setEditingMatch(null);
+        setActivePage('explore');
+        setShowConfirmation("Salvando alterações...");
+
         try {
             const { error } = await supabase
                 .from('matches')
@@ -1129,17 +1136,15 @@ const App: React.FC = () => {
 
             if (error) throw error;
 
-            setMatches(prev => prev.map(m => m.id === updatedMatch.id ? updatedMatch : m));
-
-            setEditingMatch(null);
-            setActivePage('explore');
             setShowConfirmation("Partida atualizada com sucesso!");
             setTimeout(() => setShowConfirmation(null), 3000);
         } catch (error) {
             console.error('Error updating match:', (error as AuthError)?.message ?? error);
             alert(`Erro ao atualizar a partida: ${(error as AuthError)?.message ?? error}`);
+            // Revert optimistic update
+            setMatches(previousMatches);
         }
-    }, []);
+    }, [matches]);
 
     const handleDraftMatch = useCallback((draftData: DraftMatchData) => {
         if (!currentUser) {
