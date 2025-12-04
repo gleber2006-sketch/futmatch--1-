@@ -7,6 +7,18 @@ import RankingList from './components/RankingList';
 import ChatBot from './components/ChatBot';
 import Home from './components/Home';
 import MatchesMap from './components/MatchesMap';
+import MyGames from './components/MyGames';
+import Community from './components/Community';
+import Arenas from './components/Arenas';
+import MatchChat from './components/MatchChat';
+import Notifications from './components/Notifications';
+import Wallet from './components/Wallet';
+import { Page, Feature, Profile, Match, Ranking, DraftMatchData, NewUserRegistrationData, MatchParticipant } from './types';
+import { supabase } from './services/supabaseClient';
+import { initGemini } from './services/geminiService';
+import { AuthError, Session, User } from '@supabase/supabase-js';
+import DatabaseSetup from './components/DatabaseSetup';
+import LoadingSpinner from './components/LoadingSpinner';
 import Toast from './components/Toast';
 import { generateInviteCode } from './utils/inviteCode';
 
