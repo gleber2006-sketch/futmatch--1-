@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Match, Profile } from '../types';
-import { LocationIcon, CalendarIcon, UsersIcon, EditIcon, ChatIcon, ShareIcon } from './Icons';
+import { LocationIcon, CalendarIcon, UsersIcon, EditIcon, ChatIcon, ShareIcon, LockIcon } from './Icons';
 import LoadingSpinner from './LoadingSpinner';
 import { SPORT_EMOJIS } from '../constants';
 
@@ -192,6 +192,14 @@ Bora jogar? 🚀`;
             {isBoosted && !isCanceled && (
                 <div className="absolute top-0 right-0 bg-gradient-to-r from-yellow-500 to-orange-500 text-white text-[0.6rem] font-bold px-1 py-0.5 rounded-bl-lg z-10 flex items-center gap-0.5 shadow-sm max-w-[120px] overflow-hidden whitespace-nowrap">
                     <span>🔥 Destaque</span>
+                </div>
+            )}
+
+            {/* Badge de Partida Privada */}
+            {match.is_private && !isCanceled && (
+                <div className={`absolute top-0 ${isBoosted ? 'right-[4.5rem]' : 'right-0'} bg-purple-600 text-white text-[0.6rem] font-bold px-2 py-0.5 rounded-bl-lg z-10 flex items-center gap-1 shadow-sm`}>
+                    <LockIcon className="h-3 w-3" />
+                    <span>PRIVADA</span>
                 </div>
             )}
 

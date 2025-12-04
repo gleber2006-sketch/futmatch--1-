@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Match, Profile } from '../types';
-import { LocationIcon, CalendarIcon, UsersIcon, CloseIcon, EditIcon, ChatIcon, ShareIcon } from './Icons';
+import { LocationIcon, CalendarIcon, UsersIcon, CloseIcon, EditIcon, ChatIcon, ShareIcon, LockIcon } from './Icons';
 import LoadingSpinner from './LoadingSpinner';
 import { supabase } from '../services/supabaseClient';
 import MatchParticipantsModal from './MatchParticipantsModal';
@@ -318,6 +318,16 @@ Bora jogar? 🚀`;
             </div>
           </div>
 
+          {match.is_private && (
+            <div className="mt-4 bg-purple-500/20 p-3 rounded-lg border border-purple-500/40 flex items-start gap-3">
+              <LockIcon className="h-5 w-5 text-purple-300 flex-shrink-0 mt-0.5" />
+              <div>
+                <p className="font-bold text-purple-300 text-sm">Partida Privada</p>
+                <p className="text-purple-200 text-xs mt-0.5">Apenas convidados com o link podem participar.</p>
+              </div>
+            </div>
+          )}
+
           {isCanceled && match.cancellation_reason && (
             <div className="mt-4 bg-red-500/10 p-3 rounded-lg border border-red-500/30">
               <p className="font-bold text-red-300">Motivo do Cancelamento:</p>
@@ -462,9 +472,15 @@ Bora jogar? 🚀`;
             <div className="mt-3">
               <button
                 onClick={handleShareClick}
-                className="w-full bg-green-500 text-white font-bold py-3 rounded-lg shadow-md hover:brightness-110 transition-all flex items-center justify-center gap-2"
+                className={`w-full font-bold py-3 rounded-lg shadow-md hover:brightness-110 transition-all flex items-center justify-center gap-2 ${match.is_private
+                  ? 'bg-gradient-to-r from-purple-600 to-purple-500 text-white border border-purple-400'
+                  : 'bg-green-500 text-white'
+                  }`}
               >
-                <ShareIcon /> <span className="inline">Compartilhar no WhatsApp</span>
+                <ShareIcon />
+                <span className="inline">
+                  {match.is_private ? 'Convidar Amigo (Link Privado)' : 'Compartilhar no WhatsApp'}
+                </span>
               </button>
             </div>
 
