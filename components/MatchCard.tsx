@@ -183,9 +183,11 @@ Bora jogar? 🚀`;
     return (
         <div
             onClick={() => !isCanceled && onCardClick(match)}
-            className={`relative bg-gray-800 rounded-xl shadow-lg overflow-hidden mb-4 transition-all duration-300 w-full ${className}
+            className={`relative rounded-xl shadow-lg overflow-hidden mb-4 transition-all duration-300 w-full ${className}
+        ${match.is_private && !isCanceled ? 'bg-gradient-to-br from-purple-900/40 via-gray-800 to-gray-800' : 'bg-gray-800'}
         ${isCanceled ? 'opacity-60 grayscale-[50%]' : 'transform hover:scale-[1.02] cursor-pointer'}
-        ${isBoosted && !isCanceled ? 'border-2 border-yellow-400 shadow-[0_0_15px_rgba(250,204,21,0.3)]' : ''}`}
+        ${isBoosted && !isCanceled ? 'border-2 border-yellow-400 shadow-[0_0_15px_rgba(250,204,21,0.3)]' : ''}
+        ${match.is_private && !isCanceled && !isBoosted ? 'border border-purple-500/30 shadow-[0_0_10px_rgba(168,85,247,0.15)]' : ''}`}
             aria-disabled={isCanceled}
         >
             {/* Badge de destaque (booster) */}
