@@ -63,6 +63,7 @@ const Explore: React.FC<ExploreProps> = ({ matches, platformFeatures, onJoinMatc
   const [distanceFilter, setDistanceFilter] = useState<number>(Infinity);
   const [statusFilter, setStatusFilter] = useState<Match['status'] | 'all'>('Convocando');
   const [sportFilter, setSportFilter] = useState<string>('all');
+  const [visibilityFilter, setVisibilityFilter] = useState<'all' | 'private' | 'public'>('all');
 
   const matchesSectionRef = useRef<HTMLDivElement>(null);
 
@@ -122,10 +123,21 @@ const Explore: React.FC<ExploreProps> = ({ matches, platformFeatures, onJoinMatc
   };
 
   const sortedAndFilteredMatches = matches
-    .filter(match => !match.is_private) // Filter out private matches
     .map(match => {
       const distance = userLocation && match.lat != null && match.lng != null ? haversineDistance(userLocation, { lat: match.lat, lng: match.lng }) : Infinity;
       return { ...match, distance };
+    })
+    .filter(match => {
+      // Filtro de visibilidade baseado no botão selecionado
+      if (visibilityFilter === 'private') {
+        // Mostrar apenas privadas
+        return match.is_private === true;
+      } else if (visibilityFilter === 'public') {
+        // Mostrar apenas públicas
+        return match.is_private === false || !match.is_private;
+      }
+      // 'all': Mostrar todas (públicas + privadas do usuário)
+      return true;
     })
     .filter(match => {
       const matchesSearch =
@@ -149,7 +161,15 @@ const Explore: React.FC<ExploreProps> = ({ matches, platformFeatures, onJoinMatc
       if (aIsBoosted && !bIsBoosted) return -1;
       if (!aIsBoosted && bIsBoosted) return 1;
 
-      // 2. Priority: Status
+      // 2. Priority: Privadas antes de públicas (apenas no filtro "Todas")
+      if (visibilityFilter === 'all') {
+        const aIsPrivate = a.is_private === true;
+        const bIsPrivate = b.is_private === true;
+        if (aIsPrivate && !bIsPrivate) return -1;
+        if (!aIsPrivate && bIsPrivate) return 1;
+      }
+
+      // 3. Priority: Status
       const statusOrder: { [key in Match['status']]: number } = {
         'Convocando': 1,
         'Confirmado': 2,
@@ -160,7 +180,7 @@ const Explore: React.FC<ExploreProps> = ({ matches, platformFeatures, onJoinMatc
         return statusOrder[a.status] - statusOrder[b.status];
       }
 
-      // 3. Priority: Distance
+      // 4. Priority: Distance
       return a.distance - b.distance;
     });
 
@@ -179,6 +199,38 @@ const Explore: React.FC<ExploreProps> = ({ matches, platformFeatures, onJoinMatc
 
       <div ref={matchesSectionRef} className="mb-6 bg-gray-900 py-2 max-w-md mx-auto md:max-w-7xl overflow-hidden">
         <h2 className="text-2xl font-bold text-white mb-4 text-center">Partidas Próximas</h2>
+
+        {/* Botões de Filtro de Visibilidade */}
+        <div className="flex gap-2 mb-4 justify-center px-4">
+          <button
+            onClick={() => setVisibilityFilter('all')}
+            className={`px-4 py-2 rounded-lg font-semibold transition-all text-sm ${visibilityFilter === 'all'
+                ? 'bg-gradient-to-r from-green-600 to-green-500 text-white shadow-lg'
+                : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+              }`}
+          >
+            Todas
+          </button>
+          <button
+            onClick={() => setVisibilityFilter('private')}
+            className={`px-4 py-2 rounded-lg font-semibold transition-all text-sm ${visibilityFilter === 'private'
+                ? 'bg-gradient-to-r from-purple-600 to-purple-500 text-white shadow-lg'
+                : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+              }`}
+          >
+            Privadas
+          </button>
+          <button
+            onClick={() => setVisibilityFilter('public')}
+            className={`px-4 py-2 rounded-lg font-semibold transition-all text-sm ${visibilityFilter === 'public'
+                ? 'bg-gradient-to-r from-blue-600 to-blue-500 text-white shadow-lg'
+                : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+              }`}
+          >
+            Públicas
+          </button>
+        </div>
+
         <input
           type="text"
           placeholder="Buscar por esporte, nome ou local..."

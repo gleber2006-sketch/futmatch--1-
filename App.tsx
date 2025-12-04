@@ -84,32 +84,93 @@ const App: React.FC = () => {
         }
     }, [matches, selectedMatch]);
 
+    const fetchUserPrivateMatches = useCallback(async () => {
+        if (!currentUser) return [];
+
+        try {
+            // Buscar partidas privadas criadas pelo usuário
+            const { data: createdMatches, error: createdError } = await supabase
+                .from('matches')
+                .select('*, match_participants(user_id, status, joined_at, waitlist_position, profiles(photo_url, name, reputation))')
+                .eq('created_by', currentUser.id)
+                .eq('is_private', true)
+                .neq('status', 'Cancelado')
+                .order('date', { ascending: true });
+
+            if (createdError) throw createdError;
+
+            // Buscar partidas privadas em que o usuário participa
+            const { data: participantData, error: participantError } = await supabase
+                .from('match_participants')
+                .select('match_id')
+                .eq('user_id', currentUser.id);
+
+            if (participantError) throw participantError;
+
+            const participantMatchIds = participantData?.map(p => p.match_id) || [];
+
+            let participatedMatches: any[] = [];
+            if (participantMatchIds.length > 0) {
+                const { data, error: participatedError } = await supabase
+                    .from('matches')
+                    .select('*, match_participants(user_id, status, joined_at, waitlist_position, profiles(photo_url, name, reputation))')
+                    .in('id', participantMatchIds)
+                    .eq('is_private', true)
+                    .neq('status', 'Cancelado')
+                    .order('date', { ascending: true });
+
+                if (participatedError) throw participatedError;
+                participatedMatches = data || [];
+            }
+
+            // Mesclar e remover duplicatas
+            const allPrivateMatches = [...(createdMatches || []), ...participatedMatches];
+            const uniqueMatches = Array.from(
+                new Map(allPrivateMatches.map(m => [m.id, m])).values()
+            );
+
+            return uniqueMatches.map(m => ({
+                ...m,
+                date: new Date(m.date)
+            }));
+        } catch (error: any) {
+            console.error('Error fetching user private matches:', error.message);
+            return [];
+        }
+    }, [currentUser]);
+
     const fetchMatches = useCallback(async () => {
         try {
             // Fetch public matches
-            const { data, error } = await supabase
+            const { data: publicData, error: publicError } = await supabase
                 .from('matches')
-                .select('*, match_participants(user_id, status, joined_at, waitlist_position, profiles(photo_url, name))')
+                .select('*, match_participants(user_id, status, joined_at, waitlist_position, profiles(photo_url, name, reputation))')
                 .neq('status', 'Cancelado')
-                .eq('is_private', false) // Only public matches
+                .eq('is_private', false)
                 .order('date', { ascending: true });
 
-            if (error) {
-                if (isSchemaMismatchError(error)) {
+            if (publicError) {
+                if (isSchemaMismatchError(publicError)) {
                     console.warn("Database schema missing or incomplete.");
                     setDbSetupRequired(true);
                     return;
                 }
-                throw error;
+                throw publicError;
             }
 
-            const parsedMatches = data?.map(m => ({
+            const publicMatches = publicData?.map(m => ({
                 ...m,
                 date: new Date(m.date)
             })) || [];
 
-            // Initial sort to respect boost
-            const sortedMatches = parsedMatches.sort((a, b) => {
+            // Fetch user's private matches
+            const privateMatches = await fetchUserPrivateMatches();
+
+            // Merge public and private matches
+            const allMatches = [...publicMatches, ...privateMatches];
+
+            // Sort with boost priority
+            const sortedMatches = allMatches.sort((a, b) => {
                 const now = new Date();
                 const aIsBoosted = a.is_boosted && a.boost_until && new Date(a.boost_until) > now;
                 const bIsBoosted = b.is_boosted && b.boost_until && new Date(b.boost_until) > now;
@@ -123,7 +184,7 @@ const App: React.FC = () => {
         } catch (error: any) {
             console.error('Error fetching matches:', error.message);
         }
-    }, []);
+    }, [fetchUserPrivateMatches]);
 
     // Back Button & Navigation Handler
     useEffect(() => {
