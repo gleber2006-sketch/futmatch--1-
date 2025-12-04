@@ -393,17 +393,25 @@ const App: React.FC = () => {
             .on(
                 'postgres_changes',
                 { event: '*', schema: 'public', table: 'match_participants' },
-                (payload) => {
+                async (payload) => {
                     console.log('👥 Participant change:', payload.eventType);
 
+                    // Buscar lista atualizada de participantes para a partida afetada
+                    const matchId = payload.eventType === 'DELETE' ? payload.old.match_id : payload.new.match_id;
+
+                    const { data: updatedParticipants } = await supabase
+                        .from('match_participants')
+                        .select('user_id, status, joined_at, waitlist_position, profiles(photo_url, name, reputation)')
+                        .eq('match_id', matchId);
+
                     setMatches(prev => prev.map(match => {
-                        // Handle INSERT (someone joined)
-                        if (payload.eventType === 'INSERT' && payload.new.match_id === match.id) {
-                            return { ...match, filled_slots: match.filled_slots + 1 };
-                        }
-                        // Handle DELETE (someone left/removed)
-                        if (payload.eventType === 'DELETE' && payload.old.match_id === match.id) {
-                            return { ...match, filled_slots: Math.max(0, match.filled_slots - 1) };
+                        if (match.id === matchId) {
+                            const confirmedCount = updatedParticipants?.filter(p => p.status === 'confirmed').length || 0;
+                            return {
+                                ...match,
+                                filled_slots: confirmedCount,
+                                match_participants: updatedParticipants || []
+                            };
                         }
                         return match;
                     }));
@@ -574,19 +582,18 @@ const App: React.FC = () => {
                 invite_code = generateInviteCode();
             }
 
-            const matchPayload = {
-                ...newMatch,
-                date: newMatch.date.toISOString(),
-                created_by: currentUser.id,
-                filled_slots: 0,
-                invite_code
-            };
-
-            const { data, error } = await supabase
-                .from('matches')
-                .insert([matchPayload])
-                .select()
-                .single();
+            const { data, error } = await supabase.rpc('create_match_with_tokens', {
+                p_name: newMatch.name,
+                p_sport: newMatch.sport,
+                p_location: newMatch.location,
+                p_lat: newMatch.lat,
+                p_lng: newMatch.lng,
+                p_date: newMatch.date.toISOString(),
+                p_slots: newMatch.slots,
+                p_rules: newMatch.rules,
+                p_is_private: newMatch.is_private,
+                p_invite_code: invite_code
+            });
 
             if (error) throw error;
 
@@ -613,8 +620,12 @@ const App: React.FC = () => {
             setTimeout(() => setShowConfirmation(null), 3000);
         } catch (error) {
             const msg = (error as AuthError)?.message ?? 'Unknown error';
-            console.error('Error creating match:', msg);
-            alert(`Erro ao criar partida: ${msg}`);
+            if (msg.includes('INSUFFICIENT_FUNDS')) {
+                alert("Saldo insuficiente de MatchCoins. Você precisa de 3 tokens para criar uma partida.");
+            } else {
+                console.error('Error creating match:', msg);
+                alert(`Erro ao criar partida: ${msg}`);
+            }
         }
     }, [currentUser, fetchUserProfile, session]);
 
@@ -639,7 +650,23 @@ const App: React.FC = () => {
             if (status === 'OK' || status === 'confirmed') {
                 // Success: Update local state optimistically
                 setJoinedMatchIds(prev => new Set(prev).add(matchId));
-                // NOTE: filled_slots is updated via realtime subscription to avoid double counting
+
+                // Atualiza visualmente adicionando o participante e incrementando contador
+                setMatches(prev => prev.map(m => {
+                    if (m.id === matchId) {
+                        const currentParticipants = m.match_participants || [];
+                        const wasAlreadyInList = currentParticipants.some(p => p.user_id === currentUser.id);
+                        const filteredParticipants = currentParticipants.filter(p => p.user_id !== currentUser.id);
+
+                        return {
+                            ...m,
+                            // Só incrementa se não estava na lista antes
+                            filled_slots: wasAlreadyInList ? m.filled_slots : (m.filled_slots || 0) + 1,
+                            match_participants: [...filteredParticipants, { user_id: currentUser.id, profile: currentUser }]
+                        };
+                    }
+                    return m;
+                }));
 
                 setCurrentUser(prev => prev ? ({
                     ...prev,
@@ -661,7 +688,28 @@ const App: React.FC = () => {
             } else if (status === 'MATCH_CLOSED') {
                 alert("Essa partida não está mais aceitando jogadores.");
             } else if (status === 'ALREADY_IN') {
-                alert("Você já está nessa partida.");
+                // Se já está na partida, apenas sincroniza o estado local
+                setJoinedMatchIds(prev => new Set(prev).add(matchId));
+
+                // Atualiza visualmente a lista e contador
+                setMatches(prev => prev.map(m => {
+                    if (m.id === matchId) {
+                        const currentParticipants = m.match_participants || [];
+                        const wasAlreadyInList = currentParticipants.some(p => p.user_id === currentUser.id);
+                        const filteredParticipants = currentParticipants.filter(p => p.user_id !== currentUser.id);
+
+                        return {
+                            ...m,
+                            // Só incrementa se não estava na lista antes
+                            filled_slots: wasAlreadyInList ? m.filled_slots : (m.filled_slots || 0) + 1,
+                            match_participants: [...filteredParticipants, { user_id: currentUser.id, profile: currentUser }]
+                        };
+                    }
+                    return m;
+                }));
+
+                setShowConfirmation("Você já está confirmado nesta partida!");
+                setTimeout(() => setShowConfirmation(null), 3000);
             } else if (status === 'MATCH_NOT_FOUND') {
                 alert("Partida não encontrada. Atualize a tela.");
             } else if (status === 'NOT_AUTHENTICATED') {
@@ -698,6 +746,20 @@ const App: React.FC = () => {
                     newSet.delete(matchId);
                     return newSet;
                 });
+
+                // Atualiza visualmente removendo o participante e decrementando contador
+                setMatches(prev => prev.map(m => {
+                    if (m.id === matchId) {
+                        const wasInList = m.match_participants?.some(p => p.user_id === currentUser.id);
+                        return {
+                            ...m,
+                            // Só decrementa se estava na lista
+                            filled_slots: wasInList ? Math.max(0, (m.filled_slots || 0) - 1) : m.filled_slots,
+                            match_participants: m.match_participants?.filter(p => p.user_id !== currentUser.id) || []
+                        };
+                    }
+                    return m;
+                }));
                 // NOTE: filled_slots is updated via realtime subscription to avoid double counting
 
                 setCurrentUser(prev => prev ? ({
@@ -717,6 +779,20 @@ const App: React.FC = () => {
                     newSet.delete(matchId);
                     return newSet;
                 });
+
+                // Também limpa visualmente e decrementa contador
+                setMatches(prev => prev.map(m => {
+                    if (m.id === matchId) {
+                        const wasInList = m.match_participants?.some(p => p.user_id === currentUser.id);
+                        return {
+                            ...m,
+                            // Só decrementa se estava na lista
+                            filled_slots: wasInList ? Math.max(0, (m.filled_slots || 0) - 1) : m.filled_slots,
+                            match_participants: m.match_participants?.filter(p => p.user_id !== currentUser.id) || []
+                        };
+                    }
+                    return m;
+                }));
             } else if (status === 'NOT_AUTHENTICATED') {
                 alert("Você precisa estar logado.");
             } else {
@@ -1275,6 +1351,7 @@ const App: React.FC = () => {
                     onDeleteCanceledMatches={handleDeleteCanceledMatches}
                     onEditMatch={handleStartEditMatch}
                     onNavigateBack={() => setActivePage('explore')}
+                    onNavigateToCreate={() => setActivePage('create')}
                     onBalanceUpdate={handleBalanceUpdate}
                     onBoostMatch={handleBoostMatch}
                     onNavigateToDirectChat={handleNavigateToMatchChat}
@@ -1282,6 +1359,9 @@ const App: React.FC = () => {
                     onDeclineParticipant={handleDeclineParticipant}
                     onRemoveParticipant={handleRemoveParticipant}
                     onPromoteFromWaitlist={handlePromoteFromWaitlist}
+                    selectedMatch={selectedMatch}
+                    onSelectMatch={setSelectedMatch}
+                    onCloseMatchDetails={() => setSelectedMatch(null)}
                 />;
             case 'match-chat':
                 return <MatchChat

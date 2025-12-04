@@ -41,13 +41,7 @@ export interface Match {
   boost_until?: string;
   is_private?: boolean;
   invite_code?: string | null;
-  match_participants?: {
-    user_id: string;
-    profile: {
-      photo_url: string;
-      name: string;
-    };
-  }[];
+  match_participants?: MatchParticipant[];
 }
 
 export interface MatchMessage {
@@ -176,5 +170,5 @@ export interface MatchParticipant {
   joined_at: string;
   status: ParticipantStatus;
   waitlist_position?: number;
-  profile: Pick<Profile, 'name' | 'photoUrl' | 'reputation'>;
+  profiles: Pick<Profile, 'name' | 'photoUrl' | 'reputation'>;
 }

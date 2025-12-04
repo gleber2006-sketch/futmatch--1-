@@ -23,13 +23,13 @@ const ParticipantItem: React.FC<{
         <div className="flex items-center justify-between bg-gray-700/50 p-3 rounded-lg mb-2">
             <div className="flex items-center gap-3">
                 <img
-                    src={participant.profile.photoUrl || `https://ui-avatars.com/api/?name=${participant.profile.name}`}
-                    alt={participant.profile.name}
+                    src={participant.profiles.photoUrl || `https://ui-avatars.com/api/?name=${participant.profiles.name}`}
+                    alt={participant.profiles.name}
                     className="w-10 h-10 rounded-full border-2 border-gray-600"
                 />
                 <div>
                     <p className="text-white font-semibold text-sm flex items-center gap-2">
-                        {participant.profile.name}
+                        {participant.profiles.name}
                         {isMe && <span className="text-[10px] bg-blue-500/20 text-blue-300 px-1.5 py-0.5 rounded">Você</span>}
                     </p>
                     <p className="text-xs text-gray-400">

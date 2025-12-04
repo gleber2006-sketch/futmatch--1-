@@ -160,23 +160,8 @@ const CreateMatchForm: React.FC<CreateMatchFormProps> = ({ onCreateMatch, onUpda
         return;
       }
 
-      // TOKENS CHECK FOR CREATION
-      if (!isEditMode) {
-        const { data: userData } = await supabase.auth.getUser();
-        if (userData.user) {
-          const { data: rpcData, error: rpcError } = await supabase.rpc('spend_tokens', {
-            p_user_id: userData.user.id,
-            amount: 3
-          });
+      // TOKENS CHECK REMOVED - Handled by atomic RPC in App.tsx
 
-          if (rpcError) throw rpcError;
-          if (rpcData === 'INSUFFICIENT_FUNDS') {
-            alert("Saldo insuficiente de MatchCoins. Você precisa de 3 tokens para criar uma partida.");
-            setIsSubmitting(false);
-            return;
-          }
-        }
-      }
 
       // Use whatever coordinates we have (from selection or edit mode), or null.
       // We do NOT block to search anymore.
@@ -363,8 +348,8 @@ const CreateMatchForm: React.FC<CreateMatchFormProps> = ({ onCreateMatch, onUpda
               type="button"
               onClick={() => setIsPrivate(false)}
               className={`flex-1 py-3 px-4 rounded-lg font-semibold transition-all duration-200 ${!isPrivate
-                  ? 'bg-gradient-to-r from-green-600 to-green-500 text-white shadow-lg'
-                  : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                ? 'bg-gradient-to-r from-green-600 to-green-500 text-white shadow-lg'
+                : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
                 }`}
             >
               <div className="flex flex-col items-center">
@@ -376,8 +361,8 @@ const CreateMatchForm: React.FC<CreateMatchFormProps> = ({ onCreateMatch, onUpda
               type="button"
               onClick={() => setIsPrivate(true)}
               className={`flex-1 py-3 px-4 rounded-lg font-semibold transition-all duration-200 ${isPrivate
-                  ? 'bg-gradient-to-r from-purple-600 to-purple-500 text-white shadow-lg'
-                  : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                ? 'bg-gradient-to-r from-purple-600 to-purple-500 text-white shadow-lg'
+                : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
                 }`}
             >
               <div className="flex-col items-center">

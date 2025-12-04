@@ -238,6 +238,8 @@ create table public.matches (
   cancellation_reason text,
   is_boosted boolean default false,
   boost_until timestamp with time zone,
+  is_private boolean default false,
+  invite_code text,
   created_at timestamp with time zone default now() not null
 );
 
@@ -491,7 +493,58 @@ security definer
 as $$
 begin
 end;
-$$;`;
+
+-- TRANSACTIONAL CREATE MATCH (Cost: 3 Tokens)
+create function public.create_match_with_tokens(
+  p_name text,
+  p_sport text,
+  p_location text,
+  p_lat real,
+  p_lng real,
+  p_date timestamp with time zone,
+  p_slots int,
+  p_rules text,
+  p_is_private boolean,
+  p_invite_code text
+)
+returns jsonb
+language plpgsql
+security definer
+as $$
+declare
+  v_user_id uuid;
+  v_balance int;
+  v_new_match_id bigint;
+  v_match_data jsonb;
+begin
+  v_user_id := auth.uid();
+  if v_user_id is null then
+    raise exception 'NOT_AUTHENTICATED';
+  end if;
+
+  -- Check Token Balance
+  select balance into v_balance from public.tokens where user_id = v_user_id;
+  if v_balance is null or v_balance < 3 then
+    raise exception 'INSUFFICIENT_FUNDS';
+  end if;
+
+  -- 1. Deduct Tokens
+  update public.tokens set balance = balance - 3 where user_id = v_user_id;
+
+  -- 2. Create Match
+  insert into public.matches (
+    created_by, name, sport, location, lat, lng, date, slots, rules, is_private, invite_code
+  ) values (
+    v_user_id, p_name, p_sport, p_location, p_lat, p_lng, p_date, p_slots, p_rules, p_is_private, p_invite_code
+  ) returning id into v_new_match_id;
+
+  -- 3. Return the created match data
+  select to_jsonb(m) into v_match_data from public.matches m where id = v_new_match_id;
+  
+  return v_match_data;
+end;
+$$;
+`;
 
 const DatabaseSetup: React.FC = () => {
   const [copied, setCopied] = useState(false);
@@ -512,7 +565,7 @@ const DatabaseSetup: React.FC = () => {
           O aplicativo detectou que as tabelas necessárias não existem no seu projeto Supabase ou estão incompletas.
           Para corrigir isso, você precisa executar o script SQL de configuração.
         </p>
-        
+
         <div className="bg-blue-900/30 border border-blue-500/50 rounded-lg p-4 mb-6">
           <h3 className="font-bold text-blue-400 mb-2">Como resolver:</h3>
           <ol className="list-decimal list-inside text-gray-300 space-y-2">
@@ -525,26 +578,26 @@ const DatabaseSetup: React.FC = () => {
         </div>
 
         <div className="relative mb-6">
-            <div className="absolute top-2 right-2">
-                <button 
-                    onClick={handleCopy}
-                    className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${copied ? 'bg-green-500 text-white' : 'bg-gray-700 text-gray-300 hover:bg-gray-600'}`}
-                >
-                    {copied ? 'Copiado!' : 'Copiar SQL'}
-                </button>
-            </div>
-            <pre className="bg-black/50 p-4 rounded-lg text-xs text-green-400 font-mono h-64 overflow-y-auto border border-gray-700">
-                {sqlScript}
-            </pre>
-        </div>
-        
-        <div className="text-center">
-            <button 
-                onClick={() => window.location.reload()}
-                className="bg-green-600 hover:bg-green-500 text-white font-bold py-3 px-8 rounded-lg transition-all shadow-lg"
+          <div className="absolute top-2 right-2">
+            <button
+              onClick={handleCopy}
+              className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${copied ? 'bg-green-500 text-white' : 'bg-gray-700 text-gray-300 hover:bg-gray-600'}`}
             >
-                Já executei o script, Recarregar Página
+              {copied ? 'Copiado!' : 'Copiar SQL'}
             </button>
+          </div>
+          <pre className="bg-black/50 p-4 rounded-lg text-xs text-green-400 font-mono h-64 overflow-y-auto border border-gray-700">
+            {sqlScript}
+          </pre>
+        </div>
+
+        <div className="text-center">
+          <button
+            onClick={() => window.location.reload()}
+            className="bg-green-600 hover:bg-green-500 text-white font-bold py-3 px-8 rounded-lg transition-all shadow-lg"
+          >
+            Já executei o script, Recarregar Página
+          </button>
         </div>
       </div>
     </div>
