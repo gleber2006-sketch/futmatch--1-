@@ -72,6 +72,18 @@ const App: React.FC = () => {
 
     const isAuthenticated = !!currentUser;
 
+    // Sincronizar selectedMatch com updates em matches (Realtime/Otimista)
+    // Isso garante que o modal aberto receba as atualizações de participantes e status
+    useEffect(() => {
+        if (selectedMatch) {
+            const matchInList = matches.find(m => m.id === selectedMatch.id);
+            // Atualiza apenas se houver diferença para evitar loops
+            if (matchInList && matchInList !== selectedMatch) {
+                setSelectedMatch(matchInList);
+            }
+        }
+    }, [matches, selectedMatch]);
+
     const fetchMatches = useCallback(async () => {
         try {
             // Fetch public matches
