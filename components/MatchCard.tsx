@@ -184,11 +184,11 @@ Bora jogar? 🚀`;
         <div
             onClick={() => !isCanceled && onCardClick(match)}
             className={`relative rounded-xl shadow-lg overflow-hidden mb-4 transition-all duration-300 w-full ${className}
-        ${match.is_private && !isCanceled ? 'bg-gradient-to-br from-purple-800/55 via-purple-900/30 to-gray-800' : !isCanceled ? 'bg-gradient-to-br from-green-800/35 via-green-900/20 to-gray-800' : 'bg-gray-800'}
+        ${match.is_private && !isCanceled ? 'bg-gradient-to-br from-purple-800/55 via-purple-900/30 to-gray-800' : !isCanceled ? 'bg-gradient-to-br from-green-600/45 via-green-800/25 to-gray-800' : 'bg-gray-800'}
         ${isCanceled ? 'opacity-60 grayscale-[50%]' : 'transform hover:scale-[1.02] cursor-pointer'}
         ${isBoosted && !isCanceled ? 'border-2 border-yellow-400 shadow-[0_0_15px_rgba(250,204,21,0.3)]' : ''}
         ${match.is_private && !isCanceled && !isBoosted ? 'border border-purple-400/40 shadow-[0_0_15px_rgba(168,85,247,0.25),inset_0_1px_2px_rgba(192,132,252,0.15)]' : ''}
-        ${!match.is_private && !isCanceled && !isBoosted ? 'border border-green-400/30 shadow-[0_4px_12px_rgba(34,197,94,0.15)]' : ''}`}
+        ${!match.is_private && !isCanceled && !isBoosted ? 'border border-green-500/45 shadow-[0_0_12px_rgba(34,197,94,0.2),0_4px_14px_rgba(34,197,94,0.18)]' : ''}`}
             aria-disabled={isCanceled}
         >
             {/* Badge de destaque (booster) */}
