@@ -396,6 +396,9 @@ const App: React.FC = () => {
                 async (payload) => {
                     console.log('👥 Participant change:', payload.eventType);
 
+                    // Adicionar delay para garantir consistência do DB (evitar race condition)
+                    await new Promise(resolve => setTimeout(resolve, 500));
+
                     // Buscar lista atualizada de participantes para a partida afetada
                     const matchId = payload.eventType === 'DELETE' ? payload.old.match_id : payload.new.match_id;
 
