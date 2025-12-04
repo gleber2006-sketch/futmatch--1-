@@ -7,18 +7,6 @@ import RankingList from './components/RankingList';
 import ChatBot from './components/ChatBot';
 import Home from './components/Home';
 import MatchesMap from './components/MatchesMap';
-import MyGames from './components/MyGames';
-import Community from './components/Community';
-import Arenas from './components/Arenas';
-import MatchChat from './components/MatchChat';
-import Notifications from './components/Notifications';
-import Wallet from './components/Wallet';
-import { Page, Feature, Profile, Match, Ranking, DraftMatchData, NewUserRegistrationData } from './types';
-import { supabase } from './services/supabaseClient';
-import { initGemini } from './services/geminiService';
-import { AuthError, Session, User } from '@supabase/supabase-js';
-import DatabaseSetup from './components/DatabaseSetup';
-import LoadingSpinner from './components/LoadingSpinner';
 import Toast from './components/Toast';
 import { generateInviteCode } from './utils/inviteCode';
 
@@ -673,11 +661,19 @@ const App: React.FC = () => {
                         const wasAlreadyInList = currentParticipants.some(p => p.user_id === currentUser.id);
                         const filteredParticipants = currentParticipants.filter(p => p.user_id !== currentUser.id);
 
+                        const newParticipant: MatchParticipant = {
+                            match_id: matchId,
+                            user_id: currentUser.id,
+                            joined_at: new Date().toISOString(),
+                            status: 'confirmed',
+                            profiles: currentUser
+                        };
+
                         return {
                             ...m,
                             // Só incrementa se não estava na lista antes
                             filled_slots: wasAlreadyInList ? m.filled_slots : (m.filled_slots || 0) + 1,
-                            match_participants: [...filteredParticipants, { user_id: currentUser.id, profile: currentUser }]
+                            match_participants: [...filteredParticipants, newParticipant]
                         };
                     }
                     return m;
@@ -713,11 +709,19 @@ const App: React.FC = () => {
                         const wasAlreadyInList = currentParticipants.some(p => p.user_id === currentUser.id);
                         const filteredParticipants = currentParticipants.filter(p => p.user_id !== currentUser.id);
 
+                        const newParticipant: MatchParticipant = {
+                            match_id: matchId,
+                            user_id: currentUser.id,
+                            joined_at: new Date().toISOString(),
+                            status: 'confirmed',
+                            profiles: currentUser
+                        };
+
                         return {
                             ...m,
                             // Só incrementa se não estava na lista antes
                             filled_slots: wasAlreadyInList ? m.filled_slots : (m.filled_slots || 0) + 1,
-                            match_participants: [...filteredParticipants, { user_id: currentUser.id, profile: currentUser }]
+                            match_participants: [...filteredParticipants, newParticipant]
                         };
                     }
                     return m;
