@@ -213,7 +213,7 @@ const Community: React.FC<CommunityProps> = ({ currentUser, onNavigateBack }) =>
             console.log('[Community Debug] Fetching posts from Supabase...');
             const { data: postsData, error: postsError } = await supabase
                 .from('community_posts')
-                .select('*, profiles(name, photo_url)')
+                .select('*, profiles!user_id(name, photo_url)')
                 .order('created_at', { ascending: false });
 
             console.log('[Community Debug] Posts query result:', {
