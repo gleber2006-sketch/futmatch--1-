@@ -25,6 +25,7 @@ const FeatureCard: React.FC<FeatureCardProps> = ({ icon, title, subtitle, onClic
 interface FeatureGridProps {
     onNavigateToCreate: () => void;
     onRefreshMatches?: () => Promise<void>;
+    onScrollToMatches?: () => void;
     onNavigateToMyGames: () => void;
     onNavigateToCommunity: () => void;
     onNavigateToRanking: () => void;
@@ -36,6 +37,7 @@ interface FeatureGridProps {
 const FeatureGrid: React.FC<FeatureGridProps> = ({
     onNavigateToCreate,
     onRefreshMatches,
+    onScrollToMatches,
     onNavigateToMyGames,
     onNavigateToCommunity,
     onNavigateToRanking,
@@ -66,7 +68,10 @@ const FeatureGrid: React.FC<FeatureGridProps> = ({
             ),
             title: 'Encontre Partidas',
             subtitle: 'Encontre partidas para partidas de encontro',
-            onClick: () => onRefreshMatches?.()
+            onClick: () => {
+                onRefreshMatches?.();
+                onScrollToMatches?.();
+            }
         },
         {
             icon: (

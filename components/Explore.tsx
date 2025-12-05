@@ -208,6 +208,7 @@ const Explore: React.FC<ExploreProps> = ({ matches, platformFeatures, onJoinMatc
       <FeatureGrid
         onNavigateToCreate={onNavigateToCreate}
         onRefreshMatches={onRefreshMatches}
+        onScrollToMatches={() => matchesSectionRef.current?.scrollIntoView({ behavior: 'smooth' })}
         onNavigateToMyGames={onNavigateToMyGames}
         onNavigateToCommunity={onNavigateToCommunity}
         onNavigateToRanking={onNavigateToRanking}
