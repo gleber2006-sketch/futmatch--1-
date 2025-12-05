@@ -201,7 +201,7 @@ const Explore: React.FC<ExploreProps> = ({ matches, platformFeatures, onJoinMatc
       {/* Next Match Widget */}
       <NextMatchWidget
         matches={sortedAndFilteredMatches}
-        onMatchClick={handleCardClick}
+        onNavigateToMap={onNavigateToMap}
       />
 
       {/* Feature Grid */}

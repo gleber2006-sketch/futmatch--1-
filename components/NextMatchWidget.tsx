@@ -3,10 +3,10 @@ import { Match } from '../types';
 
 interface NextMatchWidgetProps {
     matches: Match[];
-    onMatchClick: (match: Match) => void;
+    onNavigateToMap: () => void;
 }
 
-const NextMatchWidget: React.FC<NextMatchWidgetProps> = ({ matches, onMatchClick }) => {
+const NextMatchWidget: React.FC<NextMatchWidgetProps> = ({ matches, onNavigateToMap }) => {
     const [currentIndex, setCurrentIndex] = useState(0);
 
     // Get upcoming matches (not canceled or finished)
@@ -33,7 +33,7 @@ const NextMatchWidget: React.FC<NextMatchWidgetProps> = ({ matches, onMatchClick
     return (
         <div className="px-4 py-4">
             <div
-                onClick={() => onMatchClick(currentMatch)}
+                onClick={onNavigateToMap}
                 className="relative bg-gradient-to-br from-[#1a2332] to-[#0f1824] rounded-2xl p-4 border-2 border-[#00ff88] shadow-[0_0_20px_rgba(0,255,136,0.3)] cursor-pointer hover:shadow-[0_0_30px_rgba(0,255,136,0.5)] transition-all overflow-hidden"
             >
                 {/* Soccer Field Background Pattern */}
@@ -63,7 +63,7 @@ const NextMatchWidget: React.FC<NextMatchWidgetProps> = ({ matches, onMatchClick
 
                 {/* Content */}
                 <div className="relative z-10">
-                    <h3 className="text-white font-bold text-lg mb-3">Próxima Partida</h3>
+                    <h3 className="text-white font-bold text-lg mb-3">Mapa das Partidas</h3>
 
                     <div className="space-y-2">
                         {/* Date and Time */}
@@ -108,8 +108,8 @@ const NextMatchWidget: React.FC<NextMatchWidgetProps> = ({ matches, onMatchClick
                                     setCurrentIndex(index);
                                 }}
                                 className={`w-2 h-2 rounded-full transition-all ${index === currentIndex
-                                        ? 'bg-[#00ff88] w-6'
-                                        : 'bg-gray-600'
+                                    ? 'bg-[#00ff88] w-6'
+                                    : 'bg-gray-600'
                                     }`}
                             />
                         ))}
