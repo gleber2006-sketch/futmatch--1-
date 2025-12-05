@@ -198,11 +198,32 @@ const Explore: React.FC<ExploreProps> = ({ matches, platformFeatures, onJoinMatc
         onNavigateToWallet={onNavigateToWallet}
       />
 
-      <PlatformFeatures features={platformFeatures} onFeatureClick={handleFeatureClick} />
+      {/* Next Match Widget */}
+      <NextMatchWidget
+        matches={sortedAndFilteredMatches}
+        onMatchClick={handleCardClick}
+      />
 
+      {/* Feature Grid */}
+      <FeatureGrid
+        onNavigateToCreate={onNavigateToCreate}
+        onRefreshMatches={onRefreshMatches}
+        onNavigateToMyGames={onNavigateToMyGames}
+        onNavigateToCommunity={onNavigateToCommunity}
+        onNavigateToRanking={onNavigateToRanking}
+        onNavigateToArenas={onNavigateToArenas}
+        onNavigateToMatchChat={onNavigateToMatchChat}
+        onNavigateToNotifications={onNavigateToNotifications}
+      />
 
-      <div ref={matchesSectionRef} className="mb-6 bg-gray-900 py-2 max-w-md mx-auto md:max-w-7xl overflow-hidden">
-        <h2 className="text-2xl font-bold text-white mb-4 text-center">Partidas Próximas</h2>
+      {/* Upcoming Matches Carousel */}
+      <UpcomingMatchesCarousel
+        matches={sortedAndFilteredMatches}
+        onMatchClick={handleCardClick}
+      />
+
+      <div ref={matchesSectionRef} className="mb-6 bg-transparent py-2 max-w-md mx-auto md:max-w-7xl overflow-hidden px-4">
+        <h2 className="text-2xl font-bold text-white mb-4 text-center">Todas as Partidas</h2>
 
         {/* Botões de Filtro de Visibilidade */}
         <div className="flex gap-2 mb-4 justify-center px-4">
