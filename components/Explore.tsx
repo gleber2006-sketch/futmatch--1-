@@ -6,6 +6,11 @@ import LoadingSpinner from './LoadingSpinner';
 import PlatformFeatures from './PlatformFeatures';
 import MatchDetailsModal from './MatchDetailsModal';
 import { SPORTS_LIST } from '../constants';
+import ExploreHeader from './ExploreHeader';
+import NextMatchWidget from './NextMatchWidget';
+import FeatureGrid from './FeatureGrid';
+import UpcomingMatchesCarousel from './UpcomingMatchesCarousel';
+
 
 interface ExploreProps {
   matches: Match[];
@@ -185,17 +190,16 @@ const Explore: React.FC<ExploreProps> = ({ matches, platformFeatures, onJoinMatc
     });
 
   return (
-    <div>
-      <div className="fixed top-4 right-4 z-50">
-        <button
-          onClick={onNavigateToWallet}
-          className="bg-gray-900/90 backdrop-blur-sm text-yellow-400 px-4 py-2 rounded-full text-sm font-bold border border-yellow-500/50 shadow-lg hover:bg-gray-800 transition-all flex items-center gap-2 animate-fade-in"
-        >
-          ⚡ {currentUser.matchCoins} <span className="hidden sm:inline">MatchCoins</span>
-        </button>
-      </div>
+    <div className="bg-gradient-to-b from-[#0a1628] to-[#0f1824] min-h-screen">
+      {/* New Redesigned Header */}
+      <ExploreHeader
+        currentUser={currentUser}
+        onNavigateToProfile={onNavigateToProfile}
+        onNavigateToWallet={onNavigateToWallet}
+      />
 
       <PlatformFeatures features={platformFeatures} onFeatureClick={handleFeatureClick} />
+
 
       <div ref={matchesSectionRef} className="mb-6 bg-gray-900 py-2 max-w-md mx-auto md:max-w-7xl overflow-hidden">
         <h2 className="text-2xl font-bold text-white mb-4 text-center">Partidas Próximas</h2>
@@ -205,8 +209,8 @@ const Explore: React.FC<ExploreProps> = ({ matches, platformFeatures, onJoinMatc
           <button
             onClick={() => setVisibilityFilter('all')}
             className={`px-4 py-2 rounded-lg font-semibold transition-all text-sm ${visibilityFilter === 'all'
-                ? 'bg-gradient-to-r from-green-600 to-green-500 text-white shadow-lg'
-                : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+              ? 'bg-gradient-to-r from-green-600 to-green-500 text-white shadow-lg'
+              : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
               }`}
           >
             Todas
@@ -214,8 +218,8 @@ const Explore: React.FC<ExploreProps> = ({ matches, platformFeatures, onJoinMatc
           <button
             onClick={() => setVisibilityFilter('private')}
             className={`px-4 py-2 rounded-lg font-semibold transition-all text-sm ${visibilityFilter === 'private'
-                ? 'bg-gradient-to-r from-purple-600 to-purple-500 text-white shadow-lg'
-                : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+              ? 'bg-gradient-to-r from-purple-600 to-purple-500 text-white shadow-lg'
+              : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
               }`}
           >
             Privadas
@@ -223,8 +227,8 @@ const Explore: React.FC<ExploreProps> = ({ matches, platformFeatures, onJoinMatc
           <button
             onClick={() => setVisibilityFilter('public')}
             className={`px-4 py-2 rounded-lg font-semibold transition-all text-sm ${visibilityFilter === 'public'
-                ? 'bg-gradient-to-r from-blue-600 to-blue-500 text-white shadow-lg'
-                : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+              ? 'bg-gradient-to-r from-blue-600 to-blue-500 text-white shadow-lg'
+              : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
               }`}
           >
             Públicas
