@@ -171,7 +171,7 @@ const Home: React.FC<HomeProps> = ({ onLogin, onRegister, onGoogleLogin, loginEr
                                 </label>
                                 <a href="#" className="font-semibold text-neon-green hover:text-[#00e686] hover:underline transition-colors">Esqueci a senha</a>
                             </div>
-                            <button type="submit" className="w-full bg-neon-green text-[#0a1628] p-3 rounded-lg font-bold shadow-lg hover:bg-[#00e686] hover:shadow-[0_0_20px_rgba(0,255,148,0.4)] transition-all transform hover:scale-[1.02]">
+                            <button type="submit" className="w-full bg-[#00FF94] text-[#0a1628] p-3 rounded-lg font-bold shadow-lg hover:bg-[#00e686] hover:shadow-[0_0_20px_rgba(0,255,148,0.4)] transition-all transform hover:scale-[1.02]">
                                 Entrar
                             </button>
                         </form>
@@ -282,7 +282,7 @@ const Home: React.FC<HomeProps> = ({ onLogin, onRegister, onGoogleLogin, loginEr
                                 </div>
                             )}
 
-                            <button type="submit" className="w-full bg-neon-green text-[#0a1628] p-3 rounded-lg font-bold shadow-lg hover:bg-[#00e686] hover:shadow-[0_0_20px_rgba(0,255,148,0.4)] transition-all transform hover:scale-[1.02] mt-4" disabled={isRegistering}>
+                            <button type="submit" className="w-full bg-[#00FF94] text-[#0a1628] p-3 rounded-lg font-bold shadow-lg hover:bg-[#00e686] hover:shadow-[0_0_20px_rgba(0,255,148,0.4)] transition-all transform hover:scale-[1.02] mt-4" disabled={isRegistering}>
                                 {isRegistering ? (
                                     <div className="flex items-center justify-center">
                                         <LoadingSpinner size={5} />
@@ -326,7 +326,7 @@ const Home: React.FC<HomeProps> = ({ onLogin, onRegister, onGoogleLogin, loginEr
                                 Login com Google desabilitado neste ambiente. Use o e-mail.
                             </p>
                             <button onClick={() => setView('login')} className="w-full bg-[#112240] border border-neon-green/30 text-white p-3 rounded-lg font-semibold shadow-lg hover:bg-[#1a2f55] hover:border-neon-green/50 transition-all">Entrar com E-mail</button>
-                            <button onClick={() => setView('register')} className="w-full bg-neon-green text-[#0a1628] p-3 rounded-lg font-bold shadow-[0_0_20px_rgba(0,255,148,0.3)] hover:bg-[#00e686] hover:shadow-[0_0_30px_rgba(0,255,148,0.5)] transition-all transform hover:scale-105">Criar Nova Conta</button>
+                            <button onClick={() => setView('register')} className="w-full bg-[#00FF94] text-[#0a1628] p-3 rounded-lg font-bold shadow-[0_0_20px_rgba(0,255,148,0.3)] hover:bg-[#00e686] hover:shadow-[0_0_30px_rgba(0,255,148,0.5)] transition-all transform hover:scale-105">Criar Nova Conta</button>
                         </div>
                     </div>
                 );

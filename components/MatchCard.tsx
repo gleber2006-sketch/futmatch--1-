@@ -303,7 +303,7 @@ Bora jogar? 🚀`;
                                 ? 'bg-gray-600 text-gray-300 cursor-not-allowed'
                                 : hasJoined
                                     ? 'bg-red-500 hover:bg-red-400 text-white'
-                                    : 'bg-neon-green hover:bg-[#00e686] hover:shadow-[0_0_15px_rgba(0,255,148,0.4)]'
+                                    : 'bg-[#00FF94] hover:bg-[#00e686] hover:shadow-[0_0_15px_rgba(0,255,148,0.4)]'
                                 }`}
                         >
                             {buttonState.text}
