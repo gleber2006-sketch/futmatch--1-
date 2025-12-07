@@ -127,21 +127,21 @@ Bora jogar? 🚀`;
             return {
                 text: 'Partida Cancelada ❌',
                 isDisabled: true,
-                className: 'bg-gradient-to-r from-gray-700 to-gray-600 opacity-50 cursor-not-allowed',
+                className: 'bg-gradient-to-r from-gray-700 to-gray-600 opacity-80 text-gray-200 cursor-not-allowed border border-gray-600',
             };
         }
         if (isConfirmed) {
             return {
                 text: 'Presenças Encerradas ✅',
                 isDisabled: true,
-                className: 'bg-gradient-to-r from-gray-700 to-gray-600 opacity-50 cursor-not-allowed',
+                className: 'bg-gradient-to-r from-gray-700 to-gray-600 opacity-80 text-gray-200 cursor-not-allowed border border-gray-600',
             };
         }
         if (isFinalized) {
             return {
                 text: 'Partida Finalizada 🏁',
                 isDisabled: true,
-                className: 'bg-gradient-to-r from-gray-700 to-gray-600 opacity-50 cursor-not-allowed',
+                className: 'bg-gradient-to-r from-gray-700 to-gray-600 opacity-80 text-gray-200 cursor-not-allowed border border-gray-600',
             };
         }
         if (isLoading) {
@@ -168,7 +168,7 @@ Bora jogar? 🚀`;
             return {
                 text: 'Lotado ✅',
                 isDisabled: true,
-                className: 'bg-gradient-to-r from-gray-700 to-gray-600 opacity-50 cursor-not-allowed',
+                className: 'bg-gradient-to-r from-gray-700 to-gray-600 opacity-80 text-gray-200 cursor-not-allowed border border-gray-600',
             };
         }
         return {
@@ -183,38 +183,47 @@ Bora jogar? 🚀`;
     return (
         <div
             onClick={() => !isCanceled && onCardClick(match)}
-            className={`relative rounded-xl shadow-lg overflow-hidden mb-4 transition-all duration-300 w-full ${className}
-        ${match.is_private && !isCanceled ? 'bg-gradient-to-br from-purple-800/55 via-purple-900/30 to-gray-800' : !isCanceled ? 'bg-gradient-to-br from-green-600/45 via-green-800/25 to-gray-800' : 'bg-gray-800'}
-        ${isCanceled ? 'opacity-60 grayscale-[50%]' : 'transform hover:scale-[1.02] cursor-pointer'}
-        ${isBoosted && !isCanceled ? 'border-2 border-yellow-400 shadow-[0_0_15px_rgba(250,204,21,0.3)]' : ''}
-        ${match.is_private && !isCanceled && !isBoosted ? 'border border-purple-400/40 shadow-[0_0_15px_rgba(168,85,247,0.25),inset_0_1px_2px_rgba(192,132,252,0.15)]' : ''}
-        ${!match.is_private && !isCanceled && !isBoosted ? 'border border-green-500/45 shadow-[0_0_12px_rgba(34,197,94,0.2),0_4px_14px_rgba(34,197,94,0.18)]' : ''}`}
+            className={`relative rounded-xl shadow-lg overflow-hidden mb-4 transition-all duration-300 w-full backdrop-blur-md border ${className}
+        ${match.is_private && !isCanceled
+                    ? 'bg-purple-900/20 border-purple-500/30 hover:border-purple-400/50'
+                    : !isCanceled
+                        ? 'bg-[#112240]/60 border-white/10 hover:border-neon-green/50'
+                        : 'bg-gray-800/50 border-gray-700'}
+        ${isCanceled ? 'opacity-60 grayscale-[50%]' : 'transform hover:scale-[1.02] cursor-pointer hover:shadow-[0_0_20px_rgba(0,255,148,0.15)]'}
+        ${isBoosted && !isCanceled ? 'border-neon-green/80 shadow-[0_0_20px_rgba(0,255,148,0.3)]' : ''}
+        `}
             aria-disabled={isCanceled}
         >
             {/* Badge de destaque (booster) */}
-            {isBoosted && !isCanceled && (
-                <div className="absolute top-0 right-0 bg-gradient-to-r from-yellow-500 to-orange-500 text-white text-[0.6rem] font-bold px-1 py-0.5 rounded-bl-lg z-10 flex items-center gap-0.5 shadow-sm max-w-[120px] overflow-hidden whitespace-nowrap">
-                    <span>🔥 Destaque</span>
-                </div>
-            )}
+            {
+                isBoosted && !isCanceled && (
+                    <div className="absolute top-0 right-0 bg-gradient-to-r from-yellow-500 to-orange-500 text-white text-[0.6rem] font-bold px-1 py-0.5 rounded-bl-lg z-10 flex items-center gap-0.5 shadow-sm max-w-[120px] overflow-hidden whitespace-nowrap">
+                        <span>🔥 Destaque</span>
+                    </div>
+                )
+            }
 
             {/* Badge de Partida Privada */}
-            {match.is_private && !isCanceled && (
-                <div className={`absolute top-0 ${isBoosted ? 'right-[4.5rem]' : 'right-0'} bg-purple-600 text-white text-[0.6rem] font-bold px-2 py-0.5 rounded-bl-lg z-10 flex items-center gap-1 shadow-sm`}>
-                    <LockIcon className="h-3 w-3" />
-                    <span>PRIVADA</span>
-                </div>
-            )}
+            {
+                match.is_private && !isCanceled && (
+                    <div className={`absolute top-0 ${isBoosted ? 'right-[4.5rem]' : 'right-0'} bg-purple-600 text-white text-[0.6rem] font-bold px-2 py-0.5 rounded-bl-lg z-10 flex items-center gap-1 shadow-sm`}>
+                        <LockIcon className="h-3 w-3" />
+                        <span>PRIVADA</span>
+                    </div>
+                )
+            }
 
             {/* Overlay quando a partida está cancelada */}
-            {isCanceled && (
-                <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/60 z-10 p-4 text-center">
-                    <span className="text-red-400 font-bold text-lg">🚫 Cancelada</span>
-                    {match.cancellation_reason && (
-                        <p className="text-sm text-red-300 italic mt-1">{match.cancellation_reason}</p>
-                    )}
-                </div>
-            )}
+            {
+                isCanceled && (
+                    <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/60 z-10 p-4 text-center">
+                        <span className="text-red-400 font-bold text-lg">🚫 Cancelada</span>
+                        {match.cancellation_reason && (
+                            <p className="text-sm text-red-300 italic mt-1">{match.cancellation_reason}</p>
+                        )}
+                    </div>
+                )
+            }
 
             <div className="p-4">
                 <div className="flex justify-between items-start">
@@ -232,7 +241,7 @@ Bora jogar? 🚀`;
                                     e.stopPropagation();
                                     onEditMatch(match);
                                 }}
-                                className="p-2 text-gray-400 bg-gray-700/50 rounded-full hover:bg-gray-700 hover:text-white transition-colors"
+                                className="p-2 text-white bg-gray-700 rounded-full border border-gray-600 hover:bg-gray-600 transition-colors"
                                 aria-label="Editar Partida"
                             >
                                 <EditIcon />
@@ -290,7 +299,12 @@ Bora jogar? 🚀`;
                         <button
                             onClick={handleParticipationClick}
                             disabled={buttonState.isDisabled}
-                            className={`flex-1 text-white font-bold py-2.5 rounded-lg shadow-md transition-all duration-200 flex justify-center items-center text-sm ${buttonState.className}`}
+                            className={`flex-1 text-[#0a1628] font-bold py-2.5 rounded-lg shadow-md transition-all duration-200 flex justify-center items-center text-sm ${buttonState.isDisabled
+                                ? 'bg-gray-600 text-gray-300 cursor-not-allowed'
+                                : hasJoined
+                                    ? 'bg-red-500 hover:bg-red-400 text-white'
+                                    : 'bg-neon-green hover:bg-[#00e686] hover:shadow-[0_0_15px_rgba(0,255,148,0.4)]'
+                                }`}
                         >
                             {buttonState.text}
                         </button>
@@ -301,7 +315,7 @@ Bora jogar? 🚀`;
                                     e.stopPropagation();
                                     onNavigateToDirectChat(match.id);
                                 }}
-                                className="bg-gradient-to-r from-blue-600 to-blue-400 text-white p-3 rounded-lg shadow-md hover:brightness-110 transition-all"
+                                className="bg-[#00C2FF] text-[#0a1628] p-3 rounded-lg shadow-md hover:brightness-110 transition-all"
                                 title="Chat da Partida"
                             >
                                 <ChatIcon />
@@ -310,7 +324,7 @@ Bora jogar? 🚀`;
 
                         <button
                             onClick={handleShareClick}
-                            className="bg-green-500 text-white p-3 rounded-lg shadow-md hover:brightness-110 transition-all"
+                            className="bg-white/10 text-white border border-white/20 p-3 rounded-lg shadow-md hover:bg-white/20 transition-all backdrop-blur-sm"
                             title="Compartilhar no WhatsApp"
                         >
                             <ShareIcon />
@@ -323,7 +337,7 @@ Bora jogar? 🚀`;
                     </div>
                 )}
             </div>
-        </div>
+        </div >
     );
 };
 

@@ -277,14 +277,14 @@ Bora jogar? 🚀`;
 
   return (
     <div
-      className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-[100] p-4 animate-fade-in"
+      className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-[100] p-4 animate-fade-in"
       onClick={onClose}
       role="dialog"
       aria-modal="true"
       aria-labelledby="match-details-title"
     >
       <div
-        className="bg-gray-800 rounded-xl shadow-2xl w-full max-w-md max-h-[90vh] overflow-y-auto relative flex flex-col"
+        className="bg-[#0a1628] border border-white/10 rounded-xl shadow-[0_0_50px_rgba(0,0,0,0.5)] w-full max-w-md max-h-[90vh] overflow-y-auto relative flex flex-col"
         onClick={e => e.stopPropagation()}
       >
         <button onClick={onClose} className="absolute top-3 left-3 text-white hover:text-green-400 z-[9999] px-3 py-2 bg-gray-900 hover:bg-black rounded-lg transition-all duration-200 shadow-xl border border-gray-700 flex items-center gap-1 text-sm font-bold" aria-label="Voltar">
@@ -354,7 +354,12 @@ Bora jogar? 🚀`;
             <button
               onClick={handleParticipationClick}
               disabled={buttonState.isDisabled || isLoading}
-              className={`w-full text-white font-bold py-3 rounded-lg shadow-md transition-all flex items-center justify-center ${buttonState.className}`}
+              className={`w-full text-[#0a1628] font-bold py-3 rounded-lg shadow-md transition-all flex items-center justify-center ${buttonState.isDisabled
+                  ? 'bg-gray-700 text-gray-400 cursor-not-allowed'
+                  : hasJoined
+                    ? 'bg-red-500 hover:bg-red-400 text-white'
+                    : 'bg-neon-green hover:bg-[#00e686] hover:shadow-[0_0_20px_rgba(0,255,148,0.4)]'
+                }`}
             >
               {isLoading ? (
                 <>

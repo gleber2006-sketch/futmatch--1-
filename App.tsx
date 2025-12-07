@@ -1511,6 +1511,7 @@ const App: React.FC = () => {
                     onBalanceUpdate={handleBalanceUpdate}
                     onBoostMatch={handleBoostMatch}
                     onNavigateToDirectChat={handleNavigateToMatchChat}
+                    onMatchClick={setSelectedMatch}
                 />;
             default:
                 return <Explore
@@ -1588,19 +1589,19 @@ const App: React.FC = () => {
     if (!currentUser) {
         if (profileError) {
             return (
-                <div className="flex flex-col items-center justify-center h-screen bg-gray-900 text-white p-4 text-center">
-                    <p className="text-xl font-bold mb-4">Erro ao carregar perfil</p>
+                <div className="flex flex-col items-center justify-center h-screen bg-[#0a1628] text-white p-4 text-center">
+                    <p className="text-xl font-bold mb-4 text-red-400">Erro ao carregar perfil</p>
                     <p className="mb-6 text-gray-400">Não foi possível carregar seus dados. Verifique sua conexão.</p>
                     <div className="flex gap-4">
                         <button
                             onClick={() => window.location.reload()}
-                            className="bg-green-600 px-6 py-2 rounded-lg font-bold hover:bg-green-700 transition-colors"
+                            className="bg-neon-green text-[#0a1628] px-6 py-2 rounded-lg font-bold hover:bg-[#00e686] transition-colors shadow-lg"
                         >
                             Tentar Novamente
                         </button>
                         <button
                             onClick={handleLogout}
-                            className="bg-red-600 px-6 py-2 rounded-lg font-bold hover:bg-red-700 transition-colors"
+                            className="bg-red-500/10 border border-red-500/30 text-red-400 px-6 py-2 rounded-lg font-bold hover:bg-red-500/20 transition-colors"
                         >
                             Sair
                         </button>

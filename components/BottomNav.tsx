@@ -14,16 +14,21 @@ const NavItem: React.FC<{
   isActive: boolean;
   onClick: () => void;
 }> = ({ label, icon, isActive, onClick }) => {
-  const activeClasses = 'text-green-500';
-  const inactiveClasses = 'text-gray-400 hover:text-white';
+  // Neon Style Logic
+  const activeClasses = 'text-neon-green drop-shadow-[0_0_8px_rgba(0,255,148,0.6)] scale-110';
+  const inactiveClasses = 'text-gray-300 hover:text-white hover:scale-105';
 
   return (
     <button
       onClick={onClick}
-      className={`flex flex-col items-center justify-center w-full transition-colors duration-200 ${isActive ? activeClasses : inactiveClasses}`}
+      className={`flex flex-col items-center justify-center w-full transition-all duration-300 ${isActive ? activeClasses : inactiveClasses}`}
     >
-      {icon}
-      <span className="text-xs font-medium mt-1">{label}</span>
+      <div className={`transition-transform duration-300 ${isActive ? '-translate-y-1' : ''}`}>
+        {icon}
+      </div>
+      <span className={`text-[10px] font-medium mt-1 transition-opacity duration-300 ${isActive ? 'opacity-100 text-neon-green' : 'opacity-85'}`}>
+        {label}
+      </span>
     </button>
   );
 };
@@ -51,7 +56,7 @@ const BottomNav: React.FC<BottomNavProps> = ({ activePage, onNavigate }) => {
   }, [lastScrollY]);
 
   return (
-    <nav className={`fixed bottom-0 left-0 right-0 bg-gray-900/95 backdrop-blur-sm border-t border-gray-700 h-20 flex justify-around items-center z-50 transition-transform duration-300 ${isVisible ? 'translate-y-0' : 'translate-y-full'
+    <nav className={`fixed bottom-0 left-0 right-0 bg-[#0a1628]/95 backdrop-blur-md border-t border-white/10 h-20 flex justify-around items-center z-50 transition-transform duration-300 shadow-[0_-5px_20px_rgba(0,0,0,0.5)] ${isVisible ? 'translate-y-0' : 'translate-y-full'
       }`}>
       <NavItem
         label="Explorar"

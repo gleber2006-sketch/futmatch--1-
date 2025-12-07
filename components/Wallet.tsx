@@ -3,98 +3,98 @@ import React from 'react';
 import { Profile } from '../types';
 
 interface WalletProps {
-  currentUser: Profile;
-  onNavigateBack: () => void;
+    currentUser: Profile;
+    onNavigateBack: () => void;
 }
 
 const Wallet: React.FC<WalletProps> = ({ currentUser, onNavigateBack }) => {
-  return (
-    <div className="bg-gray-900 min-h-full pb-20">
-      {/* Header */}
-      <div className="flex items-center justify-between bg-gray-800 p-4 rounded-b-xl shadow-md mb-6 sticky top-0 z-10">
-        <h2 className="text-xl font-bold text-white">Carteira FutMatch</h2>
-        <button 
-            onClick={onNavigateBack}
-            className="bg-gradient-to-r from-gray-700 to-gray-600 text-white py-1 px-3 rounded-lg text-sm hover:brightness-110 transition-all"
-        >
-            Voltar
-        </button>
-      </div>
-
-      <div className="px-4">
-        {/* Balance Card */}
-        <div className="bg-gradient-to-br from-yellow-600 to-yellow-800 rounded-2xl p-6 shadow-xl mb-6 border border-yellow-500/30 relative overflow-hidden">
-            <div className="absolute -right-6 -top-6 w-32 h-32 bg-yellow-400/20 rounded-full blur-2xl"></div>
-            <div className="absolute -left-6 -bottom-6 w-24 h-24 bg-yellow-400/10 rounded-full blur-xl"></div>
-            
-            <h3 className="text-yellow-100 font-semibold text-sm uppercase tracking-wider mb-1">Saldo Disponível</h3>
-            <div className="flex items-center gap-2 mb-2">
-                <span className="text-5xl font-bold text-white">{currentUser.matchCoins}</span>
-                <span className="text-4xl">⚡</span>
+    return (
+        <div className="min-h-full pb-20">
+            {/* Header */}
+            <div className="flex items-center justify-between bg-[#0a1628]/95 backdrop-blur-md p-4 rounded-b-xl shadow-lg mb-6 sticky top-0 z-10 border-b border-white/5">
+                <h2 className="text-xl font-bold text-white">Carteira FutMatch</h2>
+                <button
+                    onClick={onNavigateBack}
+                    className="bg-white/10 text-white py-1 px-3 rounded-lg text-sm hover:bg-white/20 transition-all border border-white/10"
+                >
+                    Voltar
+                </button>
             </div>
-            <p className="text-yellow-100/80 text-sm">
-                MatchCoins (MTC)
-            </p>
-            <div className="mt-4 pt-4 border-t border-white/20 text-xs text-yellow-50">
-                Use suas MatchCoins para criar partidas, entrar em jogos e dar BOOST nos seus matches.
+
+            <div className="px-4">
+                {/* Balance Card */}
+                <div className="bg-gradient-to-br from-yellow-600/90 to-yellow-800/90 backdrop-blur-md rounded-2xl p-6 shadow-[0_0_30px_rgba(234,179,8,0.2)] mb-6 border border-yellow-500/30 relative overflow-hidden group">
+                    <div className="absolute -right-6 -top-6 w-32 h-32 bg-yellow-400/20 rounded-full blur-2xl group-hover:bg-yellow-400/30 transition-all duration-500"></div>
+                    <div className="absolute -left-6 -bottom-6 w-24 h-24 bg-yellow-400/10 rounded-full blur-xl group-hover:bg-yellow-400/20 transition-all duration-500"></div>
+
+                    <h3 className="text-yellow-100 font-semibold text-sm uppercase tracking-wider mb-1 drop-shadow-md">Saldo Disponível</h3>
+                    <div className="flex items-center gap-2 mb-2">
+                        <span className="text-5xl font-bold text-white drop-shadow-md">{currentUser.matchCoins}</span>
+                        <span className="text-4xl drop-shadow-md">⚡</span>
+                    </div>
+                    <p className="text-yellow-100/80 text-sm drop-shadow-md">
+                        MatchCoins (MTC)
+                    </p>
+                    <div className="mt-4 pt-4 border-t border-white/20 text-xs text-yellow-50">
+                        Use suas MatchCoins para criar partidas, entrar em jogos e dar BOOST nos seus matches.
+                    </div>
+                </div>
+
+                <div className="space-y-4">
+                    {/* Buy Action (Placeholder) */}
+                    <button
+                        onClick={() => alert("Em breve: Compra de pacotes de MatchCoins via PIX e Cartão.")}
+                        className="w-full bg-[#112240]/60 hover:bg-[#112240]/80 backdrop-blur-md p-4 rounded-xl flex items-center justify-between transition-all group border border-white/5 hover:border-neon-green/30 hover:shadow-[0_0_15px_rgba(0,255,148,0.1)]"
+                    >
+                        <div className="flex items-center gap-4">
+                            <div className="w-10 h-10 rounded-full bg-neon-green/10 text-neon-green flex items-center justify-center text-xl group-hover:scale-110 transition-transform border border-neon-green/20">
+                                💰
+                            </div>
+                            <div className="text-left">
+                                <h4 className="font-bold text-white group-hover:text-neon-green transition-colors">Comprar MatchCoins</h4>
+                                <p className="text-xs text-gray-400">1 MatchCoin = R$ 1,50</p>
+                            </div>
+                        </div>
+                        <div className="text-gray-500 group-hover:text-neon-green transition-colors">›</div>
+                    </button>
+
+                    {/* Refer Action (Placeholder) */}
+                    <button
+                        onClick={() => alert("Em breve: Convide amigos e ganhe +5 MatchCoins por cadastro!")}
+                        className="w-full bg-[#112240]/60 hover:bg-[#112240]/80 backdrop-blur-md p-4 rounded-xl flex items-center justify-between transition-all group border border-white/5 hover:border-neon-blue/30 hover:shadow-[0_0_15px_rgba(0,194,255,0.1)]"
+                    >
+                        <div className="flex items-center gap-4">
+                            <div className="w-10 h-10 rounded-full bg-neon-blue/10 text-neon-blue flex items-center justify-center text-xl group-hover:scale-110 transition-transform border border-neon-blue/20">
+                                🎁
+                            </div>
+                            <div className="text-left">
+                                <h4 className="font-bold text-white group-hover:text-neon-blue transition-colors">Indicar Amigo</h4>
+                                <p className="text-xs text-gray-400">Ganhe tokens convidando</p>
+                            </div>
+                        </div>
+                        <div className="text-gray-500 group-hover:text-neon-blue transition-colors">›</div>
+                    </button>
+
+                    {/* History Action (Placeholder) */}
+                    <button
+                        onClick={() => alert("Em breve: Extrato detalhado de uso das suas moedas.")}
+                        className="w-full bg-[#112240]/60 hover:bg-[#112240]/80 backdrop-blur-md p-4 rounded-xl flex items-center justify-between transition-all group border border-white/5 hover:border-white/20"
+                    >
+                        <div className="flex items-center gap-4">
+                            <div className="w-10 h-10 rounded-full bg-gray-700/50 text-gray-300 flex items-center justify-center text-xl group-hover:scale-110 transition-transform border border-white/10">
+                                📜
+                            </div>
+                            <div className="text-left">
+                                <h4 className="font-bold text-white group-hover:text-gray-200 transition-colors">Histórico de Uso</h4>
+                                <p className="text-xs text-gray-400">Veja suas transações</p>
+                            </div>
+                        </div>
+                        <div className="text-gray-500 group-hover:text-white transition-colors">›</div>
+                    </button>
+                </div>
             </div>
         </div>
-
-        <div className="space-y-4">
-            {/* Buy Action (Placeholder) */}
-            <button 
-                onClick={() => alert("Em breve: Compra de pacotes de MatchCoins via PIX e Cartão.")}
-                className="w-full bg-gray-800 hover:bg-gray-700 p-4 rounded-xl flex items-center justify-between transition-colors group border border-gray-700"
-            >
-                <div className="flex items-center gap-4">
-                    <div className="w-10 h-10 rounded-full bg-green-500/20 text-green-400 flex items-center justify-center text-xl group-hover:scale-110 transition-transform">
-                        💰
-                    </div>
-                    <div className="text-left">
-                        <h4 className="font-bold text-white">Comprar MatchCoins</h4>
-                        <p className="text-xs text-gray-400">1 MatchCoin = R$ 1,50</p>
-                    </div>
-                </div>
-                <div className="text-gray-500">›</div>
-            </button>
-
-             {/* Refer Action (Placeholder) */}
-             <button 
-                onClick={() => alert("Em breve: Convide amigos e ganhe +5 MatchCoins por cadastro!")}
-                className="w-full bg-gray-800 hover:bg-gray-700 p-4 rounded-xl flex items-center justify-between transition-colors group border border-gray-700"
-            >
-                <div className="flex items-center gap-4">
-                    <div className="w-10 h-10 rounded-full bg-blue-500/20 text-blue-400 flex items-center justify-center text-xl group-hover:scale-110 transition-transform">
-                        🎁
-                    </div>
-                    <div className="text-left">
-                        <h4 className="font-bold text-white">Indicar Amigo</h4>
-                        <p className="text-xs text-gray-400">Ganhe tokens convidando</p>
-                    </div>
-                </div>
-                <div className="text-gray-500">›</div>
-            </button>
-
-             {/* History Action (Placeholder) */}
-             <button 
-                onClick={() => alert("Em breve: Extrato detalhado de uso das suas moedas.")}
-                className="w-full bg-gray-800 hover:bg-gray-700 p-4 rounded-xl flex items-center justify-between transition-colors group border border-gray-700"
-            >
-                <div className="flex items-center gap-4">
-                    <div className="w-10 h-10 rounded-full bg-gray-600/20 text-gray-400 flex items-center justify-center text-xl group-hover:scale-110 transition-transform">
-                        📜
-                    </div>
-                    <div className="text-left">
-                        <h4 className="font-bold text-white">Histórico de Uso</h4>
-                        <p className="text-xs text-gray-400">Veja suas transações</p>
-                    </div>
-                </div>
-                <div className="text-gray-500">›</div>
-            </button>
-        </div>
-      </div>
-    </div>
-  );
+    );
 };
 
 export default Wallet;

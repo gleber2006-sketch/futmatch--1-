@@ -2,9 +2,101 @@
 @tailwind components;
 @tailwind utilities;
 
+:root {
+  --primary-neon: #00FF94;
+  --bg-dark: #0a1628;
+}
+
 body {
   margin: 0;
   font-family: 'Poppins', sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  background-color: var(--bg-dark);
+  color: white;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #0a1628;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #1f2937;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #00FF94;
+}
+
+/* Global Input Styles */
+input,
+select,
+textarea {
+  background-color: rgba(255, 255, 255, 0.05) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  color: white !important;
+  border-radius: 0.5rem !important;
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+  outline: none !important;
+  border-color: #00FF94 !important;
+  box-shadow: 0 0 0 2px rgba(0, 255, 148, 0.2) !important;
+}
+
+/* Global Button Styles Override for consistency */
+.btn-primary {
+  background: linear-gradient(to right, #00FF94, #00C2FF);
+  color: #0a1628;
+  font-weight: bold;
+  border: none;
+  transition: all 0.3s ease;
+}
+
+.btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 0 15px rgba(0, 255, 148, 0.4);
+}
+
+.app-container {
+  min-height: 100vh;
+  background-color: var(--bg-dark);
+  display: flex;
+  flex-direction: column;
+}
+
+.confirmation-toast {
+  position: fixed;
+  bottom: 80px;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: rgba(0, 255, 148, 0.9);
+  color: #0a1628;
+  padding: 12px 24px;
+  border-radius: 9999px;
+  font-weight: bold;
+  box-shadow: 0 0 20px rgba(0, 255, 148, 0.4);
+  z-index: 100;
+  animation: slideUp 0.3s ease-out;
+  white-space: nowrap;
+}
+
+@keyframes slideUp {
+  from {
+    transform: translate(-50%, 20px);
+    opacity: 0;
+  }
+
+  to {
+    transform: translate(-50%, 0);
+    opacity: 1;
+  }
 }

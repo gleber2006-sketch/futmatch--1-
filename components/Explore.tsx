@@ -230,27 +230,27 @@ const Explore: React.FC<ExploreProps> = ({ matches, platformFeatures, onJoinMatc
         <div className="flex gap-2 mb-4 justify-center px-4">
           <button
             onClick={() => setVisibilityFilter('all')}
-            className={`px-4 py-2 rounded-lg font-semibold transition-all text-sm ${visibilityFilter === 'all'
-              ? 'bg-gradient-to-r from-green-600 to-green-500 text-white shadow-lg'
-              : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+            className={`px-4 py-2 rounded-lg font-semibold transition-all text-sm border ${visibilityFilter === 'all'
+              ? 'bg-gradient-to-r from-green-600 to-green-500 text-white shadow-lg border-transparent'
+              : 'bg-gray-800 text-gray-200 border-gray-600 hover:bg-gray-700'
               }`}
           >
             Todas
           </button>
           <button
             onClick={() => setVisibilityFilter('private')}
-            className={`px-4 py-2 rounded-lg font-semibold transition-all text-sm ${visibilityFilter === 'private'
-              ? 'bg-gradient-to-r from-purple-600 to-purple-500 text-white shadow-lg'
-              : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+            className={`px-4 py-2 rounded-lg font-semibold transition-all text-sm border ${visibilityFilter === 'private'
+              ? 'bg-gradient-to-r from-purple-600 to-purple-500 text-white shadow-lg border-transparent'
+              : 'bg-gray-800 text-gray-200 border-gray-600 hover:bg-gray-700'
               }`}
           >
             Privadas
           </button>
           <button
             onClick={() => setVisibilityFilter('public')}
-            className={`px-4 py-2 rounded-lg font-semibold transition-all text-sm ${visibilityFilter === 'public'
-              ? 'bg-gradient-to-r from-blue-600 to-blue-500 text-white shadow-lg'
-              : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+            className={`px-4 py-2 rounded-lg font-semibold transition-all text-sm border ${visibilityFilter === 'public'
+              ? 'bg-gradient-to-r from-blue-600 to-blue-500 text-white shadow-lg border-transparent'
+              : 'bg-gray-800 text-gray-200 border-gray-600 hover:bg-gray-700'
               }`}
           >
             Públicas

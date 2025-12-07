@@ -74,7 +74,7 @@ const MatchesMap: React.FC<MatchesMapProps> = ({ matches, onNavigateBack, onMatc
       matches.forEach(match => {
         if (match.lat && match.lng && match.status !== 'Cancelado') {
           const emoji = SPORT_EMOJIS[match.sport] || '⚽';
-          
+
           const matchIcon = L.divIcon({
             className: 'custom-div-icon',
             html: `<div class="flex items-center justify-center w-8 h-8 bg-green-600 rounded-full border-2 border-white shadow-md text-lg">${emoji}</div>`,
@@ -84,17 +84,40 @@ const MatchesMap: React.FC<MatchesMapProps> = ({ matches, onNavigateBack, onMatc
           });
 
           const marker = L.marker([match.lat, match.lng], { icon: matchIcon }).addTo(map);
-          
+
+          // Always show button per user request to "add button on matches"
+          const buttonHtml = `<button id="btn-match-${match.id}" class="mt-2 w-full bg-[#00FF94] text-[#0a1628] text-xs font-bold py-2 px-2 rounded hover:brightness-110 transition-colors shadow-sm">VER DETALHES</button>`;
+
           const popupContent = `
-            <div class="text-gray-900 p-1 min-w-[150px]">
-                <p class="text-xs font-bold text-green-600 uppercase">${match.sport}</p>
-                <h3 class="font-bold text-sm mb-1">${match.name}</h3>
-                <p class="text-xs text-gray-600 mb-1">📍 ${match.location}</p>
-                <p class="text-xs text-gray-600">📅 ${new Date(match.date).toLocaleDateString('pt-BR')}</p>
+            <div class="text-gray-900 p-1 min-w-[160px]">
+                <p class="text-xs font-bold text-green-600 uppercase mb-1">${match.sport}</p>
+                <h3 class="font-bold text-sm mb-1 leading-tight">${match.name}</h3>
+                <p class="text-xs text-gray-600 mb-1 truncate">📍 ${match.location}</p>
+                <p class="text-xs text-gray-600 mb-2">📅 ${new Date(match.date).toLocaleDateString('pt-BR')} ${new Date(match.date).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}</p>
+                ${buttonHtml}
             </div>
           `;
-          
+
           marker.bindPopup(popupContent);
+        }
+      });
+
+      // Event delegation for popup buttons
+      map.on('popupopen', (e: any) => {
+        const popup = e.popup;
+        const wrapper = popup.getElement();
+        if (wrapper) {
+          const buttons = wrapper.querySelectorAll('button[id^="btn-match-"]');
+          buttons.forEach((btn: any) => {
+            const matchId = parseInt(btn.id.replace('btn-match-', ''), 10);
+            btn.onclick = (ev: MouseEvent) => {
+              ev.preventDefault();
+              const match = matches.find(m => m.id === matchId);
+              if (match && onMatchClick) {
+                onMatchClick(match);
+              }
+            };
+          });
         }
       });
 
@@ -108,47 +131,50 @@ const MatchesMap: React.FC<MatchesMapProps> = ({ matches, onNavigateBack, onMatc
         mapInstance.current = null;
       }
     };
-  }, [isLoading, userLocation, matches]);
+  }, [isLoading, userLocation, matches, onMatchClick]);
 
 
   return (
-    <div className="bg-gray-900 min-h-full flex flex-col h-[calc(100vh-160px)]">
-      {/* Header Navigation */}
-      <div className="flex items-center justify-between bg-gray-800 p-4 rounded-t-xl shadow-md z-10">
-        <div className="flex items-center">
-            <h2 className="text-xl font-bold text-white flex items-center gap-2">
-                <LocationIcon /> Mapa das Partidas
-            </h2>
-        </div>
-        <button 
+    // FULL SCREEN MAP CONTAINER
+    <div className="fixed inset-0 z-50 bg-gray-900 flex flex-col">
+      {/* Header Navigation - Floating on top */}
+      <div className="absolute top-0 left-0 right-0 p-4 z-[1000] pointer-events-none">
+        <div className="flex items-center justify-between bg-gray-800/90 backdrop-blur-md p-3 rounded-xl shadow-lg border border-gray-700 pointer-events-auto">
+          <h2 className="text-sm font-bold text-white flex items-center gap-2">
+            <LocationIcon /> Mapa das Partidas
+          </h2>
+          <button
             onClick={onNavigateBack}
-            className="bg-gradient-to-r from-gray-700 to-gray-600 text-white py-1 px-3 rounded-lg text-sm hover:brightness-110 transition-all"
-        >
-            Voltar para Lista
-        </button>
+            className="flex items-center justify-center w-8 h-8 rounded-full bg-gray-700 hover:bg-gray-600 text-white transition-all shadow-md"
+          >
+            <CloseIcon />
+          </button>
+        </div>
       </div>
 
-      {/* Map Container */}
-      <div className="flex-grow relative bg-gray-800 rounded-b-xl overflow-hidden shadow-inner border border-gray-700">
+      {/* Map Container - Full Size */}
+      <div className="flex-grow w-full h-full relative z-0">
         {isLoading && (
-             <div className="absolute inset-0 flex flex-col items-center justify-center bg-gray-900 z-20">
-                <LoadingSpinner size={10} />
-                <p className="mt-4 text-gray-400">Carregando mapa...</p>
-             </div>
+          <div className="absolute inset-0 flex flex-col items-center justify-center bg-gray-900 z-20">
+            <LoadingSpinner size={10} />
+            <p className="mt-4 text-gray-400 animate-pulse">Carregando mapa...</p>
+          </div>
         )}
-        <div ref={mapRef} className="w-full h-full z-0" />
-        
-        {/* Floating Info Badge */}
+        <div ref={mapRef} className="w-full h-full" />
+
+        {/* Floating Info Badge - Bottom */}
         {!isLoading && (
-            <div className="absolute bottom-4 left-4 right-4 bg-gray-900/90 backdrop-blur-sm p-3 rounded-lg border border-gray-700 z-10 shadow-lg pointer-events-none">
-                <div className="flex justify-between items-center">
-                    <div>
-                        <p className="text-green-400 text-xs font-bold uppercase">Partidas Ativas</p>
-                        <p className="text-white text-sm">Mostrando {matches.filter(m => m.lat && m.lng && m.status !== 'Cancelado').length} jogos no mapa</p>
-                    </div>
-                    <div className="text-2xl">🌍</div>
-                </div>
+          <div className="absolute bottom-6 left-4 right-4 z-[1000] pointer-events-none">
+            <div className="bg-gray-900/90 backdrop-blur-md p-3 rounded-xl border border-gray-700 shadow-xl flex justify-between items-center pointer-events-auto">
+              <div>
+                <p className="text-[#00FF94] text-xs font-bold uppercase tracking-wider">Partidas Ativas</p>
+                <p className="text-white text-sm font-medium">
+                  {matches.filter(m => m.lat && m.lng && m.status !== 'Cancelado').length} jogos encontrados na região
+                </p>
+              </div>
+              <div className="text-2xl filter drop-shadow-md">🌍</div>
             </div>
+          </div>
         )}
       </div>
     </div>

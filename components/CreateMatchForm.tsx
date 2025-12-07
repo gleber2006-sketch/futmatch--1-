@@ -236,11 +236,11 @@ const CreateMatchForm: React.FC<CreateMatchFormProps> = ({ onCreateMatch, onUpda
       )}
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
-          <label className="block text-sm font-medium text-gray-300 mb-1">Nome do Jogo</label>
+          <label className="block text-sm font-medium text-gray-100 mb-1">Nome do Jogo</label>
           <input type="text" value={name} onChange={e => setName(e.target.value)} className={inputClasses} placeholder="Ex: Futebol de Quinta" required />
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-300 mb-1">Esporte</label>
+          <label className="block text-sm font-medium text-gray-100 mb-1">Esporte</label>
           <select value={sport} onChange={e => setSport(e.target.value)} className={inputClasses}>
             {SPORTS_LIST.map(s => (
               <option key={s} value={s}>{s}</option>
@@ -249,7 +249,7 @@ const CreateMatchForm: React.FC<CreateMatchFormProps> = ({ onCreateMatch, onUpda
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-300 mb-1">Local</label>
+          <label className="block text-sm font-medium text-gray-100 mb-1">Local</label>
           <div className="relative flex items-center">
             <input
               type="text"
@@ -332,24 +332,24 @@ const CreateMatchForm: React.FC<CreateMatchFormProps> = ({ onCreateMatch, onUpda
           />
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-300 mb-1">Número de Jogadores</label>
+          <label className="block text-sm font-medium text-gray-100 mb-1">Número de Jogadores</label>
           <input type="number" value={slots} onChange={e => setSlots(Number(e.target.value))} className={inputClasses} min="2" />
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-300 mb-1">Regras (opcional)</label>
+          <label className="block text-sm font-medium text-gray-100 mb-1">Regras (opcional)</label>
           <input type="text" value={rules} onChange={e => setRules(e.target.value)} className={inputClasses} placeholder="Ex: 7x7, 10 min por tempo" />
         </div>
 
         {/* Privacy Toggle */}
         <div>
-          <label className="block text-sm font-medium text-gray-300 mb-2">Visibilidade da Partida</label>
+          <label className="block text-sm font-medium text-gray-100 mb-2">Visibilidade da Partida</label>
           <div className="flex gap-3">
             <button
               type="button"
               onClick={() => setIsPrivate(false)}
-              className={`flex-1 py-3 px-4 rounded-lg font-semibold transition-all duration-200 ${!isPrivate
-                ? 'bg-gradient-to-r from-green-600 to-green-500 text-white shadow-lg'
-                : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+              className={`flex-1 py-3 px-4 rounded-lg font-semibold transition-all duration-200 border ${!isPrivate
+                ? 'bg-gradient-to-r from-green-600 to-green-500 text-white shadow-lg border-transparent'
+                : 'bg-gray-800 text-gray-200 border-gray-600 hover:bg-gray-700'
                 }`}
             >
               <div className="flex flex-col items-center">
@@ -360,9 +360,9 @@ const CreateMatchForm: React.FC<CreateMatchFormProps> = ({ onCreateMatch, onUpda
             <button
               type="button"
               onClick={() => setIsPrivate(true)}
-              className={`flex-1 py-3 px-4 rounded-lg font-semibold transition-all duration-200 ${isPrivate
-                ? 'bg-gradient-to-r from-purple-600 to-purple-500 text-white shadow-lg'
-                : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+              className={`flex-1 py-3 px-4 rounded-lg font-semibold transition-all duration-200 border ${isPrivate
+                ? 'bg-gradient-to-r from-purple-600 to-purple-500 text-white shadow-lg border-transparent'
+                : 'bg-gray-800 text-gray-200 border-gray-600 hover:bg-gray-700'
                 }`}
             >
               <div className="flex-col items-center">
