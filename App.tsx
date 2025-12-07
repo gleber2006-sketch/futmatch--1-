@@ -1512,6 +1512,8 @@ const App: React.FC = () => {
                     onBoostMatch={handleBoostMatch}
                     onNavigateToDirectChat={handleNavigateToMatchChat}
                     onMatchClick={setSelectedMatch}
+                    selectedMatch={selectedMatch}
+                    onCloseMatchDetails={() => setSelectedMatch(null)}
                 />;
             default:
                 return <Explore

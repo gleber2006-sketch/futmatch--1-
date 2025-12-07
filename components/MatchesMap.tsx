@@ -1,9 +1,10 @@
 
 import React, { useEffect, useRef, useState } from 'react';
-import { Match } from '../types';
+import { Match, Profile } from '../types';
 import LoadingSpinner from './LoadingSpinner';
 import { LocationIcon, CloseIcon } from './Icons';
 import { SPORT_EMOJIS } from '../constants';
+import MatchDetailsModal from './MatchDetailsModal';
 
 // Declare Leaflet's 'L' to avoid TypeScript errors
 declare var L: any;
@@ -12,9 +13,35 @@ interface MatchesMapProps {
   matches: Match[];
   onNavigateBack: () => void;
   onMatchClick?: (match: Match) => void;
+  selectedMatch?: Match | null;
+  onCloseMatchDetails?: () => void;
+  currentUser: Profile | null;
+  joinedMatchIds: Set<number>;
+  onJoinMatch: (matchId: number) => Promise<void>;
+  onLeaveMatch: (matchId: number) => Promise<void>;
+  onCancelMatch: (matchId: number, reason: string) => Promise<void>;
+  onEditMatch: (match: Match) => void;
+  onNavigateToDirectChat?: (matchId: number) => void;
+  onBalanceUpdate?: (amount: number) => void;
+  onBoostMatch?: (matchId: number) => Promise<boolean>;
 }
 
-const MatchesMap: React.FC<MatchesMapProps> = ({ matches, onNavigateBack, onMatchClick }) => {
+const MatchesMap: React.FC<MatchesMapProps> = ({
+  matches,
+  onNavigateBack,
+  onMatchClick,
+  selectedMatch,
+  onCloseMatchDetails,
+  currentUser,
+  joinedMatchIds,
+  onJoinMatch,
+  onLeaveMatch,
+  onCancelMatch,
+  onEditMatch,
+  onNavigateToDirectChat,
+  onBalanceUpdate,
+  onBoostMatch
+}) => {
   const mapRef = useRef<HTMLDivElement>(null);
   const mapInstance = useRef<any>(null);
   const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
@@ -176,6 +203,26 @@ const MatchesMap: React.FC<MatchesMapProps> = ({ matches, onNavigateBack, onMatc
             </div>
           </div>
         )}
+
+        {/* Modal Rendering */}
+        {selectedMatch && currentUser && onCloseMatchDetails && (
+          <div className="absolute inset-0 z-[2000] flex items-center justify-center pointer-events-auto">
+            <MatchDetailsModal
+              match={matches.find(m => m.id === selectedMatch.id) || selectedMatch}
+              onClose={onCloseMatchDetails}
+              onJoinMatch={onJoinMatch}
+              onLeaveMatch={onLeaveMatch}
+              onCancelMatch={onCancelMatch}
+              joinedMatchIds={joinedMatchIds}
+              currentUser={currentUser}
+              onEditMatch={onEditMatch}
+              onNavigateToDirectChat={onNavigateToDirectChat}
+              onBalanceUpdate={onBalanceUpdate}
+              onBoostMatch={onBoostMatch}
+            />
+          </div>
+        )}
+
       </div>
     </div>
   );
