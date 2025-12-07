@@ -99,7 +99,19 @@ const MatchesMap: React.FC<MatchesMapProps> = ({
 
       // Match Markers
       matches.forEach(match => {
-        if (match.lat && match.lng && match.status !== 'Cancelado') {
+        const isCanceledOrFinished = match.status === 'Cancelado' || match.status === 'Finalizada';
+        const isPastDate = new Date(match.date) < new Date();
+        const isPrivate = match.is_private;
+        const canViewPrivate = currentUser && (match.created_by === currentUser.id || joinedMatchIds.has(match.id));
+
+        // Logic Check: Show public FUTURE matches, OR private FUTURE matches the user is involved in.
+        // We exclude canceled/finished matches.
+        const shouldShow =
+          !isCanceledOrFinished &&
+          !isPastDate &&
+          (!isPrivate || canViewPrivate);
+
+        if (shouldShow && match.lat && match.lng) {
           const emoji = SPORT_EMOJIS[match.sport] || '⚽';
 
           const matchIcon = L.divIcon({
@@ -196,7 +208,13 @@ const MatchesMap: React.FC<MatchesMapProps> = ({
               <div>
                 <p className="text-[#00FF94] text-xs font-bold uppercase tracking-wider">Partidas Ativas</p>
                 <p className="text-white text-sm font-medium">
-                  {matches.filter(m => m.lat && m.lng && m.status !== 'Cancelado').length} jogos encontrados na região
+                  {matches.filter(m => {
+                    const isCanceledOrFinished = m.status === 'Cancelado' || m.status === 'Finalizada';
+                    const isPastDate = new Date(m.date) < new Date();
+                    const isPrivate = m.is_private;
+                    const canViewPrivate = currentUser && (m.created_by === currentUser.id || joinedMatchIds.has(m.id));
+                    return m.lat && m.lng && !isCanceledOrFinished && !isPastDate && (!isPrivate || canViewPrivate);
+                  }).length} jogos encontrados na região
                 </p>
               </div>
               <div className="text-2xl filter drop-shadow-md">🌍</div>
