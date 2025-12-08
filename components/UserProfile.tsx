@@ -5,6 +5,8 @@ import { StarIcon, TrophyIcon, EditIcon } from './Icons';
 import { supabase } from '../services/supabaseClient';
 import ModernLoader from './ModernLoader';
 import { SPORTS_LIST, SPORT_POSITIONS, BRAZILIAN_TEAMS, CITY_LIST } from '../constants';
+import FriendsManager from './Friends/FriendsManager';
+import { friendshipService } from '../services/friendshipService';
 
 interface UserProfileProps {
     user: Profile;
@@ -44,6 +46,24 @@ const UserProfile: React.FC<UserProfileProps> = ({ user, onUpdateUser, onLogout,
     const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
     const [isUploadingBanner, setIsUploadingBanner] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
+    const [showFriendsManager, setShowFriendsManager] = useState(false);
+    const [friendCount, setFriendCount] = useState(0);
+
+    const isOwnProfile = true; // Assuming UserProfile is currently only used for "My Profile". 
+    // If it's reused for others, we'd check currentUser.id === user.id. 
+    // But for now the App structure shows it's passed as 'currentUser' in 'activePage === profile'.
+
+    useEffect(() => {
+        const fetchFriendCount = async () => {
+            try {
+                const friends = await friendshipService.getFriends(user.id);
+                setFriendCount(friends.length);
+            } catch (e) {
+                console.error("Error fetching friend count", e);
+            }
+        };
+        fetchFriendCount();
+    }, [user.id]);
 
     const avatarInputRef = useRef<HTMLInputElement>(null);
     const bannerInputRef = useRef<HTMLInputElement>(null);
@@ -303,6 +323,10 @@ const UserProfile: React.FC<UserProfileProps> = ({ user, onUpdateUser, onLogout,
                             <p className="text-xl sm:text-2xl font-bold text-white">{calculateAge(formData.dateOfBirth)}</p>
                             <p className="text-[10px] sm:text-xs text-gray-400 uppercase font-bold tracking-wide">Idade</p>
                         </div>
+                        <div className="bg-[#0a1628]/50 rounded-xl p-3 text-center border border-white/5 backdrop-blur-sm cursor-pointer hover:bg-[#0a1628]/80 transition-colors" onClick={() => setShowFriendsManager(true)}>
+                            <p className="text-xl sm:text-2xl font-bold text-white">{friendCount}</p>
+                            <p className="text-[10px] sm:text-xs text-gray-400 uppercase font-bold tracking-wide">Amigos</p>
+                        </div>
                         <div className="bg-[#0a1628]/50 rounded-xl p-3 text-center border border-white/5 backdrop-blur-sm">
                             <p className="text-xl sm:text-2xl font-bold text-white">{user.matchesPlayed}</p>
                             <p className="text-[10px] sm:text-xs text-gray-400 uppercase font-bold tracking-wide">Partidas</p>
@@ -457,6 +481,9 @@ const UserProfile: React.FC<UserProfileProps> = ({ user, onUpdateUser, onLogout,
                             </div>
 
                             <div className="pt-6 space-y-3 border-t border-white/10 mt-6">
+                                <button onClick={() => setShowFriendsManager(true)} className="w-full bg-[#112240] border border-white/10 text-white font-bold py-3 rounded-lg hover:bg-[#1a2f55] transition-all flex justify-center items-center gap-2">
+                                    👥 Gerenciar Amigos
+                                </button>
                                 <button onClick={() => setIsEditing(true)} className="w-full bg-[#112240] border border-white/10 text-white font-bold py-3 rounded-lg hover:bg-[#1a2f55] transition-all flex justify-center items-center gap-2">
                                     <EditIcon /> Editar Informações
                                 </button>
@@ -469,6 +496,9 @@ const UserProfile: React.FC<UserProfileProps> = ({ user, onUpdateUser, onLogout,
 
                 </div>
             </div>
+
+            {showFriendsManager && <FriendsManager currentUser={user} onClose={() => setShowFriendsManager(false)} />}
+
             <style>{`
           @keyframes fade-in {
             from { opacity: 0; transform: translateY(10px); }

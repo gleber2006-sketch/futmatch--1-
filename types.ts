@@ -172,3 +172,15 @@ export interface MatchParticipant {
   waitlist_position?: number;
   profiles: Pick<Profile, 'name' | 'photoUrl' | 'reputation'>;
 }
+
+export type FriendshipStatus = 'pending' | 'accepted';
+
+export interface Friendship {
+  id: number;
+  requester_id: string;
+  receiver_id: string;
+  status: FriendshipStatus;
+  created_at: string;
+  requester?: Pick<Profile, 'name' | 'photoUrl' | 'reputation'>;
+  receiver?: Pick<Profile, 'name' | 'photoUrl' | 'reputation'>;
+}
