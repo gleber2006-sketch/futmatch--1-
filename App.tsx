@@ -50,6 +50,8 @@ const isSchemaMismatchError = (error: any): boolean => {
         error.code === '42P01';
 };
 
+import Sidebar from './components/Sidebar';
+
 const App: React.FC = () => {
     const [activePage, setActivePage] = useState<Page>('explore');
     const [currentUser, setCurrentUser] = useState<Profile | null>(null);
@@ -58,6 +60,8 @@ const App: React.FC = () => {
     const [isLoadingDbCheck, setIsLoadingDbCheck] = useState(true);
     const [dbSetupRequired, setDbSetupRequired] = useState(false);
     const [loginError, setLoginError] = useState<string | null>(null);
+    const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+    const [profileInitialSection, setProfileInitialSection] = useState<'details' | 'friends'>('details');
     const [showConfirmation, setShowConfirmation] = useState<string | null>(null);
     const [draftMatchData, setDraftMatchData] = useState<DraftMatchData | null>(null);
     const [rankings, setRankings] = useState<Ranking[]>([]);
@@ -1470,6 +1474,7 @@ const App: React.FC = () => {
                     onUpdateUser={handleUpdateUser}
                     onLogout={handleLogout}
                     onNavigateBack={() => setActivePage('explore')}
+                    initialSection={profileInitialSection}
                 />;
             case 'ranking':
                 return <RankingList
@@ -1543,6 +1548,7 @@ const App: React.FC = () => {
                     selectedMatch={selectedMatch}
                     onSelectMatch={setSelectedMatch}
                     onCloseMatchDetails={() => setSelectedMatch(null)}
+                    onOpenSidebar={() => setIsSidebarOpen(true)}
                 />;
         }
     };
@@ -1628,13 +1634,31 @@ const App: React.FC = () => {
                     {showConfirmation}
                 </div>
             )}
-            <Toast
-                message="Pressione novamente para sair"
-                isVisible={showExitToast}
-                onClose={() => setShowExitToast(false)}
-                duration={2000}
-            />
+            {showExitToast && (
+                <Toast
+                    message={exitAttemptRef.current ? "Pressione Voltar novamente para sair" : "Pressione Voltar novamente para sair"}
+                    type="info"
+                    onClose={() => setShowExitToast(false)}
+                />
+            )}
             <ChatBot />
+
+            <Sidebar
+                isOpen={isSidebarOpen}
+                onClose={() => setIsSidebarOpen(false)}
+                currentUser={currentUser}
+                onNavigateToProfile={() => {
+                    setProfileInitialSection('details');
+                    setActivePage('profile');
+                }}
+                onNavigateToFriends={() => {
+                    setProfileInitialSection('friends');
+                    setActivePage('profile');
+                }}
+                onNavigateToMyGames={() => setActivePage('my-games')}
+                onNavigateToCommunity={() => setActivePage('community')}
+                onLogout={handleLogout}
+            />
         </div>
     );
 }

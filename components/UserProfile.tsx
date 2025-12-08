@@ -13,6 +13,7 @@ interface UserProfileProps {
     onUpdateUser: (user: Profile) => Promise<void>;
     onLogout: () => void;
     onNavigateBack?: () => void;
+    initialSection?: 'details' | 'friends';
 }
 
 const calculateAge = (dob: string | null): number | string => {
@@ -28,7 +29,7 @@ const calculateAge = (dob: string | null): number | string => {
     return age;
 };
 
-const UserProfile: React.FC<UserProfileProps> = ({ user, onUpdateUser, onLogout, onNavigateBack }) => {
+const UserProfile: React.FC<UserProfileProps> = ({ user, onUpdateUser, onLogout, onNavigateBack, initialSection = 'details' }) => {
     const [isEditing, setIsEditing] = useState(false);
     const [formData, setFormData] = useState({
         ...user,
@@ -46,12 +47,18 @@ const UserProfile: React.FC<UserProfileProps> = ({ user, onUpdateUser, onLogout,
     const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
     const [isUploadingBanner, setIsUploadingBanner] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
-    const [showFriendsManager, setShowFriendsManager] = useState(false);
+    const [showFriendsManager, setShowFriendsManager] = useState(initialSection === 'friends');
     const [friendCount, setFriendCount] = useState(0);
 
-    const isOwnProfile = true; // Assuming UserProfile is currently only used for "My Profile". 
-    // If it's reused for others, we'd check currentUser.id === user.id. 
-    // But for now the App structure shows it's passed as 'currentUser' in 'activePage === profile'.
+    const isOwnProfile = true;
+
+    useEffect(() => {
+        if (initialSection === 'friends') {
+            setShowFriendsManager(true);
+        } else {
+            setShowFriendsManager(false);
+        }
+    }, [initialSection]);
 
     useEffect(() => {
         const fetchFriendCount = async () => {

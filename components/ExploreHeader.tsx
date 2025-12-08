@@ -5,20 +5,34 @@ interface ExploreHeaderProps {
     currentUser: Profile;
     onNavigateToProfile: () => void;
     onNavigateToWallet: () => void;
+    onOpenSidebar: () => void;
 }
 
-const ExploreHeader: React.FC<ExploreHeaderProps> = ({ currentUser, onNavigateToProfile, onNavigateToWallet }) => {
+const ExploreHeader: React.FC<ExploreHeaderProps> = ({ currentUser, onNavigateToProfile, onNavigateToWallet, onOpenSidebar }) => {
     return (
         <div className="sticky top-0 z-50 bg-[#0a1628]/95 backdrop-blur-md px-4 py-3 shadow-lg border-b border-white/5">
             <div className="max-w-md mx-auto flex items-center justify-between">
-                {/* Logo */}
-                <div className="flex items-center gap-2">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="drop-shadow-[0_0_8px_rgba(0,255,148,0.5)]">
-                        <path d="M12 2L2 7L12 12L22 7L12 2Z" fill="#00FF94" />
-                        <path d="M2 17L12 22L22 17" stroke="#00FF94" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                        <path d="M2 12L12 17L22 12" stroke="#00FF94" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                    </svg>
-                    <span className="text-white font-bold text-xl tracking-wide">FutMatch</span>
+                <div className="flex items-center">
+                    {/* Menu Button */}
+                    <button
+                        onClick={onOpenSidebar}
+                        className="mr-3 p-1 rounded-md hover:bg-white/10 transition-colors text-white"
+                        aria-label="Menu"
+                    >
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                        </svg>
+                    </button>
+
+                    {/* Logo */}
+                    <div className="flex items-center gap-2">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="drop-shadow-[0_0_8px_rgba(0,255,148,0.5)]">
+                            <path d="M12 2L2 7L12 12L22 7L12 2Z" fill="#00FF94" />
+                            <path d="M2 17L12 22L22 17" stroke="#00FF94" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                            <path d="M2 12L12 17L22 12" stroke="#00FF94" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                        </svg>
+                        <span className="text-white font-bold text-xl tracking-wide">FutMatch</span>
+                    </div>
                 </div>
 
                 {/* Right Side: Profile Icon + MatchCoins */}

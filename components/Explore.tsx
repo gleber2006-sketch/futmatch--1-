@@ -39,6 +39,7 @@ interface ExploreProps {
   selectedMatch: Match | null;
   onSelectMatch: (match: Match | null) => void;
   onCloseMatchDetails: () => void;
+  onOpenSidebar: () => void;
 }
 
 const haversineDistance = (
@@ -61,7 +62,7 @@ const haversineDistance = (
   return R * c;
 };
 
-const Explore: React.FC<ExploreProps> = ({ matches, platformFeatures, onJoinMatch, onLeaveMatch, onCancelMatch, onDeleteCanceledMatches, onEditMatch, joinedMatchIds, currentUser, onNavigateToCreate, onRefreshMatches, onNavigateToProfile, onNavigateToMap, onNavigateToMyGames, onNavigateToRanking, onNavigateToCommunity, onNavigateToArenas, onNavigateToMatchChat, onNavigateToDirectChat, onNavigateToNotifications, onNavigateToWallet, onBalanceUpdate, onBoostMatch, selectedMatch, onSelectMatch, onCloseMatchDetails }) => {
+const Explore: React.FC<ExploreProps> = ({ matches, platformFeatures, onJoinMatch, onLeaveMatch, onCancelMatch, onDeleteCanceledMatches, onEditMatch, joinedMatchIds, currentUser, onNavigateToCreate, onRefreshMatches, onNavigateToProfile, onNavigateToMap, onNavigateToMyGames, onNavigateToRanking, onNavigateToCommunity, onNavigateToArenas, onNavigateToMatchChat, onNavigateToDirectChat, onNavigateToNotifications, onNavigateToWallet, onBalanceUpdate, onBoostMatch, selectedMatch, onSelectMatch, onCloseMatchDetails, onOpenSidebar }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
   const [locationStatus, setLocationStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
@@ -196,6 +197,7 @@ const Explore: React.FC<ExploreProps> = ({ matches, platformFeatures, onJoinMatc
         currentUser={currentUser}
         onNavigateToProfile={onNavigateToProfile}
         onNavigateToWallet={onNavigateToWallet}
+        onOpenSidebar={onOpenSidebar}
       />
 
       {/* Next Match Widget */}
