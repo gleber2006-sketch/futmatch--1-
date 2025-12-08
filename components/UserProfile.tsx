@@ -3,7 +3,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Profile } from '../types';
 import { StarIcon, TrophyIcon, EditIcon } from './Icons';
 import { supabase } from '../services/supabaseClient';
-import LoadingSpinner from './LoadingSpinner';
+import ModernLoader from './ModernLoader';
 import { SPORTS_LIST, SPORT_POSITIONS, BRAZILIAN_TEAMS, CITY_LIST } from '../constants';
 
 interface UserProfileProps {
@@ -255,8 +255,8 @@ const UserProfile: React.FC<UserProfileProps> = ({ user, onUpdateUser, onLogout,
                     )}
 
                     {isUploadingBanner && (
-                        <div className="absolute inset-0 flex items-center justify-center bg-black/60">
-                            <LoadingSpinner size={8} />
+                        <div className="absolute inset-0 flex items-center justify-center bg-black/60 z-50">
+                            <ModernLoader />
                         </div>
                     )}
                 </div>
@@ -289,8 +289,8 @@ const UserProfile: React.FC<UserProfileProps> = ({ user, onUpdateUser, onLogout,
                                 )}
 
                                 {isUploadingAvatar && (
-                                    <div className="absolute inset-0 flex items-center justify-center">
-                                        <LoadingSpinner size={8} />
+                                    <div className="absolute inset-0 flex items-center justify-center z-50">
+                                        <ModernLoader />
                                     </div>
                                 )}
                             </div>
@@ -410,10 +410,9 @@ const UserProfile: React.FC<UserProfileProps> = ({ user, onUpdateUser, onLogout,
                                     Cancelar
                                 </button>
                                 <button onClick={handleSave} className="flex-1 bg-neon-green text-[#0a1628] font-bold py-3 rounded-lg hover:bg-[#00e686] hover:shadow-[0_0_15px_rgba(0,255,148,0.4)] transition-all flex justify-center items-center" disabled={isUploadingAvatar || isUploadingBanner || isSaving}>
-                                    {isSaving ? (
-                                        <><LoadingSpinner size={5} /><span className="ml-2">Salvando...</span></>
-                                    ) : 'Salvar Perfil'}
+                                    {isSaving ? 'Salvando...' : 'Salvar Perfil'}
                                 </button>
+                                {isSaving && <ModernLoader />}
                             </div>
                         </div>
                     ) : (

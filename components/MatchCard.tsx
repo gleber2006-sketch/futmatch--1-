@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Match, Profile } from '../types';
 import { LocationIcon, CalendarIcon, UsersIcon, EditIcon, ChatIcon, ShareIcon, LockIcon } from './Icons';
-import LoadingSpinner from './LoadingSpinner';
+import ModernLoader from './ModernLoader';
 import { SPORT_EMOJIS } from '../constants';
 
 interface MatchCardProps {
@@ -149,7 +149,6 @@ Bora jogar? 🚀`;
             return {
                 text: (
                     <>
-                        <LoadingSpinner size={5} />
                         <span className="ml-2">{loadingText}</span>
                     </>
                 ),
@@ -337,6 +336,7 @@ Bora jogar? 🚀`;
                     </div>
                 )}
             </div>
+            {isLoading && <ModernLoader />}
         </div >
     );
 };

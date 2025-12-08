@@ -2,11 +2,10 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { ChatMessage, GroundingSource, DraftMatchData } from '../types';
 import { getBotResponse } from '../services/geminiService';
-import LoadingSpinner from './LoadingSpinner';
 import { ChatIcon, SendIcon, CloseIcon } from './Icons';
 
 interface ChatBotProps {
-    onDraftMatch?: (data: DraftMatchData) => void;
+  onDraftMatch?: (data: DraftMatchData) => void;
 }
 
 const ChatBot: React.FC<ChatBotProps> = ({ onDraftMatch }) => {
@@ -17,30 +16,30 @@ const ChatBot: React.FC<ChatBotProps> = ({ onDraftMatch }) => {
   const [userInput, setUserInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [userLocation, setUserLocation] = useState<{ latitude: number; longitude: number } | null>(null);
-  
+
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (isOpen) {
-        messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+      messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
     }
   }, [messages, isOpen]);
 
   useEffect(() => {
     if (isOpen) {
-        if (navigator.geolocation) {
-            navigator.geolocation.getCurrentPosition(
-                (position) => {
-                    setUserLocation({
-                        latitude: position.coords.latitude,
-                        longitude: position.coords.longitude,
-                    });
-                },
-                () => {
-                    console.warn("Geolocation permission denied.");
-                }
-            );
-        }
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+          (position) => {
+            setUserLocation({
+              latitude: position.coords.latitude,
+              longitude: position.coords.longitude,
+            });
+          },
+          () => {
+            console.warn("Geolocation permission denied.");
+          }
+        );
+      }
     }
   }, [isOpen]);
 
@@ -57,7 +56,7 @@ const ChatBot: React.FC<ChatBotProps> = ({ onDraftMatch }) => {
     setIsLoading(true);
 
     const { text, sources, draftData } = await getBotResponse(userInput, userLocation);
-    
+
     const newBotMessage: ChatMessage = {
       id: (Date.now() + 1).toString(),
       text: text || (draftData ? "Entendido! Abrindo o formulário para você conferir..." : "Não entendi, pode repetir?"),
@@ -65,9 +64,9 @@ const ChatBot: React.FC<ChatBotProps> = ({ onDraftMatch }) => {
       sources,
     };
     setMessages(prev => [...prev, newBotMessage]);
-    
+
     if (draftData && onDraftMatch) {
-        onDraftMatch(draftData);
+      onDraftMatch(draftData);
     }
 
     setIsLoading(false);
@@ -76,27 +75,27 @@ const ChatBot: React.FC<ChatBotProps> = ({ onDraftMatch }) => {
   const renderMessage = (message: ChatMessage) => {
     const isBot = message.sender === 'bot';
     return (
-        <div key={message.id} className={`flex ${isBot ? 'justify-start' : 'justify-end'} mb-4`}>
-            <div className={`rounded-2xl p-3 max-w-sm ${isBot ? 'bg-gray-700 text-white rounded-bl-none' : 'bg-green-500 text-white rounded-br-none'}`}>
-                <p className="text-sm">{message.text}</p>
-                {message.sources && message.sources.length > 0 && (
-                     <div className="mt-2 border-t border-gray-600 pt-2">
-                         <h4 className="text-xs font-bold text-gray-400 mb-1">Fontes:</h4>
-                         {message.sources.map((source: GroundingSource, index: number) => (
-                             <a 
-                                 href={source.uri} 
-                                 target="_blank" 
-                                 rel="noopener noreferrer"
-                                 key={index}
-                                 className="text-xs text-green-400 hover:underline block truncate"
-                             >
-                                 {source.title || 'Ver no Google Maps'}
-                             </a>
-                         ))}
-                     </div>
-                 )}
+      <div key={message.id} className={`flex ${isBot ? 'justify-start' : 'justify-end'} mb-4`}>
+        <div className={`rounded-2xl p-3 max-w-sm ${isBot ? 'bg-gray-700 text-white rounded-bl-none' : 'bg-green-500 text-white rounded-br-none'}`}>
+          <p className="text-sm">{message.text}</p>
+          {message.sources && message.sources.length > 0 && (
+            <div className="mt-2 border-t border-gray-600 pt-2">
+              <h4 className="text-xs font-bold text-gray-400 mb-1">Fontes:</h4>
+              {message.sources.map((source: GroundingSource, index: number) => (
+                <a
+                  href={source.uri}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  key={index}
+                  className="text-xs text-green-400 hover:underline block truncate"
+                >
+                  {source.title || 'Ver no Google Maps'}
+                </a>
+              ))}
             </div>
+          )}
         </div>
+      </div>
     )
   }
 
@@ -115,19 +114,19 @@ const ChatBot: React.FC<ChatBotProps> = ({ onDraftMatch }) => {
           <header className="bg-gray-900 p-4 rounded-t-2xl flex justify-between items-center">
             <h3 className="font-bold text-lg text-white">FutMatchBot 🤖</h3>
             <button onClick={() => setIsOpen(false)} className="text-gray-400 hover:text-white">
-                <CloseIcon />
+              <CloseIcon />
             </button>
           </header>
-          
+
           <div className="flex-1 p-4 overflow-y-auto">
             {messages.map(renderMessage)}
             {isLoading && (
-                <div className="flex justify-start mb-4">
-                     <div className="rounded-2xl p-3 max-w-sm bg-gray-700 text-white rounded-bl-none flex items-center">
-                        <LoadingSpinner size={4}/>
-                        <span className="ml-2 text-sm italic">Digitando...</span>
-                    </div>
+              <div className="flex justify-start mb-4">
+                <div className="rounded-2xl p-3 max-w-sm bg-gray-700 text-white rounded-bl-none flex items-center">
+                  <span className="animate-pulse">...</span>
+                  <span className="ml-2 text-sm italic">Digitando...</span>
                 </div>
+              </div>
             )}
             <div ref={messagesEndRef} />
           </div>

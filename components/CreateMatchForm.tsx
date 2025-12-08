@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { Match, VenueLocation, DraftMatchData } from '../types';
 import { searchLocalVenues } from '../services/geminiService';
-import LoadingSpinner from './LoadingSpinner';
+import ModernLoader from './ModernLoader';
 import { SearchIcon, LocationIcon } from './Icons';
 import { SPORTS_LIST } from '../constants';
 import { supabase } from '../services/supabaseClient';
@@ -266,7 +266,7 @@ const CreateMatchForm: React.FC<CreateMatchFormProps> = ({ onCreateMatch, onUpda
               className="absolute right-2 p-2 bg-gray-600 hover:bg-gray-500 rounded-md text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               title="Verificar local no mapa"
             >
-              {isSearching ? <LoadingSpinner size={4} /> : <SearchIcon />}
+              {<SearchIcon />}
             </button>
           </div>
 
@@ -393,13 +393,10 @@ const CreateMatchForm: React.FC<CreateMatchFormProps> = ({ onCreateMatch, onUpda
             disabled={isSubmitting}
             className="flex-1 bg-gradient-to-r from-green-600 to-blue-600 text-white font-bold py-3 rounded-lg shadow-lg hover:brightness-110 transition-all flex justify-center items-center"
           >
-            {isSubmitting ? (
-              <><LoadingSpinner size={5} /><span className="ml-2">Processando...</span></>
-            ) : (
-              isEditMode ? 'Salvar Alterações' : 'Criar Partida (3 Tokens)'
-            )}
+            {isSubmitting ? 'Processando...' : (isEditMode ? 'Salvar Alterações' : 'Criar Partida (3 Tokens)')}
           </button>
         </div>
+        {(isSubmitting || isSearching) && <ModernLoader />}
       </form>
     </div>
   );

@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { Profile, Post, Comment } from '../types';
 import { supabase } from '../services/supabaseClient';
 import { HeartIcon, CommentIcon, SendIcon, CloseIcon } from './Icons';
-import LoadingSpinner from './LoadingSpinner';
+import ModernLoader from './ModernLoader';
 
 interface CommunityProps {
     currentUser: Profile;
@@ -134,7 +134,7 @@ const PostItem: React.FC<{ post: Post; currentUser: Profile; onLikeToggle: (post
             {isCommentsOpen && (
                 <div className="mt-4 pt-4 border-t border-gray-700/50">
                     {isLoadingComments ? (
-                        <div className="flex justify-center py-2"><LoadingSpinner size={4} /></div>
+                        <div className="flex justify-center py-2 text-gray-400 text-xs">Carregando comentários...</div>
                     ) : (
                         <div className="space-y-3 mb-4">
                             {comments.length > 0 && (
@@ -181,7 +181,7 @@ const PostItem: React.FC<{ post: Post; currentUser: Profile; onLikeToggle: (post
                                 disabled={isSendingComment || !newComment.trim()}
                                 className="absolute right-1 top-1 p-1 bg-green-500 hover:bg-green-600 rounded-full text-white disabled:opacity-50 transition-colors"
                             >
-                                {isSendingComment ? <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div> : <div className="w-4 h-4"><SendIcon /></div>}
+                                {isSendingComment ? <div className="animate-pulse">...</div> : <div className="w-4 h-4"><SendIcon /></div>}
                             </button>
                         </div>
                     </div>
@@ -377,7 +377,7 @@ const Community: React.FC<CommunityProps> = ({ currentUser, onNavigateBack }) =>
 
             <div className="px-4 space-y-4">
                 {isLoading ? (
-                    <div className="flex justify-center py-10"><LoadingSpinner /></div>
+                    <div className="flex justify-center py-10"><ModernLoader /></div>
                 ) : posts.length === 0 ? (
                     <div className="text-center py-10 text-gray-500">
                         <p>Nenhum post ainda. Seja o primeiro a postar!</p>
@@ -424,8 +424,9 @@ const Community: React.FC<CommunityProps> = ({ currentUser, onNavigateBack }) =>
                                 disabled={isPosting || !newPostContent.trim()}
                                 className="w-full bg-gradient-to-r from-green-600 to-blue-600 text-white font-bold py-3 rounded-lg shadow-md hover:brightness-110 transition-all flex justify-center"
                             >
-                                {isPosting ? <LoadingSpinner size={5} /> : 'Publicar'}
+                                {isPosting ? 'Publicando...' : 'Publicar'}
                             </button>
+                            {isPosting && <ModernLoader />}
                         </div>
                     </div>
                 </div>

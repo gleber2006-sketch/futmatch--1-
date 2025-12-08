@@ -2,7 +2,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { GoogleIcon, EyeIcon, EyeOffIcon } from './Icons';
 import { Profile } from '../types';
-import LoadingSpinner from './LoadingSpinner';
+import ModernLoader from './ModernLoader';
 import { SPORTS_LIST, SPORT_POSITIONS, CITY_LIST } from '../constants';
 
 interface HomeProps {
@@ -283,15 +283,9 @@ const Home: React.FC<HomeProps> = ({ onLogin, onRegister, onGoogleLogin, loginEr
                             )}
 
                             <button type="submit" className="w-full bg-[#00FF94] text-[#0a1628] p-3 rounded-lg font-bold shadow-lg hover:bg-[#00e686] hover:shadow-[0_0_20px_rgba(0,255,148,0.4)] transition-all transform hover:scale-[1.02] mt-4" disabled={isRegistering}>
-                                {isRegistering ? (
-                                    <div className="flex items-center justify-center">
-                                        <LoadingSpinner size={5} />
-                                        <span className="ml-2">Registrando...</span>
-                                    </div>
-                                ) : (
-                                    'Criar Conta'
-                                )}
+                                {isRegistering ? 'Registrando...' : 'Criar Conta'}
                             </button>
+                            {isRegistering && <ModernLoader />}
 
                             <div className="flex items-center my-4">
                                 <hr className="flex-grow border-white/10" /><span className="mx-4 text-gray-500 text-xs font-bold uppercase tracking-widest">OU</span><hr className="flex-grow border-white/10" />

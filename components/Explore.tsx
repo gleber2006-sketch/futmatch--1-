@@ -2,7 +2,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Match, Feature, Profile } from '../types';
 import MatchCard from './MatchCard';
-import LoadingSpinner from './LoadingSpinner';
+import ModernLoader from './ModernLoader';
 import PlatformFeatures from './PlatformFeatures';
 import MatchDetailsModal from './MatchDetailsModal';
 import { SPORTS_LIST } from '../constants';
@@ -317,7 +317,7 @@ const Explore: React.FC<ExploreProps> = ({ matches, platformFeatures, onJoinMatc
         </div>
       </div>
 
-      {locationStatus === 'loading' && <div className="flex justify-center items-center p-4"><LoadingSpinner /> <span className="ml-2">Buscando sua localização...</span></div>}
+      {locationStatus === 'loading' && <ModernLoader />}
       {locationStatus === 'error' && <div className="bg-yellow-500/20 text-yellow-300 p-3 rounded-lg mb-4 text-center max-w-md mx-auto">Não foi possível obter sua localização. Mostrando todos os jogos.</div>}
 
       <div className="max-w-md mx-auto md:max-w-7xl px-4">

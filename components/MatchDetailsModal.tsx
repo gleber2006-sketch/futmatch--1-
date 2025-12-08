@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Match, Profile } from '../types';
 import { LocationIcon, CalendarIcon, UsersIcon, CloseIcon, EditIcon, ChatIcon, ShareIcon, LockIcon } from './Icons';
-import LoadingSpinner from './LoadingSpinner';
+import ModernLoader from './ModernLoader';
 import { supabase } from '../services/supabaseClient';
 import MatchParticipantsModal from './MatchParticipantsModal';
 
@@ -355,20 +355,13 @@ Bora jogar? 🚀`;
               onClick={handleParticipationClick}
               disabled={buttonState.isDisabled || isLoading}
               className={`w-full text-[#0a1628] font-bold py-3 rounded-lg shadow-md transition-all flex items-center justify-center ${buttonState.isDisabled
-                  ? 'bg-gray-700 text-gray-400 cursor-not-allowed'
-                  : hasJoined
-                    ? 'bg-red-500 hover:bg-red-400 text-white'
-                    : 'bg-neon-green hover:bg-[#00e686] hover:shadow-[0_0_20px_rgba(0,255,148,0.4)]'
+                ? 'bg-gray-700 text-gray-400 cursor-not-allowed'
+                : hasJoined
+                  ? 'bg-red-500 hover:bg-red-400 text-white'
+                  : 'bg-neon-green hover:bg-[#00e686] hover:shadow-[0_0_20px_rgba(0,255,148,0.4)]'
                 }`}
             >
-              {isLoading ? (
-                <>
-                  <LoadingSpinner size={5} />
-                  <span className="ml-2">{hasJoined ? 'Saindo...' : 'Confirmando...'}</span>
-                </>
-              ) : (
-                buttonState.text
-              )}
+              buttonState.text
             </button>
 
             {/* Organizer Actions */}
@@ -380,7 +373,7 @@ Bora jogar? 🚀`;
                     disabled={isBoosting}
                     className="w-full bg-gradient-to-r from-yellow-600 to-yellow-500 text-white font-bold py-3 rounded-lg shadow-md hover:brightness-110 transition-all flex items-center justify-center gap-2 border border-yellow-400"
                   >
-                    {isBoosting ? <LoadingSpinner size={5} /> : '🚀 Dar BOOST (2 MatchCoins)'}
+                    {isBoosting ? 'Processando...' : '🚀 Dar BOOST (2 MatchCoins)'}
                   </button>
                 )}
 
@@ -420,14 +413,7 @@ Bora jogar? 🚀`;
                             disabled={isLoading}
                             className="flex-1 bg-gradient-to-r from-red-600 to-red-400 text-white font-bold py-2 rounded-lg hover:brightness-110 transition-all"
                           >
-                            {isLoading ? (
-                              <>
-                                <LoadingSpinner size={5} />
-                                <span className="ml-2">Confirmando...</span>
-                              </>
-                            ) : (
-                              'Confirmar Cancelamento'
-                            )}
+                            {isLoading ? 'Confirmando...' : 'Confirmar Cancelamento'}
                           </button>
                           <button
                             onClick={() => setShowCancelInput(false)}
@@ -518,7 +504,8 @@ Bora jogar? 🚀`;
         )}
 
       </div>
-    </div>
+      {(isLoading || isBoosting) && <ModernLoader />}
+    </div >
   );
 };
 

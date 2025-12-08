@@ -18,7 +18,7 @@ import { supabase } from './services/supabaseClient';
 import { initGemini } from './services/geminiService';
 import { AuthError, Session, User } from '@supabase/supabase-js';
 import DatabaseSetup from './components/DatabaseSetup';
-import LoadingSpinner from './components/LoadingSpinner';
+import ModernLoader from './components/ModernLoader';
 import Toast from './components/Toast';
 import { generateInviteCode } from './utils/inviteCode';
 
@@ -1569,7 +1569,7 @@ const App: React.FC = () => {
     }, []);
 
     if (isLoadingDbCheck) {
-        return <LoadingSpinner />;
+        return <ModernLoader />;
     }
 
     if (dbSetupRequired) {
@@ -1611,7 +1611,7 @@ const App: React.FC = () => {
                 </div>
             );
         }
-        return <LoadingSpinner />;
+        return <ModernLoader />;
     }
 
     return (

@@ -1,7 +1,7 @@
 
 import React, { useEffect, useRef, useState } from 'react';
 import { Match, Profile } from '../types';
-import LoadingSpinner from './LoadingSpinner';
+import ModernLoader from './ModernLoader';
 import { LocationIcon, CloseIcon } from './Icons';
 import { SPORT_EMOJIS } from '../constants';
 import MatchDetailsModal from './MatchDetailsModal';
@@ -195,7 +195,7 @@ const MatchesMap: React.FC<MatchesMapProps> = ({
       <div className="flex-grow w-full h-full relative z-0">
         {isLoading && (
           <div className="absolute inset-0 flex flex-col items-center justify-center bg-gray-900 z-20">
-            <LoadingSpinner size={10} />
+            <ModernLoader />
             <p className="mt-4 text-gray-400 animate-pulse">Carregando mapa...</p>
           </div>
         )}
