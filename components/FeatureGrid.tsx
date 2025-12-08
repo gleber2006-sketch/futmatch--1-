@@ -56,7 +56,7 @@ const FeatureGrid: React.FC<FeatureGridProps> = ({
                 </svg>
             ),
             title: 'Criar Partida',
-            subtitle: 'Criar criar partida ou o Soccer tempo',
+            subtitle: 'Crie sua partida em qualquer esporte e personalize regras, local e horário.',
             onClick: onNavigateToCreate
         },
         {
@@ -67,7 +67,7 @@ const FeatureGrid: React.FC<FeatureGridProps> = ({
                 </svg>
             ),
             title: 'Encontre Partidas',
-            subtitle: 'Encontre partidas para partidas de encontro',
+            subtitle: 'Busque partidas próximas filtrando por esporte, local, horário ou status.',
             onClick: () => {
                 onRefreshMatches?.();
                 onScrollToMatches?.();
@@ -83,7 +83,7 @@ const FeatureGrid: React.FC<FeatureGridProps> = ({
                 </svg>
             ),
             title: 'Meus Jogos',
-            subtitle: 'Meus uis jogos e nosos jogadores',
+            subtitle: 'Acompanhe as partidas que você criou, entrou ou está organizando.',
             onClick: onNavigateToMyGames
         },
         {
@@ -97,7 +97,7 @@ const FeatureGrid: React.FC<FeatureGridProps> = ({
                 </svg>
             ),
             title: 'Comunidade',
-            subtitle: 'Comunidade pode as comunidades',
+            subtitle: 'Explore comunidades esportivas e participe de grupos de jogadores.',
             onClick: onNavigateToCommunity
         },
         {
@@ -112,7 +112,7 @@ const FeatureGrid: React.FC<FeatureGridProps> = ({
                 </svg>
             ),
             title: 'Ranking',
-            subtitle: 'Conseguir um pontario de medal e e rankings',
+            subtitle: 'Veja sua pontuação, conquistas e posições nos rankings esportivos.',
             onClick: onNavigateToRanking
         },
         {
@@ -123,7 +123,7 @@ const FeatureGrid: React.FC<FeatureGridProps> = ({
                 </svg>
             ),
             title: 'Campos e Arenas',
-            subtitle: 'Completa em campos e arenas e stadiumentos',
+            subtitle: 'Encontre locais esportivos próximos e visualize avaliações, mapas e modalidades.',
             onClick: onNavigateToArenas
         },
         {
@@ -133,7 +133,7 @@ const FeatureGrid: React.FC<FeatureGridProps> = ({
                 </svg>
             ),
             title: 'Chat',
-            subtitle: 'Conseguir uma accos de outros',
+            subtitle: 'Converse com jogadores, organizadores e grupos esportivos.',
             onClick: onNavigateToMatchChat
         },
         {
@@ -144,7 +144,7 @@ const FeatureGrid: React.FC<FeatureGridProps> = ({
                 </svg>
             ),
             title: 'Notificações',
-            subtitle: 'Notificações ao caspa de eventa',
+            subtitle: 'Receba alertas importantes sobre partidas, convites e atualizações.',
             onClick: onNavigateToNotifications
         }
     ];
