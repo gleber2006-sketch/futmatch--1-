@@ -24,18 +24,18 @@ import { generateInviteCode } from './utils/inviteCode';
 
 
 const platformFeatures: Feature[] = [
-    { icon: '⚽', title: 'Criar Partida', description: 'Monte o jogo do seu jeito! Escolha local, data e número de jogadores.' },
-    { icon: '📍', title: 'Encontre Partidas Próximas', description: 'Descubra onde a bola já está rolando perto de você!' },
-    { icon: '👥', title: 'Meus Jogos', description: 'Veja as partidas que você confirmou presença e acompanhe as próximas.' },
-    { icon: '🧑‍🤝‍🧑', title: 'Comunidade', description: 'Converse com outros jogadores, combine jogos e forme seu time!' },
-    { icon: '🏅', title: 'Ranking de Jogadores', description: 'Suba no ranking e mostre que é um craque!' },
-    { icon: '🏟️', title: 'Campos e Arenas', description: 'Encontre os melhores lugares pra jogar e reserve seu espaço direto pelo app.' },
-    { icon: '💬', title: 'Chat das Partidas', description: 'Troque ideias e zoeiras com o time antes e depois do jogo' },
-    { icon: '🔔', title: 'Notificações', description: 'Receba alertas quando surgir uma nova partida na sua região!' },
+    { icon: '⚽', title: 'Criar Partida', description: 'Crie sua partida em qualquer esporte e personalize regras, local e horário.' },
+    { icon: '📍', title: 'Encontre Partidas Próximas', description: 'Busque partidas próximas filtrando por esporte, local, horário ou status.' },
+    { icon: '👥', title: 'Meus Jogos', description: 'Acompanhe as partidas que você criou, entrou ou está organizando.' },
+    { icon: '🧑‍🤝‍🧑', title: 'Comunidade', description: 'Explore comunidades esportivas e participe de grupos de jogadores.' },
+    { icon: '🏅', title: 'Ranking de Jogadores', description: 'Veja sua pontuação, conquistas e posições nos rankings esportivos.' },
+    { icon: '🏟️', title: 'Campos e Arenas', description: 'Encontre locais esportivos próximos e visualize avaliações, mapas e modalidades.' },
+    { icon: '💬', title: 'Chat das Partidas', description: 'Converse com jogadores, organizadores e grupos esportivos.' },
+    { icon: '🔔', title: 'Notificações', description: 'Receba alertas importantes sobre partidas, convites e atualizações.' },
     { icon: '👤', title: 'Meu Perfil', description: 'Atualize suas informações e mostre seu estilo de jogo.' },
     { icon: '💰', title: 'Carteira FutMatch', description: 'Veja seu saldo de MatchCoins e compre mais quando precisar.' },
     { icon: '🎯', title: 'Sugestões de Partidas (IA)', description: 'Deixe a IA te recomendar os melhores jogos baseados no seu perfil' },
-    { icon: '🌍', title: 'Mapa das Partidas', description: 'Veja todas as partidas rolando na sua cidade em tempo real no mapa' },
+    { icon: '🌍', title: 'Mapa das Partidas', description: 'Visualize no mapa todas as partidas próximas, com horários e jogadores em tempo real.' },
 ];
 
 // Helper function to robustly check for missing tables OR columns.
