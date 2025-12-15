@@ -58,7 +58,14 @@ const Sidebar: React.FC<SidebarProps> = ({
     onLogout
 }) => {
 
-    if (!currentUser) return null;
+    // Debug log
+    console.log('Sidebar render. isOpen:', isOpen, 'User:', currentUser?.name);
+
+    if (!currentUser) {
+        // Fallback or render empty if no user, but keep structure to debug
+        // return null; 
+    }
+
 
     const sections = [
         {
@@ -174,12 +181,12 @@ const Sidebar: React.FC<SidebarProps> = ({
         <>
             {/* Backdrop */}
             <div
-                className={`fixed inset-0 bg-black/80 backdrop-blur-sm z-[100] transition-opacity duration-300 ${isOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}
+                className={`fixed inset-0 bg-black/80 backdrop-blur-sm z-[9998] transition-opacity duration-300 ${isOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}
                 onClick={onClose}
             />
 
             {/* Sidebar Panel */}
-            <div className={`fixed inset-y-0 left-0 w-[85%] max-w-sm bg-[#0a1628] border-r border-white/10 z-[101] shadow-2xl transform transition-transform duration-300 overflow-hidden flex flex-col ${isOpen ? 'translate-x-0' : '-translate-x-full'}`}>
+            <div className={`fixed inset-y-0 left-0 w-[85%] max-w-sm bg-[#0a1628] border-r border-white/10 z-[9999] shadow-2xl transform transition-transform duration-300 overflow-hidden flex flex-col ${isOpen ? 'translate-x-0' : '-translate-x-full'}`}>
 
                 {/* Header */}
                 <div className="p-6 border-b border-white/10 flex items-center justify-between bg-[#0d1b30] flex-shrink-0">
@@ -209,10 +216,10 @@ const Sidebar: React.FC<SidebarProps> = ({
                                         onClick={item.disabled ? undefined : item.action}
                                         disabled={item.disabled}
                                         className={`w-full flex items-center gap-4 p-3 rounded-xl text-left transition-all ${item.disabled
-                                                ? 'opacity-40 cursor-not-allowed'
-                                                : item.isLogout
-                                                    ? 'hover:bg-red-500/10 border border-transparent hover:border-red-500/30'
-                                                    : 'hover:bg-gray-800 border border-transparent hover:border-white/5'
+                                            ? 'opacity-40 cursor-not-allowed'
+                                            : item.isLogout
+                                                ? 'hover:bg-red-500/10 border border-transparent hover:border-red-500/30'
+                                                : 'hover:bg-gray-800 border border-transparent hover:border-white/5'
                                             }`}
                                     >
                                         <div className={`${item.isLogout ? 'text-red-500' : 'text-neon-green'}`}>

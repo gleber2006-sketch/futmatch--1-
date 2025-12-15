@@ -1560,7 +1560,10 @@ const App: React.FC = () => {
                     selectedMatch={selectedMatch}
                     onSelectMatch={setSelectedMatch}
                     onCloseMatchDetails={() => setSelectedMatch(null)}
-                    onOpenSidebar={() => setIsSidebarOpen(true)}
+                    onOpenSidebar={() => {
+                        console.log("App: onOpenSidebar triggered");
+                        setIsSidebarOpen(true);
+                    }}
                 />;
         }
     };
