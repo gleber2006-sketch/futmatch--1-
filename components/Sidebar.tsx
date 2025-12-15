@@ -1,4 +1,5 @@
 import React from 'react';
+import ReactDOM from 'react-dom';
 import { Profile } from '../types';
 import {
     ProfileIcon,
@@ -177,7 +178,7 @@ const Sidebar: React.FC<SidebarProps> = ({
         }
     ];
 
-    return (
+    return ReactDOM.createPortal(
         <>
             {/* Backdrop */}
             <div
@@ -192,11 +193,11 @@ const Sidebar: React.FC<SidebarProps> = ({
                 <div className="p-6 border-b border-white/10 flex items-center justify-between bg-[#0d1b30] flex-shrink-0">
                     <div className="flex items-center gap-3">
                         <div className="w-12 h-12 rounded-full bg-gray-600 overflow-hidden border-2 border-neon-green/30">
-                            <img src={currentUser.photoUrl || `https://ui-avatars.com/api/?name=${currentUser.name}`} alt={currentUser.name} className="w-full h-full object-cover" />
+                            <img src={currentUser?.photoUrl || `https://ui-avatars.com/api/?name=${currentUser?.name}`} alt={currentUser?.name} className="w-full h-full object-cover" />
                         </div>
                         <div>
-                            <h3 className="text-white font-bold text-lg">{currentUser.name}</h3>
-                            <p className="text-neon-green text-xs font-semibold">{currentUser.reputation}</p>
+                            <h3 className="text-white font-bold text-lg">{currentUser?.name}</h3>
+                            <p className="text-neon-green text-xs font-semibold">{currentUser?.reputation}</p>
                         </div>
                     </div>
                     <button onClick={onClose} className="text-gray-400 hover:text-white p-2 rounded-full hover:bg-white/10 transition-colors">
@@ -235,7 +236,8 @@ const Sidebar: React.FC<SidebarProps> = ({
                     ))}
                 </div>
             </div>
-        </>
+        </>,
+        document.body
     );
 };
 
