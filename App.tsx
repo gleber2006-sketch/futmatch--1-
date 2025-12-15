@@ -1430,6 +1430,7 @@ const App: React.FC = () => {
                     selectedMatch={selectedMatch}
                     onSelectMatch={setSelectedMatch}
                     onCloseMatchDetails={() => setSelectedMatch(null)}
+                    onOpenSidebar={() => setIsSidebarOpen(true)}
                 />;
             case 'create':
                 return <CreateMatchForm
