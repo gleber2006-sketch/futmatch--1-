@@ -186,10 +186,10 @@ Bora jogar? 🚀`;
         ${match.is_private && !isCanceled
                     ? 'bg-purple-900/20 border-purple-500/30 hover:border-purple-400/50'
                     : !isCanceled
-                        ? 'bg-[#112240]/60 border-white/10 hover:border-neon-green/50'
+                        ? 'bg-gradient-to-br from-[#112240] via-[#112240] to-green-900/30 border-neon-green/40 shadow-[0_0_15px_rgba(0,255,148,0.15)] hover:border-neon-green/80'
                         : 'bg-gray-800/50 border-gray-700'}
-        ${isCanceled ? 'opacity-60 grayscale-[50%]' : 'transform hover:scale-[1.02] cursor-pointer hover:shadow-[0_0_20px_rgba(0,255,148,0.15)]'}
-        ${isBoosted && !isCanceled ? 'border-neon-green/80 shadow-[0_0_20px_rgba(0,255,148,0.3)]' : ''}
+        ${isCanceled ? 'opacity-60 grayscale-[50%]' : 'transform hover:scale-[1.02] cursor-pointer hover:shadow-[0_0_25px_rgba(0,255,148,0.25)]'}
+        ${isBoosted && !isCanceled ? 'border-neon-green/80 shadow-[0_0_20px_rgba(0,255,148,0.4)] ring-1 ring-neon-green/20' : ''}
         `}
             aria-disabled={isCanceled}
         >
