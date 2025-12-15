@@ -1,4 +1,3 @@
-import { createPortal } from 'react-dom';
 import React from 'react';
 import { Profile } from '../types';
 import {
@@ -59,14 +58,7 @@ const Sidebar: React.FC<SidebarProps> = ({
     onLogout
 }) => {
 
-    // Debug log
-    console.log('Sidebar render. isOpen:', isOpen, 'User:', currentUser?.name);
-
-    if (!currentUser) {
-        // Fallback or render empty if no user, but keep structure to debug
-        // return null; 
-    }
-
+    if (!currentUser) return null;
 
     const sections = [
         {
@@ -85,13 +77,13 @@ const Sidebar: React.FC<SidebarProps> = ({
                 {
                     icon: <LockIcon />,
                     title: 'Minhas Partidas Privadas',
-                    action: () => { onNavigateToMyGames(); onClose(); } // Reuse My Games as per instructions
+                    action: () => { onNavigateToMyGames(); onClose(); }
                 },
                 {
                     icon: <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>,
                     title: 'Convites Recebidos',
                     action: () => { },
-                    disabled: true // Future feature
+                    disabled: true
                 }
             ]
         },
@@ -139,7 +131,7 @@ const Sidebar: React.FC<SidebarProps> = ({
                     action: () => { onNavigateToNotifications(); onClose(); }
                 },
                 {
-                    icon: <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" /></svg>, // Ranking Icon (using SVG directly or could import)
+                    icon: <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" /></svg>,
                     title: 'Ranking',
                     action: () => { onNavigateToRanking(); onClose(); }
                 },
@@ -178,11 +170,11 @@ const Sidebar: React.FC<SidebarProps> = ({
         }
     ];
 
-    return createPortal(
+    return (
         <>
             {/* Backdrop */}
             <div
-                className={`fixed inset-0 bg-black/80 backdrop-blur-sm z-[9998] transition-opacity duration-300 ${isOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}
+                className={`fixed inset-0 bg-black/80 backdrop-blur-sm z-[9998] transition-opacity duration-300 ${isOpen ? 'opacity-100 pointer-events-auto visible' : 'opacity-0 pointer-events-none invisible'}`}
                 onClick={onClose}
             />
 
@@ -193,11 +185,11 @@ const Sidebar: React.FC<SidebarProps> = ({
                 <div className="p-6 border-b border-white/10 flex items-center justify-between bg-[#0d1b30] flex-shrink-0">
                     <div className="flex items-center gap-3">
                         <div className="w-12 h-12 rounded-full bg-gray-600 overflow-hidden border-2 border-neon-green/30">
-                            <img src={currentUser?.photoUrl || `https://ui-avatars.com/api/?name=${currentUser?.name}`} alt={currentUser?.name} className="w-full h-full object-cover" />
+                            <img src={currentUser.photoUrl || `https://ui-avatars.com/api/?name=${currentUser.name}`} alt={currentUser.name} className="w-full h-full object-cover" />
                         </div>
                         <div>
-                            <h3 className="text-white font-bold text-lg">{currentUser?.name}</h3>
-                            <p className="text-neon-green text-xs font-semibold">{currentUser?.reputation}</p>
+                            <h3 className="text-white font-bold text-lg">{currentUser.name}</h3>
+                            <p className="text-neon-green text-xs font-semibold">{currentUser.reputation}</p>
                         </div>
                     </div>
                     <button onClick={onClose} className="text-gray-400 hover:text-white p-2 rounded-full hover:bg-white/10 transition-colors">
@@ -217,10 +209,10 @@ const Sidebar: React.FC<SidebarProps> = ({
                                         onClick={item.disabled ? undefined : item.action}
                                         disabled={item.disabled}
                                         className={`w-full flex items-center gap-4 p-3 rounded-xl text-left transition-all ${item.disabled
-                                            ? 'opacity-40 cursor-not-allowed'
-                                            : item.isLogout
-                                                ? 'hover:bg-red-500/10 border border-transparent hover:border-red-500/30'
-                                                : 'hover:bg-gray-800 border border-transparent hover:border-white/5'
+                                                ? 'opacity-40 cursor-not-allowed'
+                                                : item.isLogout
+                                                    ? 'hover:bg-red-500/10 border border-transparent hover:border-red-500/30'
+                                                    : 'hover:bg-gray-800 border border-transparent hover:border-white/5'
                                             }`}
                                     >
                                         <div className={`${item.isLogout ? 'text-red-500' : 'text-neon-green'}`}>
@@ -236,8 +228,7 @@ const Sidebar: React.FC<SidebarProps> = ({
                     ))}
                 </div>
             </div>
-        </>,
-        document.body
+        </>
     );
 };
 
