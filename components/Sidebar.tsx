@@ -7,7 +7,15 @@ import {
     SearchIcon,
     CalendarIcon,
     StarIcon,
-    CloseIcon
+    CloseIcon,
+    WalletIcon,
+    BellIcon,
+    HelpIcon,
+    SettingsIcon,
+    LogoutIcon,
+    ChatIcon,
+    LocationIcon,
+    LockIcon
 } from './Icons';
 
 interface SidebarProps {
@@ -22,6 +30,11 @@ interface SidebarProps {
     onNavigateToSupport: () => void;
     onNavigateToMyGames: () => void;
     onNavigateToCommunity: () => void;
+    onNavigateToNotifications: () => void;
+    onNavigateToWallet: () => void;
+    onNavigateToRanking: () => void;
+    onNavigateToArenas: () => void;
+    onNavigateToMatchChat: () => void;
     onLogout: () => void;
 }
 
@@ -37,101 +50,123 @@ const Sidebar: React.FC<SidebarProps> = ({
     onNavigateToSupport,
     onNavigateToMyGames,
     onNavigateToCommunity,
+    onNavigateToNotifications,
+    onNavigateToWallet,
+    onNavigateToRanking,
+    onNavigateToArenas,
+    onNavigateToMatchChat,
     onLogout
 }) => {
 
     if (!currentUser) return null;
 
-    const menuItems = [
+    const sections = [
         {
-            icon: <ProfileIcon />,
-            title: 'Meu Perfil',
-            description: 'Editar informações pessoais, esportes favoritos e preferências.',
-            action: () => {
-                onNavigateToProfile();
-                onClose();
-            }
+            title: "Conta",
+            items: [
+                {
+                    icon: <ProfileIcon />,
+                    title: 'Meu Perfil',
+                    action: () => { onNavigateToProfile(); onClose(); }
+                },
+                {
+                    icon: <CalendarIcon />,
+                    title: 'Meus Jogos',
+                    action: () => { onNavigateToMyGames(); onClose(); }
+                },
+                {
+                    icon: <LockIcon />,
+                    title: 'Minhas Partidas Privadas',
+                    action: () => { onNavigateToMyGames(); onClose(); } // Reuse My Games as per instructions
+                },
+                {
+                    icon: <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>,
+                    title: 'Convites Recebidos',
+                    action: () => { },
+                    disabled: true // Future feature
+                }
+            ]
         },
         {
-            icon: <UsersIcon />,
-            title: 'Amigos',
-            description: 'Gerencie vínculos de amizade e solicitações recebidas.',
-            action: () => {
-                onNavigateToFriends(); // Should ideally open Friends Manager
-                onClose();
-            }
+            title: "Social",
+            items: [
+                {
+                    icon: <UsersIcon />,
+                    title: 'Amigos',
+                    action: () => { onNavigateToFriends(); onClose(); }
+                },
+                {
+                    icon: <StarIcon />,
+                    title: 'Comunidade',
+                    action: () => { onNavigateToCommunity(); onClose(); }
+                },
+                {
+                    icon: <ChatIcon />,
+                    title: 'Chat',
+                    action: () => { onNavigateToMatchChat(); onClose(); }
+                }
+            ]
         },
         {
-            icon: <ShareIcon />,
-            title: 'Convide um Amigo',
-            description: 'Convide pessoas para o FutMatch usando link compartilhável.',
-            action: () => {
-                onNavigateToInvite();
-                onClose();
-            }
+            title: "Serviços",
+            items: [
+                {
+                    icon: <SearchIcon />,
+                    title: 'Contrate um Jogador',
+                    action: () => { onNavigateToHire(); onClose(); }
+                },
+                {
+                    icon: <LocationIcon />,
+                    title: 'Campos e Arenas',
+                    action: () => { onNavigateToArenas(); onClose(); }
+                }
+            ]
         },
         {
-            icon: <SearchIcon />,
-            title: 'Contrate um Jogador/Goleiro',
-            description: 'Encontre jogadores disponíveis para completar sua partida.',
-            action: () => {
-                onNavigateToHire();
-                onClose();
-            }
+            title: "Sistema",
+            items: [
+                {
+                    icon: <BellIcon />,
+                    title: 'Notificações',
+                    action: () => { onNavigateToNotifications(); onClose(); }
+                },
+                {
+                    icon: <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" /></svg>, // Ranking Icon (using SVG directly or could import)
+                    title: 'Ranking',
+                    action: () => { onNavigateToRanking(); onClose(); }
+                },
+                {
+                    icon: <WalletIcon />,
+                    title: 'Carteira FutMatch',
+                    action: () => { onNavigateToWallet(); onClose(); }
+                }
+            ]
         },
         {
-            icon: <CalendarIcon />,
-            title: 'Minhas Partidas',
-            description: 'Lista de todas as partidas que você criou ou participa.',
-            action: () => {
-                onNavigateToMyGames();
-                onClose();
-            }
-        },
-        {
-            icon: <StarIcon />, // Should be Community Icon? 'UsersIcon' is taken. 
-            // In Icons.tsx we have 'UsersIcon' (general) and maybe 'UserIcon'.
-            // For Community let's use Star or Heart or maybe reuse Users if appropriate?
-            // Wait, Icons.tsx has 'StarIcon' used for Ranking usually. 
-            // Let's use 'UsersIcon' for Community as well or check if there is a 'HeartIcon' (Community uses Heart sometimes?).
-            // Checking Icons.tsx again... 'HeartIcon' exists (Community).
-            // But 'UsersIcon' is better for "Minhas Comunidades" (Groups).
-            title: 'Minhas Comunidades',
-            description: 'Acesse rapidamente as comunidades que você integra.',
-            action: () => {
-                onNavigateToCommunity();
-                onClose();
-            },
-            iconComponent: <UsersIcon /> // Overriding since I can't put JSX in 'icon' if I don't import it... wait I imported `UsersIcon`. 
-            // I'll just put it in the object.
-        },
-        {
-            icon: <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>,
-            title: 'Configurações',
-            description: 'Notificações, privacidade, idioma, conta e preferências gerais.',
-            action: () => {
-                onNavigateToSettings();
-                onClose();
-            }
-        },
-        {
-            icon: <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>,
-            title: 'Ajuda e Suporte',
-            description: 'Acesse tutoriais, FAQ e suporte técnico.',
-            action: () => {
-                onNavigateToSupport();
-                onClose();
-            }
-        },
-        {
-            icon: <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" /></svg>,
-            title: 'Sair',
-            description: 'Encerrar sessão atual.',
-            action: () => {
-                onLogout();
-                onClose();
-            },
-            isLogout: true
+            title: "Outros",
+            items: [
+                {
+                    icon: <HelpIcon />,
+                    title: 'Ajuda e Suporte',
+                    action: () => { onNavigateToSupport(); onClose(); }
+                },
+                {
+                    icon: <SettingsIcon />,
+                    title: 'Configurações',
+                    action: () => { onNavigateToSettings(); onClose(); }
+                },
+                {
+                    icon: <ShareIcon />,
+                    title: 'Convide um Amigo',
+                    action: () => { onNavigateToInvite(); onClose(); }
+                },
+                {
+                    icon: <LogoutIcon className="text-red-500" />,
+                    title: 'Sair',
+                    action: () => { onLogout(); onClose(); },
+                    isLogout: true
+                }
+            ]
         }
     ];
 
@@ -144,10 +179,10 @@ const Sidebar: React.FC<SidebarProps> = ({
             />
 
             {/* Sidebar Panel */}
-            <div className={`fixed inset-y-0 left-0 w-[85%] max-w-sm bg-[#0a1628] border-r border-white/10 z-[101] shadow-2xl transform transition-transform duration-300 ${isOpen ? 'translate-x-0' : '-translate-x-full'}`}>
+            <div className={`fixed inset-y-0 left-0 w-[85%] max-w-sm bg-[#0a1628] border-r border-white/10 z-[101] shadow-2xl transform transition-transform duration-300 overflow-hidden flex flex-col ${isOpen ? 'translate-x-0' : '-translate-x-full'}`}>
 
                 {/* Header */}
-                <div className="p-6 border-b border-white/10 flex items-center justify-between bg-[#0d1b30]">
+                <div className="p-6 border-b border-white/10 flex items-center justify-between bg-[#0d1b30] flex-shrink-0">
                     <div className="flex items-center gap-3">
                         <div className="w-12 h-12 rounded-full bg-gray-600 overflow-hidden border-2 border-neon-green/30">
                             <img src={currentUser.photoUrl || `https://ui-avatars.com/api/?name=${currentUser.name}`} alt={currentUser.name} className="w-full h-full object-cover" />
@@ -163,21 +198,33 @@ const Sidebar: React.FC<SidebarProps> = ({
                 </div>
 
                 {/* Menu Items */}
-                <div className="overflow-y-auto h-[calc(100%-88px)] p-4 space-y-2">
-                    {menuItems.map((item, index) => (
-                        <button
-                            key={index}
-                            onClick={item.action}
-                            className={`w-full flex items-center gap-4 p-4 rounded-xl text-left transition-all group ${item.isLogout ? 'hover:bg-red-500/10 border border-transparent hover:border-red-500/30' : 'hover:bg-gray-800 border border-transparent hover:border-white/5'}`}
-                        >
-                            <div className={`${item.isLogout ? 'text-red-500' : 'text-neon-green group-hover:scale-110 transition-transform'}`}>
-                                {item.iconComponent || item.icon}
+                <div className="overflow-y-auto flex-1 p-4 pb-20 scrollbar-thin scrollbar-thumb-gray-700 scrollbar-track-transparent">
+                    {sections.map((section, secIndex) => (
+                        <div key={secIndex} className="mb-6">
+                            <h4 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2 ml-2">{section.title}</h4>
+                            <div className="space-y-1">
+                                {section.items.map((item, index) => (
+                                    <button
+                                        key={index}
+                                        onClick={item.disabled ? undefined : item.action}
+                                        disabled={item.disabled}
+                                        className={`w-full flex items-center gap-4 p-3 rounded-xl text-left transition-all ${item.disabled
+                                                ? 'opacity-40 cursor-not-allowed'
+                                                : item.isLogout
+                                                    ? 'hover:bg-red-500/10 border border-transparent hover:border-red-500/30'
+                                                    : 'hover:bg-gray-800 border border-transparent hover:border-white/5'
+                                            }`}
+                                    >
+                                        <div className={`${item.isLogout ? 'text-red-500' : 'text-neon-green'}`}>
+                                            {item.icon}
+                                        </div>
+                                        <div>
+                                            <h4 className={`font-medium text-sm ${item.isLogout ? 'text-red-400' : 'text-gray-200'}`}>{item.title}</h4>
+                                        </div>
+                                    </button>
+                                ))}
                             </div>
-                            <div>
-                                <h4 className={`font-bold ${item.isLogout ? 'text-red-400' : 'text-white'}`}>{item.title}</h4>
-                                <p className="text-xs text-gray-400 mt-1 leading-relaxed">{item.description}</p>
-                            </div>
-                        </button>
+                        </div>
                     ))}
                 </div>
             </div>

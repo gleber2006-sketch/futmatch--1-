@@ -1673,6 +1673,11 @@ const App: React.FC = () => {
                 onNavigateToSupport={() => setActivePage('support')}
                 onNavigateToMyGames={() => setActivePage('my-games')}
                 onNavigateToCommunity={() => setActivePage('community')}
+                onNavigateToNotifications={() => setActivePage('notifications')}
+                onNavigateToWallet={() => setActivePage('wallet')}
+                onNavigateToRanking={() => setActivePage('ranking')}
+                onNavigateToArenas={() => setActivePage('arenas')}
+                onNavigateToMatchChat={() => setActivePage('match-chat')}
                 onLogout={handleLogout}
             />
         </div>
