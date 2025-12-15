@@ -1636,27 +1636,29 @@ const App: React.FC = () => {
     }
 
     return (
-        <div className="app-container">
-            {renderPage()}
-            {activePage === 'explore' && (
-                <BottomNav
-                    activePage={activePage}
-                    onNavigate={setActivePage}
-                />
-            )}
-            {showConfirmation && (
-                <div className="confirmation-toast">
-                    {showConfirmation}
-                </div>
-            )}
-            {showExitToast && (
-                <Toast
-                    message={exitAttemptRef.current ? "Pressione Voltar novamente para sair" : "Pressione Voltar novamente para sair"}
-                    type="info"
-                    onClose={() => setShowExitToast(false)}
-                />
-            )}
-            <ChatBot />
+        <>
+            <div className="app-container">
+                {renderPage()}
+                {activePage === 'explore' && (
+                    <BottomNav
+                        activePage={activePage}
+                        onNavigate={setActivePage}
+                    />
+                )}
+                {showConfirmation && (
+                    <div className="confirmation-toast">
+                        {showConfirmation}
+                    </div>
+                )}
+                {showExitToast && (
+                    <Toast
+                        message={exitAttemptRef.current ? "Pressione Voltar novamente para sair" : "Pressione Voltar novamente para sair"}
+                        type="info"
+                        onClose={() => setShowExitToast(false)}
+                    />
+                )}
+                <ChatBot />
+            </div>
 
             <Sidebar
                 isOpen={isSidebarOpen}
@@ -1683,7 +1685,7 @@ const App: React.FC = () => {
                 onNavigateToMatchChat={() => setActivePage('match-chat')}
                 onLogout={handleLogout}
             />
-        </div>
+        </>
     );
 }
 
