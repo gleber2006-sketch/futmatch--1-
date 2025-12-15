@@ -184,12 +184,12 @@ Bora jogar? 🚀`;
             onClick={() => !isCanceled && onCardClick(match)}
             className={`relative rounded-xl shadow-lg overflow-hidden mb-4 transition-all duration-300 w-full backdrop-blur-md border ${className}
         ${match.is_private && !isCanceled
-                    ? 'bg-purple-900/20 border-purple-500/30 hover:border-purple-400/50'
+                    ? 'bg-gradient-to-br from-purple-900/40 via-[#2e1065]/50 to-purple-800/20 border-purple-500/50 hover:border-purple-400 shadow-[0_0_15px_rgba(168,85,247,0.15)]'
                     : !isCanceled
-                        ? 'bg-gradient-to-br from-[#112240] via-[#112240] to-green-900/30 border-neon-green/40 shadow-[0_0_15px_rgba(0,255,148,0.15)] hover:border-neon-green/80'
+                        ? 'bg-gradient-to-br from-[#022c22]/40 via-[#064e3b]/30 to-[#065f46]/20 border-neon-green/50 shadow-[0_0_15px_rgba(0,255,148,0.2)] hover:border-neon-green hover:shadow-[0_0_25px_rgba(0,255,148,0.3)]'
                         : 'bg-gray-800/50 border-gray-700'}
-        ${isCanceled ? 'opacity-60 grayscale-[50%]' : 'transform hover:scale-[1.02] cursor-pointer hover:shadow-[0_0_25px_rgba(0,255,148,0.25)]'}
-        ${isBoosted && !isCanceled ? 'border-neon-green/80 shadow-[0_0_20px_rgba(0,255,148,0.4)] ring-1 ring-neon-green/20' : ''}
+        ${isCanceled ? 'opacity-60 grayscale-[50%]' : 'transform hover:scale-[1.02] cursor-pointer'}
+        ${isBoosted && !isCanceled ? 'border-neon-green shadow-[0_0_25px_rgba(0,255,148,0.5)] ring-1 ring-neon-green/30' : ''}
         `}
             aria-disabled={isCanceled}
         >
