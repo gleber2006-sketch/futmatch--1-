@@ -69,6 +69,7 @@ const Sidebar: React.FC<SidebarProps> = ({
                     title: 'Meu Perfil',
                     action: () => { onNavigateToProfile(); onClose(); }
                 },
+                /* Temporarily disabled options
                 {
                     icon: <CalendarIcon />,
                     title: 'Meus Jogos',
@@ -85,8 +86,10 @@ const Sidebar: React.FC<SidebarProps> = ({
                     action: () => { },
                     disabled: true
                 }
+                */
             ]
         },
+        /*
         {
             title: "Social",
             items: [
@@ -142,9 +145,11 @@ const Sidebar: React.FC<SidebarProps> = ({
                 }
             ]
         },
+        */
         {
             title: "Outros",
             items: [
+                /*
                 {
                     icon: <HelpIcon />,
                     title: 'Ajuda e Suporte',
@@ -160,6 +165,7 @@ const Sidebar: React.FC<SidebarProps> = ({
                     title: 'Convide um Amigo',
                     action: () => { onNavigateToInvite(); onClose(); }
                 },
+                */
                 {
                     icon: <LogoutIcon className="text-red-500" />,
                     title: 'Sair',
@@ -209,10 +215,10 @@ const Sidebar: React.FC<SidebarProps> = ({
                                         onClick={item.disabled ? undefined : item.action}
                                         disabled={item.disabled}
                                         className={`w-full flex items-center gap-4 p-3 rounded-xl text-left transition-all ${item.disabled
-                                                ? 'opacity-40 cursor-not-allowed'
-                                                : item.isLogout
-                                                    ? 'hover:bg-red-500/10 border border-transparent hover:border-red-500/30'
-                                                    : 'hover:bg-gray-800 border border-transparent hover:border-white/5'
+                                            ? 'opacity-40 cursor-not-allowed'
+                                            : item.isLogout
+                                                ? 'hover:bg-red-500/10 border border-transparent hover:border-red-500/30'
+                                                : 'hover:bg-gray-800 border border-transparent hover:border-white/5'
                                             }`}
                                     >
                                         <div className={`${item.isLogout ? 'text-red-500' : 'text-neon-green'}`}>
