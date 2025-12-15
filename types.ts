@@ -1,5 +1,5 @@
 
-export type Page = 'explore' | 'create' | 'profile' | 'ranking' | 'map' | 'my-games' | 'community' | 'arenas' | 'match-chat' | 'notifications' | 'wallet';
+export type Page = 'explore' | 'create' | 'profile' | 'ranking' | 'map' | 'my-games' | 'community' | 'arenas' | 'match-chat' | 'notifications' | 'wallet' | 'invite' | 'settings' | 'support' | 'hire';
 
 export interface Profile {
   id: string;

@@ -21,6 +21,10 @@ import DatabaseSetup from './components/DatabaseSetup';
 import ModernLoader from './components/ModernLoader';
 import Toast from './components/Toast';
 import { generateInviteCode } from './utils/inviteCode';
+import InviteFriendScreen from './components/InviteFriendScreen';
+import SettingsScreen from './components/SettingsScreen';
+import SupportScreen from './components/SupportScreen';
+import HirePlayerScreen from './components/HirePlayerScreen';
 
 
 const platformFeatures: Feature[] = [
@@ -1503,6 +1507,14 @@ const App: React.FC = () => {
                     onNavigateBack={() => setActivePage('explore')}
                     onBalanceUpdate={handleBalanceUpdate}
                 />;
+            case 'invite':
+                return <InviteFriendScreen onBack={() => setActivePage('explore')} />;
+            case 'settings':
+                return <SettingsScreen onBack={() => setActivePage('explore')} />;
+            case 'support':
+                return <SupportScreen onBack={() => setActivePage('explore')} />;
+            case 'hire':
+                return <HirePlayerScreen onBack={() => setActivePage('explore')} />;
             case 'map':
                 return <MatchesMap
                     matches={matches}
@@ -1655,6 +1667,10 @@ const App: React.FC = () => {
                     setProfileInitialSection('friends');
                     setActivePage('profile');
                 }}
+                onNavigateToInvite={() => setActivePage('invite')}
+                onNavigateToHire={() => setActivePage('hire')}
+                onNavigateToSettings={() => setActivePage('settings')}
+                onNavigateToSupport={() => setActivePage('support')}
                 onNavigateToMyGames={() => setActivePage('my-games')}
                 onNavigateToCommunity={() => setActivePage('community')}
                 onLogout={handleLogout}

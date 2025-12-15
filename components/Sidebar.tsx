@@ -16,6 +16,10 @@ interface SidebarProps {
     currentUser: Profile | null;
     onNavigateToProfile: () => void;
     onNavigateToFriends: () => void;
+    onNavigateToInvite: () => void;
+    onNavigateToHire: () => void;
+    onNavigateToSettings: () => void;
+    onNavigateToSupport: () => void;
     onNavigateToMyGames: () => void;
     onNavigateToCommunity: () => void;
     onLogout: () => void;
@@ -27,6 +31,10 @@ const Sidebar: React.FC<SidebarProps> = ({
     currentUser,
     onNavigateToProfile,
     onNavigateToFriends,
+    onNavigateToInvite,
+    onNavigateToHire,
+    onNavigateToSettings,
+    onNavigateToSupport,
     onNavigateToMyGames,
     onNavigateToCommunity,
     onLogout
@@ -58,17 +66,7 @@ const Sidebar: React.FC<SidebarProps> = ({
             title: 'Convide um Amigo',
             description: 'Convide pessoas para o FutMatch usando link compartilhável.',
             action: () => {
-                const message = `Venha jogar no FutMatch! Crie seu perfil e encontre partidas: https://futmatch.app`;
-                if (navigator.share) {
-                    navigator.share({
-                        title: 'FutMatch',
-                        text: message,
-                        url: 'https://futmatch.app'
-                    }).catch(console.error);
-                } else {
-                    navigator.clipboard.writeText(message);
-                    alert('Link copiado para a área de transferência!');
-                }
+                onNavigateToInvite();
                 onClose();
             }
         },
@@ -77,9 +75,7 @@ const Sidebar: React.FC<SidebarProps> = ({
             title: 'Contrate um Jogador/Goleiro',
             description: 'Encontre jogadores disponíveis para completar sua partida.',
             action: () => {
-                // Placeholder for now, or use Friends Search
-                onNavigateToFriends(); // Redirecting to Friends/Search area for now as it's the closest "Find players" feature
-                // In a real scenario this might pass a specific 'tab' param
+                onNavigateToHire();
                 onClose();
             }
         },
@@ -114,7 +110,7 @@ const Sidebar: React.FC<SidebarProps> = ({
             title: 'Configurações',
             description: 'Notificações, privacidade, idioma, conta e preferências gerais.',
             action: () => {
-                alert('Configurações em breve!');
+                onNavigateToSettings();
                 onClose();
             }
         },
@@ -123,7 +119,7 @@ const Sidebar: React.FC<SidebarProps> = ({
             title: 'Ajuda e Suporte',
             description: 'Acesse tutoriais, FAQ e suporte técnico.',
             action: () => {
-                alert('Central de Ajuda em breve!');
+                onNavigateToSupport();
                 onClose();
             }
         },
