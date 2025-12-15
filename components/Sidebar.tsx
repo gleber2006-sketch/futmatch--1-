@@ -58,7 +58,7 @@ const Sidebar: React.FC<SidebarProps> = ({
     onLogout
 }) => {
 
-    if (!currentUser) return null;
+    // if (!currentUser) return null; // MOVED CHECK DOWN or REMOVED to debug visibility
 
     const sections = [
         {
@@ -185,7 +185,10 @@ const Sidebar: React.FC<SidebarProps> = ({
             />
 
             {/* Sidebar Panel */}
-            <div className={`fixed inset-y-0 left-0 w-[85%] max-w-sm bg-[#0a1628] border-r border-white/10 z-[9999] shadow-2xl transform transition-transform duration-300 overflow-hidden flex flex-col ${isOpen ? 'translate-x-0' : '-translate-x-full'}`}>
+            <div
+                style={{ zIndex: 99999, display: isOpen ? 'flex' : 'none' }}
+                className={`fixed inset-y-0 left-0 w-[85%] max-w-sm bg-[#0a1628] border-r border-white/10 z-[9999] shadow-2xl transform transition-transform duration-300 overflow-hidden flex flex-col ${isOpen ? 'translate-x-0' : '-translate-x-full'}`}
+            >
 
                 {/* Header */}
                 <div className="p-6 border-b border-white/10 flex items-center justify-between bg-[#0d1b30] flex-shrink-0">
