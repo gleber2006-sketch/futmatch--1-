@@ -15,7 +15,11 @@ const ExploreHeader: React.FC<ExploreHeaderProps> = ({ currentUser, onNavigateTo
                 <div className="flex items-center">
                     {/* Menu Button */}
                     <button
-                        onClick={onOpenSidebar}
+                        onClick={() => {
+                            console.log('Hamburger clicked');
+                            // window.alert('Menu clicado via ExploreHeader'); // Debug visual for user
+                            onOpenSidebar();
+                        }}
                         className="mr-3 p-1 rounded-md hover:bg-white/10 transition-colors text-white"
                         aria-label="Menu"
                     >

@@ -1,5 +1,5 @@
+import { createPortal } from 'react-dom';
 import React from 'react';
-import ReactDOM from 'react-dom';
 import { Profile } from '../types';
 import {
     ProfileIcon,
@@ -178,7 +178,7 @@ const Sidebar: React.FC<SidebarProps> = ({
         }
     ];
 
-    return ReactDOM.createPortal(
+    return createPortal(
         <>
             {/* Backdrop */}
             <div
