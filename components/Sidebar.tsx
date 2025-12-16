@@ -60,7 +60,7 @@ const Sidebar: React.FC<SidebarProps> = ({
 
     // if (!currentUser) return null; // MOVED CHECK DOWN or REMOVED to debug visibility
 
-    const sections = [
+    const sections: { title: string; items: { icon: any; title: string; action: () => void; disabled?: boolean; isLogout?: boolean; }[] }[] = [
         {
             title: "Conta",
             items: [
@@ -149,23 +149,11 @@ const Sidebar: React.FC<SidebarProps> = ({
         {
             title: "Outros",
             items: [
-                /*
-                {
-                    icon: <HelpIcon />,
-                    title: 'Ajuda e Suporte',
-                    action: () => { onNavigateToSupport(); onClose(); }
-                },
-                {
-                    icon: <SettingsIcon />,
-                    title: 'Configurações',
-                    action: () => { onNavigateToSettings(); onClose(); }
-                },
                 {
                     icon: <ShareIcon />,
                     title: 'Convide um Amigo',
                     action: () => { onNavigateToInvite(); onClose(); }
                 },
-                */
                 {
                     icon: <LogoutIcon className="text-red-500" />,
                     title: 'Sair',
