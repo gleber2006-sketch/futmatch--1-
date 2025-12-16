@@ -22,6 +22,7 @@ import ModernLoader from './components/ModernLoader';
 import Toast from './components/Toast';
 import { generateInviteCode } from './utils/inviteCode';
 import InviteFriendScreen from './components/InviteFriendScreen';
+import InviteLandingScreen from './components/InviteLandingScreen';
 import SettingsScreen from './components/SettingsScreen';
 import SupportScreen from './components/SupportScreen';
 import HirePlayerScreen from './components/HirePlayerScreen';
@@ -57,7 +58,12 @@ const isSchemaMismatchError = (error: any): boolean => {
 import Sidebar from './components/Sidebar';
 
 const App: React.FC = () => {
-    const [activePage, setActivePage] = useState<Page>('explore');
+    const [activePage, setActivePage] = useState<Page | 'invite-landing'>(() => {
+        if (window.location.pathname === '/convite') {
+            return 'invite-landing';
+        }
+        return 'explore';
+    });
     const [currentUser, setCurrentUser] = useState<Profile | null>(null);
     const [matches, setMatches] = useState<Match[]>([]);
     const [joinedMatchIds, setJoinedMatchIds] = useState<Set<number>>(new Set());
@@ -593,6 +599,17 @@ const App: React.FC = () => {
         fetchMatches();
         fetchRankings();
     }, [isLoadingDbCheck, dbSetupRequired, isAuthenticated, fetchMatches, fetchRankings]);
+
+    useEffect(() => {
+        if (currentUser && activePage === 'invite-landing') {
+            // User is already logged in, so just show them the app (Explore)
+            // gracefully instead of the invite landing page.
+            window.history.replaceState({}, '', '/');
+            setActivePage('explore');
+            setShowConfirmation("Bem-vindo de volta! ⚽");
+            setTimeout(() => setShowConfirmation(null), 3000);
+        }
+    }, [currentUser, activePage]);
 
     // Deep linking: Abrir partida específica via URL ou Invite Code
     useEffect(() => {
@@ -1599,6 +1616,21 @@ const App: React.FC = () => {
     }
 
     if (!isAuthenticated) {
+        if (activePage === 'invite-landing') {
+            return (
+                <InviteLandingScreen
+                    onGoToLogin={() => {
+                        window.history.pushState({}, '', '/');
+                        setActivePage('explore'); // Will trigger Home render
+                    }}
+                    onGoToRegister={() => {
+                        window.history.pushState({}, '', '/');
+                        setActivePage('explore'); // Will trigger Home render
+                    }}
+                />
+            );
+        }
+
         return (
             <Home
                 onLogin={handleLogin}
@@ -1658,7 +1690,23 @@ const App: React.FC = () => {
                         onClose={() => setShowExitToast(false)}
                     />
                 )}
-                <ChatBot />
+                {activePage === 'invite-landing' ? (
+                    <InviteLandingScreen
+                        onGoToLogin={() => {
+                            window.history.pushState({}, '', '/');
+                            setActivePage('explore'); // Trigger Home render logic if not authenticated
+                            // Actually, logic below handles "if (!isAuthenticated) return Home".
+                            // So we just need to set activePage to explore or clear URL, 
+                            // and the main renders (if !isAuthenticated) will show Login/Home.
+                        }}
+                        onGoToRegister={() => {
+                            window.history.pushState({}, '', '/');
+                            setActivePage('explore'); // Same here, Home handles registration toggle
+                        }}
+                    />
+                ) : (
+                    <ChatBot />
+                )}
             </div>
 
             <Sidebar
