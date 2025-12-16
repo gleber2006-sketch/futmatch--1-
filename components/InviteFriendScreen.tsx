@@ -99,7 +99,13 @@ const InviteFriendScreen: React.FC<InviteFriendScreenProps> = ({ onBack }) => {
                 {/* Botão de Compartilhamento Nativo */}
                 <button
                     onClick={handleShare}
-                    className="mt-8 w-full max-w-sm bg-neon-green text-[#0a1628] py-4 rounded-xl font-bold text-lg hover:bg-[#00e686] active:scale-[0.98] transition-all shadow-[0_0_20px_rgba(0,255,148,0.3)] hover:shadow-[0_0_30px_rgba(0,255,148,0.5)] flex items-center justify-center gap-3 opacity-100"
+                    style={{
+                        opacity: 1,
+                        backgroundColor: '#00FF94',
+                        filter: 'drop-shadow(0 0 8px rgba(0, 255, 148, 0.4))',
+                        color: '#000000'
+                    }}
+                    className="mt-8 relative z-50 w-full max-w-sm py-4 rounded-xl font-bold text-lg hover:brightness-110 active:scale-[0.98] transition-all flex items-center justify-center gap-3"
                 >
                     <ShareIcon className="w-6 h-6" />
                     Compartilhar Link
