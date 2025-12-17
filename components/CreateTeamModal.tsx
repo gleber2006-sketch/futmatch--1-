@@ -1,6 +1,7 @@
 
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { teamService } from '../services/teamService';
+import { supabase } from '../services/supabaseClient';
 
 interface CreateTeamModalProps {
     userId: string;
@@ -11,8 +12,46 @@ interface CreateTeamModalProps {
 const CreateTeamModal: React.FC<CreateTeamModalProps> = ({ userId, onClose, onSuccess }) => {
     const [name, setName] = useState('');
     const [description, setDescription] = useState('');
-    const [logoUrl, setLogoUrl] = useState('');
+    const [imageFile, setImageFile] = useState<File | null>(null);
+    const [previewUrl, setPreviewUrl] = useState<string>('');
     const [loading, setLoading] = useState(false);
+    const fileInputRef = useRef<HTMLInputElement>(null);
+
+    const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        // Validação de Tamanho (2MB)
+        if (file.size > 2 * 1024 * 1024) {
+            alert("A imagem deve ter no máximo 2MB.");
+            return;
+        }
+
+        // Validação de Tipo
+        if (!['image/jpeg', 'image/png', 'image/jpg'].includes(file.type)) {
+            alert("Apenas arquivos PNG, JPG e JPEG são permitidos.");
+            return;
+        }
+
+        setImageFile(file);
+        const url = URL.createObjectURL(file);
+        setPreviewUrl(url);
+    };
+
+    const uploadLogo = async (file: File): Promise<string> => {
+        const fileExt = file.name.split('.').pop();
+        const fileName = `team_${Date.now()}_${Math.random().toString(36).substring(7)}.${fileExt}`;
+        const filePath = `${fileName}`; // Armazenar na raiz ou pasta específica
+
+        const { error: uploadError } = await supabase.storage
+            .from('team-logos')
+            .upload(filePath, file);
+
+        if (uploadError) throw uploadError;
+
+        const { data } = supabase.storage.from('team-logos').getPublicUrl(filePath);
+        return data.publicUrl;
+    };
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -20,13 +59,19 @@ const CreateTeamModal: React.FC<CreateTeamModalProps> = ({ userId, onClose, onSu
 
         setLoading(true);
         try {
-            await teamService.createTeam(userId, name, description, logoUrl || undefined);
+            let finalLogoUrl = '';
+
+            if (imageFile) {
+                finalLogoUrl = await uploadLogo(imageFile);
+            }
+
+            await teamService.createTeam(userId, name, description, finalLogoUrl || undefined);
             alert('Time criado com sucesso!');
             onSuccess();
             onClose();
         } catch (error: any) {
             console.error('Erro ao criar time:', error);
-            alert('Erro ao criar time: ' + error.message);
+            alert('Erro ao criar time: ' + (error.message || "Erro desconhecido"));
         } finally {
             setLoading(false);
         }
@@ -47,6 +92,31 @@ const CreateTeamModal: React.FC<CreateTeamModalProps> = ({ userId, onClose, onSu
 
                 {/* Content */}
                 <form onSubmit={handleSubmit} className="p-6 space-y-4">
+                    {/* Image Upload Area */}
+                    <div className="flex flex-col items-center mb-6">
+                        <div
+                            onClick={() => fileInputRef.current?.click()}
+                            className="w-24 h-24 rounded-full bg-gray-700 border-2 border-dashed border-gray-500 hover:border-green-500 hover:bg-gray-600 transition-all cursor-pointer flex items-center justify-center overflow-hidden relative group"
+                        >
+                            {previewUrl ? (
+                                <img src={previewUrl} alt="Preview" className="w-full h-full object-cover" />
+                            ) : (
+                                <span className="text-2xl text-gray-400 group-hover:text-green-500">📷</span>
+                            )}
+                            <div className="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                                <span className="text-xs text-white font-bold">Alterar</span>
+                            </div>
+                        </div>
+                        <p className="text-xs text-gray-500 mt-2">Toque para adicionar escudo (Max 2MB)</p>
+                        <input
+                            type="file"
+                            ref={fileInputRef}
+                            onChange={handleImageChange}
+                            accept="image/png, image/jpeg, image/jpg"
+                            className="hidden"
+                        />
+                    </div>
+
                     <div>
                         <label className="block text-sm font-medium text-gray-400 mb-1">Nome do Time *</label>
                         <input
@@ -69,18 +139,6 @@ const CreateTeamModal: React.FC<CreateTeamModalProps> = ({ userId, onClose, onSu
                             className="w-full bg-gray-700/50 border border-gray-600 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-green-500 transition-all placeholder-gray-500 h-24 resize-none"
                             placeholder="Breve descrição do seu time..."
                         />
-                    </div>
-
-                    <div>
-                        <label className="block text-sm font-medium text-gray-400 mb-1">URL do Escudo (Opcional)</label>
-                        <input
-                            type="url"
-                            value={logoUrl}
-                            onChange={(e) => setLogoUrl(e.target.value)}
-                            className="w-full bg-gray-700/50 border border-gray-600 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-green-500 transition-all placeholder-gray-500"
-                            placeholder="https://..."
-                        />
-                        <p className="text-xs text-gray-500 mt-1">Cole o link de uma imagem</p>
                     </div>
 
                     <div className="pt-2 flex gap-3">

@@ -193,3 +193,13 @@ export interface TeamMember {
   profiles?: Pick<Profile, 'name' | 'photoUrl' | 'reputation'>;
   team?: Team;
 }
+
+export interface Friendship {
+  id: number;
+  requester_id: string;
+  receiver_id: string;
+  status: 'pending' | 'accepted' | 'rejected' | 'blocked';
+  created_at: string;
+  requester?: Pick<Profile, 'name' | 'photoUrl' | 'reputation'>;
+  receiver?: Pick<Profile, 'name' | 'photoUrl' | 'reputation'>;
+}

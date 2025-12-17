@@ -1,7 +1,7 @@
-
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { teamService } from '../services/teamService';
 import { Team, TeamMember } from '../types';
+import { supabase } from '../services/supabaseClient';
 
 interface TeamDetailsModalProps {
     teamId: number;
@@ -16,6 +16,8 @@ const TeamDetailsModal: React.FC<TeamDetailsModalProps> = ({ teamId, currentUser
     const [loading, setLoading] = useState(true);
     const [activeTab, setActiveTab] = useState<'members' | 'requests'>('members');
     const [isRefreshing, setIsRefreshing] = useState(false);
+    const [isUploading, setIsUploading] = useState(false);
+    const fileInputRef = useRef<HTMLInputElement>(null);
 
     const loadData = async () => {
         try {
@@ -80,6 +82,46 @@ const TeamDetailsModal: React.FC<TeamDetailsModalProps> = ({ teamId, currentUser
         }
     };
 
+    const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        if (!isAdmin || !team) return;
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        if (file.size > 2 * 1024 * 1024) {
+            alert("A imagem deve ter no máximo 2MB.");
+            return;
+        }
+
+        if (!['image/jpeg', 'image/png', 'image/jpg'].includes(file.type)) {
+            alert("Formato inválido.");
+            return;
+        }
+
+        try {
+            setIsUploading(true);
+            const fileExt = file.name.split('.').pop();
+            const fileName = `team_${team.id}_${Date.now()}.${fileExt}`;
+            const filePath = `${fileName}`;
+
+            const { error: uploadError } = await supabase.storage
+                .from('team-logos')
+                .upload(filePath, file);
+
+            if (uploadError) throw uploadError;
+
+            const { data } = supabase.storage.from('team-logos').getPublicUrl(filePath);
+            const publicUrl = data.publicUrl;
+
+            await teamService.updateTeam(team.id, { logo_url: publicUrl });
+            setTeam(prev => prev ? ({ ...prev, logo_url: publicUrl }) : null);
+
+        } catch (error: any) {
+            alert("Erro ao atualizar logo: " + error.message);
+        } finally {
+            setIsUploading(false);
+        }
+    };
+
     if (loading && !isRefreshing) {
         return (
             <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50">
@@ -100,13 +142,29 @@ const TeamDetailsModal: React.FC<TeamDetailsModalProps> = ({ teamId, currentUser
                         ✕
                     </button>
                     <div className="absolute -bottom-10 left-6">
-                        <div className="w-24 h-24 rounded-full border-4 border-gray-800 bg-gray-700 overflow-hidden shadow-lg flex items-center justify-center">
+                        <div
+                            className={`w-24 h-24 rounded-full border-4 border-gray-800 bg-gray-700 overflow-hidden shadow-lg flex items-center justify-center relative group ${isAdmin ? 'cursor-pointer' : ''}`}
+                            onClick={() => isAdmin && fileInputRef.current?.click()}
+                        >
                             {team.logo_url ? (
-                                <img src={team.logo_url} alt={team.name} className="w-full h-full object-cover" />
+                                <img src={team.logo_url} alt={team.name} className={`w-full h-full object-cover transition-opacity ${isUploading ? 'opacity-50' : ''}`} />
                             ) : (
                                 <span className="text-3xl">🛡️</span>
                             )}
+
+                            {isAdmin && (
+                                <div className="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                                    <span className="text-xs text-white font-bold">{isUploading ? '...' : 'Editar'}</span>
+                                </div>
+                            )}
+
+                            {isUploading && (
+                                <div className="absolute inset-0 flex items-center justify-center">
+                                    <div className="animate-spin rounded-full h-6 w-6 border-t-2 border-white"></div>
+                                </div>
+                            )}
                         </div>
+                        <input type="file" ref={fileInputRef} onChange={handleLogoUpload} className="hidden" accept="image/png, image/jpeg, image/jpg" />
                     </div>
                 </div>
 

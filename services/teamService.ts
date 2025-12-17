@@ -139,5 +139,15 @@ export const teamService = {
             .eq('id', memberId);
 
         if (error) throw error;
+    },
+
+    // Atualizar dados do time (logo)
+    async updateTeam(teamId: number, data: Partial<Team>) {
+        const { error } = await supabase
+            .from('teams')
+            .update(data)
+            .eq('id', teamId);
+
+        if (error) throw error;
     }
 };
