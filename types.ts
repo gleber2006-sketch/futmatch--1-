@@ -173,14 +173,23 @@ export interface MatchParticipant {
   profiles: Pick<Profile, 'name' | 'photoUrl' | 'reputation'>;
 }
 
-export type FriendshipStatus = 'pending' | 'accepted';
-
-export interface Friendship {
+export interface Team {
   id: number;
-  requester_id: string;
-  receiver_id: string;
-  status: FriendshipStatus;
+  created_by: string;
+  name: string;
+  description: string | null;
+  logo_url: string | null;
+  invite_code: string;
   created_at: string;
-  requester?: Pick<Profile, 'name' | 'photoUrl' | 'reputation'>;
-  receiver?: Pick<Profile, 'name' | 'photoUrl' | 'reputation'>;
+}
+
+export interface TeamMember {
+  id: number;
+  team_id: number;
+  user_id: string;
+  status: 'pending' | 'approved' | 'rejected';
+  role: 'admin' | 'member';
+  joined_at: string;
+  profiles?: Pick<Profile, 'name' | 'photoUrl' | 'reputation'>;
+  team?: Team;
 }

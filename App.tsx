@@ -651,16 +651,12 @@ const App: React.FC = () => {
                 if (data && !error) {
                     const parsedMatch = { ...data, date: new Date(data.date) };
                     setSelectedMatch(parsedMatch);
-                    // Add to matches list temporarily so it doesn't disappear if we close modal? 
-                    // Or just let it be selected. 
-                    // Better to add it to local state if it's not there, so UI doesn't break.
                     setMatches(prev => {
                         if (!prev.find(m => m.id === parsedMatch.id)) {
                             return [...prev, parsedMatch];
                         }
                         return prev;
                     });
-
                     window.history.replaceState({}, '', window.location.pathname);
                     setShowConfirmation("Partida encontrada via convite! 🎟️");
                     setTimeout(() => setShowConfirmation(null), 3000);
@@ -669,10 +665,53 @@ const App: React.FC = () => {
                     window.history.replaceState({}, '', window.location.pathname);
                 }
             }
+
+            // Handle Team Invite
+            const teamInviteCode = urlParams.get('invite_team');
+            if (teamInviteCode) {
+                try {
+                    // 1. Get Team
+                    const { data: team, error } = await supabase.from('teams').select('id, name').eq('invite_code', teamInviteCode).single();
+
+                    if (team && !error) {
+                        if (window.confirm(`Você foi convidado para entrar no time "${team.name}". Deseja enviar solicitação?`)) {
+                            await supabase.rpc('join_team_safe', { p_team_id: team.id, p_user_id: currentUser.id })
+                                .then(({ data, error }: any) => { // Using simple insert directly in service usually, but let's try service or direct
+                                    // Using our service is cleaner:
+                                    // We need to import teamService first, but to void altering imports lets use direct logic here or dynamic import?
+                                    // Better: Add import at top and use service.
+                                });
+
+                            // To avoid complex imports just for this block, let's replicate simple logic or just trust the next step to add import.
+                            // Actually, let's use the service but I need to make sure it's imported.
+                            // I will add the logic directly here to be safe and atomic
+                            const { error: joinError } = await supabase.from('team_members').insert({
+                                team_id: team.id,
+                                user_id: currentUser.id,
+                                status: 'pending',
+                                role: 'member'
+                            });
+
+                            if (joinError) {
+                                if (joinError.code === '23505') alert("Você já faz parte ou já solicitou entrada neste time.");
+                                else alert("Erro ao solicitar entrada.");
+                            } else {
+                                setShowConfirmation("Solicitação enviada para " + team.name);
+                                setTimeout(() => setShowConfirmation(null), 3000);
+                            }
+                        }
+                    } else {
+                        alert("Convite de time inválido.");
+                    }
+                } catch (e) {
+                    console.error(e);
+                }
+                window.history.replaceState({}, '', window.location.pathname);
+            }
         };
 
         handleDeepLink();
-    }, [isAuthenticated, matches]);
+    }, [isAuthenticated, matches, currentUser]);
 
     const handleCreateMatch = useCallback(async (newMatch: Omit<Match, 'id' | 'filled_slots' | 'created_by' | 'status' | 'cancellation_reason'>) => {
         if (!currentUser) return;

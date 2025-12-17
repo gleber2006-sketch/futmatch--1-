@@ -1,12 +1,15 @@
 
 import React, { useState, useEffect, useRef } from 'react';
-import { Profile } from '../types';
+import { Profile, Team } from '../types';
 import { StarIcon, TrophyIcon, EditIcon } from './Icons';
 import { supabase } from '../services/supabaseClient';
 import ModernLoader from './ModernLoader';
 import { SPORTS_LIST, SPORT_POSITIONS, BRAZILIAN_TEAMS, CITY_LIST } from '../constants';
 import FriendsManager from './Friends/FriendsManager';
 import { friendshipService } from '../services/friendshipService';
+import { teamService } from '../services/teamService';
+import CreateTeamModal from './CreateTeamModal';
+import TeamDetailsModal from './TeamDetailsModal';
 
 interface UserProfileProps {
     user: Profile;
@@ -49,8 +52,24 @@ const UserProfile: React.FC<UserProfileProps> = ({ user, onUpdateUser, onLogout,
     const [isSaving, setIsSaving] = useState(false);
     const [showFriendsManager, setShowFriendsManager] = useState(initialSection === 'friends');
     const [friendCount, setFriendCount] = useState(0);
+    const [myTeams, setMyTeams] = useState<(Team & { role: 'admin' | 'member' })[]>([]);
+    const [showCreateTeamModal, setShowCreateTeamModal] = useState(false);
+    const [selectedTeamId, setSelectedTeamId] = useState<number | null>(null);
 
     const isOwnProfile = true;
+
+    useEffect(() => {
+        if (user.id) {
+            teamService.getUserTeams(user.id).then(setMyTeams).catch(console.error);
+        }
+    }, [user.id]);
+
+    const handleTeamCreated = () => {
+        // Refresh teams list
+        if (user.id) {
+            teamService.getUserTeams(user.id).then(setMyTeams).catch(console.error);
+        }
+    };
 
     useEffect(() => {
         if (initialSection === 'friends') {
@@ -488,6 +507,48 @@ const UserProfile: React.FC<UserProfileProps> = ({ user, onUpdateUser, onLogout,
                             </div>
 
                             <div className="pt-6 space-y-3 border-t border-white/10 mt-6">
+                                {/* Seção de Times */}
+                                {!isEditing && (
+                                    <div className="mb-6">
+                                        <div className="flex justify-between items-center mb-4 px-2">
+                                            <h3 className="text-xs font-bold text-gray-500 uppercase tracking-wider text-center">Meus Times</h3>
+                                            <button
+                                                onClick={() => setShowCreateTeamModal(true)}
+                                                className="text-xs bg-green-500/10 text-green-400 border border-green-500/20 px-2 py-1 rounded hover:bg-green-500/20 transition-colors"
+                                            >
+                                                + Criar
+                                            </button>
+                                        </div>
+                                        <div className="flex gap-4 overflow-x-auto pb-4 px-2 scrollbar-thin scrollbar-thumb-gray-700">
+                                            {myTeams.length === 0 ? (
+                                                <div className="text-gray-500 text-sm text-center w-full py-2 bg-gray-800/30 rounded-lg border border-gray-700/30">
+                                                    Você ainda não participa de nenhum time.
+                                                </div>
+                                            ) : (
+                                                myTeams.map(team => (
+                                                    <div
+                                                        key={team.id}
+                                                        onClick={() => setSelectedTeamId(team.id)}
+                                                        className="flex flex-col items-center gap-2 cursor-pointer group min-w-[80px]"
+                                                    >
+                                                        <div className="w-16 h-16 rounded-full bg-gray-700 border-2 border-gray-600 group-hover:border-green-500 transition-all overflow-hidden relative shadow-lg">
+                                                            {team.logo_url ? (
+                                                                <img src={team.logo_url} alt={team.name} className="w-full h-full object-cover" />
+                                                            ) : (
+                                                                <span className="w-full h-full flex items-center justify-center text-2xl">🛡️</span>
+                                                            )}
+                                                            {team.role === 'admin' && (
+                                                                <div className="absolute bottom-0 right-0 bg-yellow-500 text-black text-[8px] font-bold px-1 rounded-tl-md">ADM</div>
+                                                            )}
+                                                        </div>
+                                                        <span className="text-xs text-gray-300 font-medium truncate max-w-[90px] text-center group-hover:text-white">{team.name}</span>
+                                                    </div>
+                                                ))
+                                            )}
+                                        </div>
+                                    </div>
+                                )}
+
                                 <button onClick={() => setShowFriendsManager(true)} className="w-full bg-[#112240] border border-white/10 text-white font-bold py-3 rounded-lg hover:bg-[#1a2f55] transition-all flex justify-center items-center gap-2">
                                     👥 Gerenciar Amigos
                                 </button>
@@ -505,6 +566,22 @@ const UserProfile: React.FC<UserProfileProps> = ({ user, onUpdateUser, onLogout,
             </div>
 
             {showFriendsManager && <FriendsManager currentUser={user} onClose={() => setShowFriendsManager(false)} />}
+
+            {showCreateTeamModal && (
+                <CreateTeamModal
+                    userId={user.id}
+                    onClose={() => setShowCreateTeamModal(false)}
+                    onSuccess={handleTeamCreated}
+                />
+            )}
+
+            {selectedTeamId && (
+                <TeamDetailsModal
+                    teamId={selectedTeamId}
+                    currentUserId={user.id}
+                    onClose={() => setSelectedTeamId(null)}
+                />
+            )}
 
             <style>{`
           @keyframes fade-in {
