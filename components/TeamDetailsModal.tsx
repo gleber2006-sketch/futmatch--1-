@@ -122,6 +122,23 @@ const TeamDetailsModal: React.FC<TeamDetailsModalProps> = ({ teamId, currentUser
         }
     };
 
+
+    const handleLeaveTeam = async () => {
+        if (!window.confirm("Tem certeza que deseja sair deste time?")) return;
+        try {
+            await teamService.leaveTeam(teamId, currentUserId);
+            alert("Você saiu do time.");
+            onClose();
+        } catch (e) {
+            alert("Erro ao sair do time.");
+        }
+    };
+
+    // Stub
+    const handleCreateMatch = () => {
+        alert("Em breve: Criar partida oficial do time!");
+    }
+
     if (loading && !isRefreshing) {
         return (
             <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50">
@@ -169,7 +186,16 @@ const TeamDetailsModal: React.FC<TeamDetailsModalProps> = ({ teamId, currentUser
                 </div>
 
                 <div className="pt-12 px-6 pb-4">
-                    <h2 className="text-2xl font-bold text-white mb-1">{team.name}</h2>
+                    <div className="flex justify-between items-start">
+                        <div>
+                            <h2 className="text-2xl font-bold text-white mb-1">{team.name}</h2>
+                            <div className="flex items-center gap-2 mb-2">
+                                <span className="bg-gray-700 text-gray-300 text-[10px] px-2 py-0.5 rounded-full uppercase tracking-wider font-bold">Futebol</span>
+                                <span className="text-gray-500 text-xs">• {members.length} Membros</span>
+                            </div>
+                        </div>
+                    </div>
+
                     {team.description && <p className="text-gray-400 text-sm mb-4">{team.description}</p>}
 
                     <div className="flex gap-2 mb-6">
@@ -186,6 +212,24 @@ const TeamDetailsModal: React.FC<TeamDetailsModalProps> = ({ teamId, currentUser
                         >
                             🔗
                         </button>
+
+                        {isAdmin && (
+                            <button
+                                onClick={handleCreateMatch}
+                                className="flex-1 bg-[#112240] border border-white/10 hover:bg-[#1a2f55] text-white text-sm font-semibold py-2 px-4 rounded-lg transition-colors"
+                            >
+                                ⚽ Criar Partida
+                            </button>
+                        )}
+                        {!isAdmin && (
+                            <button
+                                onClick={handleLeaveTeam}
+                                className="bg-red-500/10 border border-red-500/30 text-red-400 hover:bg-red-500/20 p-2 rounded-lg transition-colors"
+                                title="Sair do Time"
+                            >
+                                🚪
+                            </button>
+                        )}
                     </div>
 
                     {/* Tabs if Admin */}

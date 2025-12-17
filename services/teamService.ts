@@ -88,8 +88,9 @@ export const teamService = {
         return data.map((d: any) => ({ ...d.team, role: d.role })) as (Team & { role: 'admin' | 'member' })[];
     },
 
-    // Buscar detalhes do time com membros (apenas membros aprovados para visualização publica)
+    // Buscar detalhes do time com membros (usando queries separadas para evitar problemas de join)
     async getTeamDetails(teamId: number) {
+        // 1. Get Team
         const { data: team, error: teamError } = await supabase
             .from('teams')
             .select('*')
@@ -98,27 +99,80 @@ export const teamService = {
 
         if (teamError) throw teamError;
 
-        const { data: members, error: membersError } = await supabase
+        // 2. Get Members
+        const { data: membersRaw, error: membersError } = await supabase
             .from('team_members')
-            .select('*, profiles(name, photo_url, reputation)')
+            .select('*')
             .eq('team_id', teamId)
             .eq('status', 'approved');
 
         if (membersError) throw membersError;
 
+        if (!membersRaw || membersRaw.length === 0) {
+            return { team, members: [] };
+        }
+
+        // 3. Get Profiles for those members
+        const userIds = membersRaw.map((m: any) => m.user_id);
+        const { data: profiles, error: profilesError } = await supabase
+            .from('profiles')
+            .select('id, name, photo_url, reputation')
+            .in('id', userIds);
+
+        if (profilesError) throw profilesError;
+
+        // 4. Map profiles to members
+        const members = membersRaw.map((member: any) => {
+            const profile = profiles?.find((p: any) => p.id === member.user_id);
+            return {
+                ...member,
+                profiles: profile ? {
+                    name: profile.name,
+                    photoUrl: profile.photo_url, // Map snake_case to camelCase
+                    reputation: profile.reputation
+                } : undefined
+            };
+        });
+
         return { team, members };
     },
 
-    // Buscar solicitações pendentes (Apenas Admin)
+    // Buscar solicitações pendentes (usando queries separadas)
     async getPendingRequests(teamId: number) {
-        const { data, error } = await supabase
+        // 1. Get Pending Members
+        const { data: pendingRaw, error } = await supabase
             .from('team_members')
-            .select('*, profiles(name, photo_url, reputation)')
+            .select('*')
             .eq('team_id', teamId)
             .eq('status', 'pending');
 
         if (error) throw error;
-        return data;
+
+        if (!pendingRaw || pendingRaw.length === 0) {
+            return [];
+        }
+
+        // 2. Get Profiles
+        const userIds = pendingRaw.map((m: any) => m.user_id);
+        const { data: profiles, error: profilesError } = await supabase
+            .from('profiles')
+            .select('id, name, photo_url, reputation')
+            .in('id', userIds);
+
+        if (profilesError) throw profilesError;
+
+        // 3. Map
+        return pendingRaw.map((member: any) => {
+            const profile = profiles?.find((p: any) => p.id === member.user_id);
+            return {
+                ...member,
+                profiles: profile ? {
+                    name: profile.name,
+                    photoUrl: profile.photo_url,
+                    reputation: profile.reputation
+                } : undefined
+            };
+        });
     },
 
     // Aprovar membro
@@ -137,6 +191,17 @@ export const teamService = {
             .from('team_members')
             .delete()
             .eq('id', memberId);
+
+        if (error) throw error;
+    },
+
+    // Sair do time (usuário remove a si mesmo)
+    async leaveTeam(teamId: number, userId: string) {
+        const { error } = await supabase
+            .from('team_members')
+            .delete()
+            .eq('team_id', teamId)
+            .eq('user_id', userId);
 
         if (error) throw error;
     },
