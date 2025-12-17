@@ -14,6 +14,14 @@ const UpcomingMatchesCarousel: React.FC<UpcomingMatchesCarouselProps> = ({ match
         .filter(m => m.status !== 'Cancelado' && m.status !== 'Finalizada')
         .slice(0, 10);
 
+    // Debug: Log participant data
+    console.log('UpcomingMatchesCarousel - matches:', upcomingMatches.map(m => ({
+        id: m.id,
+        name: m.name,
+        participants: m.match_participants?.length || 0,
+        confirmed: m.match_participants?.filter(p => p.status === 'confirmed').length || 0
+    })));
+
     if (upcomingMatches.length === 0) {
         return null;
     }
