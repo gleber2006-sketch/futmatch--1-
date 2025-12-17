@@ -100,33 +100,41 @@ const UpcomingMatchesCarousel: React.FC<UpcomingMatchesCarouselProps> = ({ match
                             {/* Participant Avatars */}
                             {match.match_participants && match.match_participants.length > 0 && (
                                 <div className="flex items-center justify-center gap-1 mt-2">
-                                    {match.match_participants.slice(0, 3).map((p, i) => (
-                                        <div
-                                            key={p.user_id || i}
-                                            className="w-5 h-5 rounded-full bg-gray-600 flex items-center justify-center text-white text-[8px] font-bold border border-gray-500 overflow-hidden"
-                                        >
-                                            {p.profile?.photo_url ? (
-                                                <img
-                                                    src={p.profile.photo_url}
-                                                    alt={p.profile?.name || 'U'}
-                                                    className="w-full h-full object-cover"
-                                                    onError={(e) => {
-                                                        const target = e.target as HTMLImageElement;
-                                                        target.style.display = 'none';
-                                                        if (target.nextSibling) {
-                                                            (target.nextSibling as HTMLElement).style.display = 'flex';
-                                                        }
-                                                    }}
-                                                />
-                                            ) : null}
-                                            <span style={{ display: p.profile?.photo_url ? 'none' : 'flex' }}>
-                                                {p.profile?.name?.substring(0, 1).toUpperCase() || 'U'}
-                                            </span>
-                                        </div>
-                                    ))}
-                                    {match.match_participants.length > 3 && (
+                                    {match.match_participants
+                                        .filter(p => p.status === 'confirmed')
+                                        .slice(0, 3)
+                                        .map((p, i) => {
+                                            const initial = p.profile?.name?.substring(0, 1).toUpperCase() || 'U';
+                                            const hasPhoto = p.profile?.photo_url;
+
+                                            return (
+                                                <div
+                                                    key={p.user_id || i}
+                                                    className="w-5 h-5 rounded-full bg-gray-600 flex items-center justify-center text-white text-[8px] font-bold border border-gray-500 overflow-hidden"
+                                                    title={p.profile?.name || 'Participante'}
+                                                >
+                                                    {hasPhoto ? (
+                                                        <img
+                                                            src={p.profile.photo_url!}
+                                                            alt={initial}
+                                                            className="w-full h-full object-cover"
+                                                            onError={(e) => {
+                                                                e.currentTarget.style.display = 'none';
+                                                                const parent = e.currentTarget.parentElement;
+                                                                if (parent) {
+                                                                    parent.textContent = initial;
+                                                                }
+                                                            }}
+                                                        />
+                                                    ) : (
+                                                        initial
+                                                    )}
+                                                </div>
+                                            );
+                                        })}
+                                    {match.match_participants.filter(p => p.status === 'confirmed').length > 3 && (
                                         <div className="w-5 h-5 rounded-full bg-gray-700 flex items-center justify-center text-white text-[8px] font-bold border border-gray-600">
-                                            +{match.match_participants.length - 3}
+                                            +{match.match_participants.filter(p => p.status === 'confirmed').length - 3}
                                         </div>
                                     )}
                                 </div>
