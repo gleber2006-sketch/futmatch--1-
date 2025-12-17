@@ -3,6 +3,7 @@ import { Match, Profile } from '../types';
 import { LocationIcon, CalendarIcon, UsersIcon, EditIcon, ChatIcon, ShareIcon, LockIcon } from './Icons';
 import ModernLoader from './ModernLoader';
 import TeamLogo from './TeamLogo';
+import ParticipantAvatar from './ParticipantAvatar';
 import { SPORT_EMOJIS } from '../constants';
 
 interface MatchCardProps {
@@ -270,12 +271,12 @@ Bora jogar? 🚀`;
                             {match.match_participants && match.match_participants.length > 0 && (
                                 <div className="flex -space-x-2 overflow-hidden">
                                     {match.match_participants.slice(0, 3).map((p, i) => (
-                                        <img
+                                        <ParticipantAvatar
                                             key={p.user_id || i}
-                                            className="inline-block h-6 w-6 rounded-full ring-2 ring-gray-800"
-                                            src={p.profile?.photo_url || `https://ui-avatars.com/api/?name=${p.profile?.name || 'User'}`}
-                                            alt={p.profile?.name}
-                                            title={p.profile?.name}
+                                            photoUrl={p.profile?.photo_url}
+                                            name={p.profile?.name || 'Usuário'}
+                                            size="small"
+                                            className="inline-block"
                                         />
                                     ))}
                                     {match.match_participants.length > 3 && (
