@@ -1,5 +1,6 @@
 import React, { useRef } from 'react';
 import { Match } from '../types';
+import TeamLogo from './TeamLogo';
 
 interface UpcomingMatchesCarouselProps {
     matches: Match[];
@@ -64,16 +65,24 @@ const UpcomingMatchesCarousel: React.FC<UpcomingMatchesCarouselProps> = ({ match
                     >
                         {/* Team Badges */}
                         <div className="flex items-center justify-center gap-2 mb-2">
-                            {/* Team 1 Badge */}
-                            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-600 to-blue-800 flex items-center justify-center text-white text-xs font-bold border-2 border-blue-400">
-                                {match.sport.substring(0, 2).toUpperCase()}
-                            </div>
+                            {/* Team 1 Badge - Show team logo if match has team, otherwise show sport initials */}
+                            {match.team ? (
+                                <TeamLogo
+                                    logoUrl={match.team.logo_url}
+                                    teamName={match.team.name}
+                                    size="small"
+                                />
+                            ) : (
+                                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-600 to-blue-800 flex items-center justify-center text-white text-xs font-bold border-2 border-blue-400">
+                                    {match.sport.substring(0, 2).toUpperCase()}
+                                </div>
+                            )}
 
                             {/* VS */}
                             <span className="text-gray-400 text-xs font-bold">vs</span>
 
-                            {/* Team 2 Badge */}
-                            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-green-600 to-green-800 flex items-center justify-center text-white text-xs font-bold border-2 border-green-400">
+                            {/* Team 2 Badge - Always show sport initials for now */}
+                            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-green-600 to-green-800 flex items-center justify-center text-white text-xs font-bold border-2 border-green-400">
                                 {match.sport.substring(0, 2).toUpperCase()}
                             </div>
                         </div>
