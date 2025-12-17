@@ -96,6 +96,41 @@ const UpcomingMatchesCarousel: React.FC<UpcomingMatchesCarouselProps> = ({ match
                             <p className="text-[#00ff88] text-[10px] font-semibold mt-1">
                                 {match.filled_slots}/{match.max_players}
                             </p>
+
+                            {/* Participant Avatars */}
+                            {match.match_participants && match.match_participants.length > 0 && (
+                                <div className="flex items-center justify-center gap-1 mt-2">
+                                    {match.match_participants.slice(0, 3).map((p, i) => (
+                                        <div
+                                            key={p.user_id || i}
+                                            className="w-5 h-5 rounded-full bg-gray-600 flex items-center justify-center text-white text-[8px] font-bold border border-gray-500 overflow-hidden"
+                                        >
+                                            {p.profile?.photo_url ? (
+                                                <img
+                                                    src={p.profile.photo_url}
+                                                    alt={p.profile?.name || 'U'}
+                                                    className="w-full h-full object-cover"
+                                                    onError={(e) => {
+                                                        const target = e.target as HTMLImageElement;
+                                                        target.style.display = 'none';
+                                                        if (target.nextSibling) {
+                                                            (target.nextSibling as HTMLElement).style.display = 'flex';
+                                                        }
+                                                    }}
+                                                />
+                                            ) : null}
+                                            <span style={{ display: p.profile?.photo_url ? 'none' : 'flex' }}>
+                                                {p.profile?.name?.substring(0, 1).toUpperCase() || 'U'}
+                                            </span>
+                                        </div>
+                                    ))}
+                                    {match.match_participants.length > 3 && (
+                                        <div className="w-5 h-5 rounded-full bg-gray-700 flex items-center justify-center text-white text-[8px] font-bold border border-gray-600">
+                                            +{match.match_participants.length - 3}
+                                        </div>
+                                    )}
+                                </div>
+                            )}
                         </div>
                     </button>
                 ))}
