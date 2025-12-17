@@ -213,6 +213,25 @@ export const teamService = {
             .update(data)
             .eq('id', teamId);
 
+    },
+
+    // Buscar partidas do time
+    async getTeamMatches(teamId: number) {
+        const { data, error } = await supabase
+            .from('matches')
+            .select(`
+                *, 
+                match_participants(user_id, status, joined_at, waitlist_position, profiles(photo_url, name, reputation))
+            `)
+            .eq('team_id', teamId)
+            .neq('status', 'Cancelado')
+            .order('date', { ascending: true });
+
         if (error) throw error;
+
+        return data.map((m: any) => ({
+            ...m,
+            date: new Date(m.date) // Ensure date is Date object
+        }));
     }
 };

@@ -16,6 +16,7 @@ interface UserProfileProps {
     onUpdateUser: (user: Profile) => Promise<void>;
     onLogout: () => void;
     onNavigateBack?: () => void;
+    onNavigateToCreateMatch?: (teamId: number, teamName: string) => void;
     initialSection?: 'details' | 'friends';
 }
 
@@ -32,7 +33,7 @@ const calculateAge = (dob: string | null): number | string => {
     return age;
 };
 
-const UserProfile: React.FC<UserProfileProps> = ({ user, onUpdateUser, onLogout, onNavigateBack, initialSection = 'details' }) => {
+const UserProfile: React.FC<UserProfileProps> = ({ user, onUpdateUser, onLogout, onNavigateBack, onNavigateToCreateMatch, initialSection = 'details' }) => {
     const [isEditing, setIsEditing] = useState(false);
     const [formData, setFormData] = useState({
         ...user,
@@ -580,6 +581,12 @@ const UserProfile: React.FC<UserProfileProps> = ({ user, onUpdateUser, onLogout,
                     teamId={selectedTeamId}
                     currentUserId={user.id}
                     onClose={() => setSelectedTeamId(null)}
+                    onCreateMatchClick={(tId, tName) => {
+                        setSelectedTeamId(null); // Close modal
+                        if (onNavigateToCreateMatch) {
+                            onNavigateToCreateMatch(tId, tName);
+                        }
+                    }}
                 />
             )}
 

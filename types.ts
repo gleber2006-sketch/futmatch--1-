@@ -41,6 +41,7 @@ export interface Match {
   boost_until?: string;
   is_private?: boolean;
   invite_code?: string | null;
+  team_id?: number | null;
   match_participants?: MatchParticipant[];
 }
 
@@ -131,6 +132,8 @@ export interface DraftMatchData {
   time?: string;
   slots?: number;
   rules?: string;
+  teamId?: number;
+  teamName?: string;
 }
 
 export interface Post {

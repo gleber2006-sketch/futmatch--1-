@@ -7,11 +7,13 @@ interface TeamDetailsModalProps {
     teamId: number;
     currentUserId: string;
     onClose: () => void;
+    onCreateMatchClick: (teamId: number, teamName: string) => void;
 }
 
-const TeamDetailsModal: React.FC<TeamDetailsModalProps> = ({ teamId, currentUserId, onClose }) => {
+const TeamDetailsModal: React.FC<TeamDetailsModalProps> = ({ teamId, currentUserId, onClose, onCreateMatchClick }) => {
     const [team, setTeam] = useState<Team | null>(null);
     const [members, setMembers] = useState<TeamMember[]>([]);
+    const [teamMatches, setTeamMatches] = useState<any[]>([]); // New state for matches
     const [pendingRequests, setPendingRequests] = useState<TeamMember[]>([]);
     const [loading, setLoading] = useState(true);
     const [activeTab, setActiveTab] = useState<'members' | 'requests'>('members');
@@ -31,6 +33,11 @@ const TeamDetailsModal: React.FC<TeamDetailsModalProps> = ({ teamId, currentUser
                 const pendings = await teamService.getPendingRequests(teamId);
                 setPendingRequests(pendings || []);
             }
+
+            // Buscar partidas do time
+            const matches = await teamService.getTeamMatches(teamId);
+            setTeamMatches(matches || []);
+
         } catch (error) {
             console.error(error);
             alert("Erro ao carregar time");
@@ -134,9 +141,10 @@ const TeamDetailsModal: React.FC<TeamDetailsModalProps> = ({ teamId, currentUser
         }
     };
 
-    // Stub
     const handleCreateMatch = () => {
-        alert("Em breve: Criar partida oficial do time!");
+        if (team) {
+            onCreateMatchClick(team.id, team.name);
+        }
     }
 
     if (loading && !isRefreshing) {
@@ -197,6 +205,27 @@ const TeamDetailsModal: React.FC<TeamDetailsModalProps> = ({ teamId, currentUser
                     </div>
 
                     {team.description && <p className="text-gray-400 text-sm mb-4">{team.description}</p>}
+
+                    {/* Team Matches Section (Preview) */}
+                    {teamMatches.length > 0 && (
+                        <div className="mb-6">
+                            <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Próximos Jogos</h3>
+                            <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
+                                {teamMatches.map(match => (
+                                    <div key={match.id} className="min-w-[120px] bg-gray-700/50 p-2 rounded-lg border border-gray-600/50 flex flex-col items-center text-center">
+                                        <div className="text-green-400 font-bold text-xs mb-1">
+                                            {/* Format Date: DD/MM - HH:mm */}
+                                            {match.date instanceof Date
+                                                ? `${match.date.getDate()}/${match.date.getMonth() + 1} - ${match.date.getHours()}:${String(match.date.getMinutes()).padStart(2, '0')}`
+                                                : 'Data inválida'}
+                                        </div>
+                                        <div className="text-white text-xs font-semibold truncate w-full">{match.name}</div>
+                                        <div className="text-gray-500 text-[10px] mt-1">{match.filled_slots}/{match.slots} Confirmados</div>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    )}
 
                     <div className="flex gap-2 mb-6">
                         <button

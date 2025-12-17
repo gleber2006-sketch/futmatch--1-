@@ -186,6 +186,7 @@ const CreateMatchForm: React.FC<CreateMatchFormProps> = ({ onCreateMatch, onUpda
         slots: Number(slots),
         rules,
         is_private: isPrivate,
+        team_id: initialData?.teamId
       };
 
       if (isEditMode && onUpdateMatch && matchToEdit) {
@@ -210,7 +211,7 @@ const CreateMatchForm: React.FC<CreateMatchFormProps> = ({ onCreateMatch, onUpda
     <div className="bg-gray-800 rounded-xl shadow-lg p-6 mb-20">
       <div className="flex items-center justify-between mb-6">
         <h2 className="text-2xl font-bold text-green-400">
-          {isEditMode ? 'Editar Partida ✏️' : 'Criar Nova Pelada ⚽'}
+          {isEditMode ? 'Editar Partida ✏️' : (initialData?.teamName ? `Criar Partida: ${initialData.teamName} 🛡️` : 'Criar Nova Pelada ⚽')}
         </h2>
         {onNavigateBack && (
           <button

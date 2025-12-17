@@ -732,7 +732,8 @@ const App: React.FC = () => {
                 p_slots: newMatch.slots,
                 p_rules: newMatch.rules,
                 p_is_private: newMatch.is_private,
-                p_invite_code: invite_code
+                p_invite_code: invite_code,
+                p_team_id: newMatch.team_id // Add team_id
             });
 
             if (error) throw error;
@@ -768,6 +769,20 @@ const App: React.FC = () => {
             }
         }
     }, [currentUser, fetchUserProfile, session]);
+
+    const handleNavigateToCreateMatch = useCallback((teamId: number, teamName: string) => {
+        setDraftMatchData({
+            teamId,
+            teamName,
+            name: `${teamName} vs ...`,
+            sport: 'Futebol', // Default or can be dynamic
+            location: '',
+            date: '',
+            time: '',
+            slots: 14 // Default for 7x7
+        });
+        setActivePage('create');
+    }, []);
 
     const handleJoinMatch = useCallback(async (matchId: number) => {
         if (!currentUser) {
@@ -1535,6 +1550,7 @@ const App: React.FC = () => {
                     onUpdateUser={handleUpdateUser}
                     onLogout={handleLogout}
                     onNavigateBack={() => setActivePage('explore')}
+                    onNavigateToCreateMatch={handleNavigateToCreateMatch}
                     initialSection={profileInitialSection}
                 />;
             case 'ranking':
