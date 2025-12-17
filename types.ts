@@ -42,6 +42,11 @@ export interface Match {
   is_private?: boolean;
   invite_code?: string | null;
   team_id?: number | null;
+  team?: {
+    id: number;
+    name: string;
+    logo_url: string | null;
+  } | null;
   match_participants?: MatchParticipant[];
 }
 

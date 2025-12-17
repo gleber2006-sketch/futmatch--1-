@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Match, Profile } from '../types';
 import { LocationIcon, CalendarIcon, UsersIcon, EditIcon, ChatIcon, ShareIcon, LockIcon } from './Icons';
 import ModernLoader from './ModernLoader';
+import TeamLogo from './TeamLogo';
 import { SPORT_EMOJIS } from '../constants';
 
 interface MatchCardProps {
@@ -231,6 +232,20 @@ Bora jogar? 🚀`;
                             {sportEmoji} {match.sport}
                         </p>
                         <h3 className="text-lg font-bold text-white mt-1 leading-tight">{match.name}</h3>
+
+                        {/* Team Logo Display */}
+                        {match.team && (
+                            <div className="flex items-center gap-2 mt-2">
+                                <TeamLogo
+                                    logoUrl={match.team.logo_url}
+                                    teamName={match.team.name}
+                                    size="small"
+                                />
+                                <span className="text-xs text-gray-400 font-medium">
+                                    {match.team.name}
+                                </span>
+                            </div>
+                        )}
                     </div>
 
                     <div className="flex items-start gap-2 pt-2 flex-shrink-0">

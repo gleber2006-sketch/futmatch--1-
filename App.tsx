@@ -105,7 +105,11 @@ const App: React.FC = () => {
             // Buscar partidas privadas criadas pelo usuário
             const { data: createdMatches, error: createdError } = await supabase
                 .from('matches')
-                .select('*, match_participants(user_id, status, joined_at, waitlist_position, profiles(photo_url, name, reputation))')
+                .select(`
+                    *,
+                    team:teams(id, name, logo_url),
+                    match_participants(user_id, status, joined_at, waitlist_position, profiles(photo_url, name, reputation))
+                `)
                 .eq('created_by', currentUser.id)
                 .eq('is_private', true)
                 .neq('status', 'Cancelado')
@@ -127,7 +131,11 @@ const App: React.FC = () => {
             if (participantMatchIds.length > 0) {
                 const { data, error: participatedError } = await supabase
                     .from('matches')
-                    .select('*, match_participants(user_id, status, joined_at, waitlist_position, profiles(photo_url, name, reputation))')
+                    .select(`
+                        *,
+                        team:teams(id, name, logo_url),
+                        match_participants(user_id, status, joined_at, waitlist_position, profiles(photo_url, name, reputation))
+                    `)
                     .in('id', participantMatchIds)
                     .eq('is_private', true)
                     .neq('status', 'Cancelado')
@@ -158,7 +166,11 @@ const App: React.FC = () => {
             // Fetch public matches
             const { data: publicData, error: publicError } = await supabase
                 .from('matches')
-                .select('*, match_participants(user_id, status, joined_at, waitlist_position, profiles(photo_url, name, reputation))')
+                .select(`
+                    *,
+                    team:teams(id, name, logo_url),
+                    match_participants(user_id, status, joined_at, waitlist_position, profiles(photo_url, name, reputation))
+                `)
                 .neq('status', 'Cancelado')
                 .eq('is_private', false)
                 .order('date', { ascending: true });
