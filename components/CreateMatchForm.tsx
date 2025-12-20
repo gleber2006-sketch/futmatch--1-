@@ -4,7 +4,7 @@ import { Match, VenueLocation, DraftMatchData } from '../types';
 import { searchLocalVenues } from '../services/geminiService';
 import ModernLoader from './ModernLoader';
 import { SearchIcon, LocationIcon } from './Icons';
-import { SPORTS_LIST } from '../constants';
+import { SPORTS_LIST, SPORT_EMOJIS } from '../constants';
 
 interface CreateMatchFormProps {
   onCreateMatch: (match: Omit<Match, 'id' | 'filled_slots' | 'created_by' | 'status' | 'cancellation_reason'>) => Promise<void>;
@@ -83,14 +83,22 @@ const CreateMatchForm: React.FC<CreateMatchFormProps> = ({ onCreateMatch, onUpda
     }
   }, []);
 
+  /* 🛡️ SHIELDED CODE: DO NOT MODIFY BLINDLY
+     Regras: 1. Busca automática PROIBIDA. 
+             2. Nada de Debounce ou useEffect no campo 'location'.
+             3. Busca apenas via handleManualSearch (clique na lupa). */
   const handleLocationChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setLocation(e.target.value);
-    // 1. Reset coordinates when user types to trigger new search
+    // Reset coordinates when user types to avoid saving old lat/lng with new text
     setSearchedLat(null);
     setSearchedLng(null);
     setVenueCandidates([]);
   };
+  // END SHIELDED CODE 🛡️
 
+  /* 🛡️ SHIELDED CODE: DO NOT MODIFY BLINDLY
+     Esta função é o ÚNICO gatilho permitido para busca de locais.
+     Qualquer tentativa de automatizar ou otimizar este fluxo sem clique explícito fere as regras de blindagem. */
   const handleManualSearch = async () => {
     if (!location) return;
 
@@ -116,6 +124,7 @@ const CreateMatchForm: React.FC<CreateMatchFormProps> = ({ onCreateMatch, onUpda
       setIsSearching(false);
     }
   };
+  // END SHIELDED CODE 🛡️
 
   const selectVenue = (venue: VenueLocation) => {
     setLocation(venue.name);
@@ -223,16 +232,41 @@ const CreateMatchForm: React.FC<CreateMatchFormProps> = ({ onCreateMatch, onUpda
           <input type="text" value={name} onChange={e => setName(e.target.value)} className={inputClasses} placeholder="Ex: Futebol de Quinta" required />
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-300 mb-1">Esporte</label>
-          <select value={sport} onChange={e => setSport(e.target.value)} className={inputClasses}>
+          <label className="block text-sm font-medium text-gray-300 mb-2">Modalidade</label>
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
             {SPORTS_LIST.map(s => (
-              <option key={s} value={s}>{s}</option>
+              <button
+                key={s}
+                type="button"
+                onClick={() => setSport(s)}
+                className={`flex items-center gap-2 p-3 rounded-xl border text-sm font-medium transition-all duration-300 relative overflow-hidden group ${sport === s
+                  ? 'bg-green-500/20 border-green-400 text-green-400 shadow-[0_0_20px_rgba(34,197,94,0.3)] scale-[1.03] z-10'
+                  : 'bg-gray-800/40 border-gray-700/50 text-gray-400 hover:border-gray-500 hover:bg-gray-700/60'
+                  }`}
+              >
+                {/* Efeito de brilho sutil no hover para botões não selecionados */}
+                {sport !== s && (
+                  <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/5 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700" />
+                )}
+
+                <span className={`text-xl transition-transform duration-300 ${sport === s ? 'scale-110 rotate-12' : 'group-hover:scale-110'}`}>
+                  {SPORT_EMOJIS[s] || '🏅'}
+                </span>
+                <span className="truncate flex-1 text-left">{s}</span>
+
+                {/* Indicador visual de seleção */}
+                {sport === s && (
+                  <div className="absolute top-1 right-1 w-1.5 h-1.5 bg-green-400 rounded-full shadow-[0_0_8px_#4ade80]" />
+                )}
+              </button>
             ))}
-          </select>
+          </div>
         </div>
 
         <div>
           <label className="block text-sm font-medium text-gray-300 mb-1">Local</label>
+          {/* 🛡️ SHIELDED UI: O comportamento deste bloco (Input + Lupa) é fixo e validado. 
+              Não adicione listeners de blur, focus ou mudanças de estado para disparar buscas. */}
           <div className="relative flex items-center">
             <input
               type="text"
@@ -304,6 +338,7 @@ const CreateMatchForm: React.FC<CreateMatchFormProps> = ({ onCreateMatch, onUpda
               ✅ Localização confirmada no mapa!
             </p>
           )}
+          {/* END SHIELDED UI 🛡️ */}
         </div>
 
         <div className="flex gap-4">
