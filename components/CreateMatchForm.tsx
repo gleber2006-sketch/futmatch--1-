@@ -5,6 +5,7 @@ import { searchLocalVenues } from '../services/geminiService';
 import ModernLoader from './ModernLoader';
 import { SearchIcon, LocationIcon } from './Icons';
 import { SPORTS_LIST, SPORT_EMOJIS } from '../constants';
+import WheelPicker from './WheelPicker';
 
 interface CreateMatchFormProps {
   onCreateMatch: (match: Omit<Match, 'id' | 'filled_slots' | 'created_by' | 'status' | 'cancellation_reason'>) => Promise<void>;
@@ -198,29 +199,36 @@ const CreateMatchForm: React.FC<CreateMatchFormProps> = ({ onCreateMatch, onUpda
     }
   };
 
-  const getNextDays = () => {
-    const days = [];
-    const today = new Date();
-    for (let i = 0; i < 7; i++) {
-      const d = new Date();
-      d.setDate(today.getDate() + i);
-      days.push({
-        date: d.toISOString().split('T')[0],
-        label: i === 0 ? 'Hoje' : i === 1 ? 'Amanhã' : d.toLocaleDateString('pt-BR', { weekday: 'short' }).replace('.', '').toUpperCase(),
-        dayNum: d.getDate(),
-        month: d.toLocaleDateString('pt-BR', { month: 'short' }).replace('.', '').toUpperCase()
-      });
-    }
-    return days;
-  };
+  const years = Array.from({ length: 5 }, (_, i) => (new Date().getFullYear() + i).toString());
+  const months = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
+  const getDaysInMonth = (month: number, year: number) => new Date(year, month + 1, 0).getDate();
 
-  const TIME_SLOTS = {
-    'Manhã': ['07:00', '08:00', '09:00', '10:00', '11:00'],
-    'Tarde': ['12:00', '13:00', '14:00', '15:00', '16:00', '17:00', '18:00'],
-    'Noite': ['19:00', '20:00', '21:00', '22:00', '23:00']
-  };
+  const hours = Array.from({ length: 24 }, (_, i) => i.toString().padStart(2, '0'));
+  const minutes = Array.from({ length: 60 }, (_, i) => i.toString().padStart(2, '0'));
 
-  const nextDays = getNextDays();
+  // Parse current state for pickers
+  const currentPartDate = date ? new Date(date + 'T00:00:00') : new Date();
+  const selectedDay = currentPartDate.getDate().toString().padStart(2, '0');
+  const selectedMonth = months[currentPartDate.getMonth()];
+  const selectedYear = currentPartDate.getFullYear().toString();
+
+  const currentPartTime = time || '19:00';
+  const [selectedHour, selectedMinute] = currentPartTime.split(':');
+
+  const updateDatePicker = React.useCallback((type: 'day' | 'month' | 'year', val: string) => {
+    const d = date ? new Date(date + 'T00:00:00') : new Date();
+    if (type === 'day') d.setDate(parseInt(val));
+    if (type === 'month') d.setMonth(months.indexOf(val));
+    if (type === 'year') d.setFullYear(parseInt(val));
+    setDate(d.toISOString().split('T')[0]);
+  }, [date, months]);
+
+  const updateTimePicker = React.useCallback((type: 'hour' | 'minute', val: string) => {
+    const currentTime = time || '19:00';
+    const [h, m] = currentTime.split(':');
+    if (type === 'hour') setTime(`${val}:${m}`);
+    else setTime(`${h}:${val}`);
+  }, [time]);
 
   const inputClasses = "w-full bg-gray-700 text-white p-3 rounded-lg border border-gray-600 focus:outline-none focus:ring-2 focus:ring-green-500 transition-all duration-200";
 
@@ -367,82 +375,45 @@ const CreateMatchForm: React.FC<CreateMatchFormProps> = ({ onCreateMatch, onUpda
           {/* END SHIELDED UI 🛡️ */}
         </div>
 
-        <div className="space-y-4">
+        <div className="space-y-6">
+          {/* iOS Style Date Picker */}
           <div>
-            <div className="flex justify-between items-center mb-2">
-              <label className="block text-sm font-medium text-gray-300">Data da Partida</label>
-              <button
-                type="button"
-                onClick={() => setShowManualDate(!showManualDate)}
-                className="text-xs text-green-400 hover:text-green-300 transition-colors font-medium"
-              >
-                {showManualDate ? '← Atalhos Rápidos' : 'Outra Data...'}
-              </button>
+            <label className="block text-sm font-medium text-gray-400 mb-3 uppercase tracking-wider">Data da Partida</label>
+            <div className="bg-gray-900/50 rounded-2xl p-2 border border-gray-700/50 flex gap-1">
+              <WheelPicker
+                options={Array.from({ length: getDaysInMonth(currentPartDate.getMonth(), currentPartDate.getFullYear()) }, (_, i) => (i + 1).toString().padStart(2, '0'))}
+                value={selectedDay}
+                onChange={(v) => updateDatePicker('day', v)}
+              />
+              <WheelPicker
+                options={months}
+                value={selectedMonth}
+                onChange={(v) => updateDatePicker('month', v)}
+              />
+              <WheelPicker
+                options={years}
+                value={selectedYear}
+                onChange={(v) => updateDatePicker('year', v)}
+              />
             </div>
-
-            {showManualDate ? (
-              <input type="date" value={date} onChange={e => setDate(e.target.value)} className={`${inputClasses} animate-fade-in`} required />
-            ) : (
-              <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide -mx-1 px-1 animate-fade-in">
-                {nextDays.map((d) => (
-                  <button
-                    key={d.date}
-                    type="button"
-                    onClick={() => setDate(d.date)}
-                    className={`flex flex-col items-center justify-center min-w-[70px] h-20 rounded-xl border transition-all duration-300 ${date === d.date
-                        ? 'bg-green-500/20 border-green-500 text-green-400 shadow-[0_0_15px_rgba(34,197,94,0.2)] scale-[1.05] z-10'
-                        : 'bg-gray-800/40 border-gray-700 text-gray-400 hover:bg-gray-700/60'
-                      }`}
-                  >
-                    <span className="text-[10px] font-bold opacity-70 mb-1">{d.label}</span>
-                    <span className="text-xl font-black">{d.dayNum}</span>
-                    <span className="text-[10px] uppercase font-bold opacity-70">{d.month}</span>
-                  </button>
-                ))}
-              </div>
-            )}
           </div>
 
+          {/* iOS Style Time Picker */}
           <div>
-            <div className="flex justify-between items-center mb-2">
-              <label className="block text-sm font-medium text-gray-300">Horário</label>
-              <button
-                type="button"
-                onClick={() => setShowManualTime(!showManualTime)}
-                className="text-xs text-green-400 hover:text-green-300 transition-colors font-medium"
-              >
-                {showManualTime ? '← Sugestões' : 'Hora Personalizada...'}
-              </button>
+            <label className="block text-sm font-medium text-gray-400 mb-3 uppercase tracking-wider">Horário</label>
+            <div className="bg-gray-900/50 rounded-2xl p-2 border border-gray-700/50 flex gap-1">
+              <WheelPicker
+                options={hours}
+                value={selectedHour}
+                onChange={(v) => updateTimePicker('hour', v)}
+              />
+              <div className="flex items-center text-gray-500 font-bold px-1">:</div>
+              <WheelPicker
+                options={minutes}
+                value={selectedMinute}
+                onChange={(v) => updateTimePicker('minute', v)}
+              />
             </div>
-
-            {showManualTime ? (
-              <input type="time" value={time} onChange={e => setTime(e.target.value)} className={`${inputClasses} animate-fade-in`} required />
-            ) : (
-              <div className="space-y-3 animate-fade-in">
-                {(Object.entries(TIME_SLOTS) as [string, string[]][]).map(([período, horários]) => (
-                  <div key={período} className="flex items-center gap-2">
-                    <span className="text-[10px] font-bold text-gray-500 uppercase vertical-text tracking-tighter w-4 h-full flex items-center justify-center">
-                      {período === 'Manhã' ? '🌅' : período === 'Tarde' ? '☀️' : '🌙'}
-                    </span>
-                    <div className="flex flex-wrap gap-2">
-                      {horários.map(h => (
-                        <button
-                          key={h}
-                          type="button"
-                          onClick={() => setTime(h)}
-                          className={`px-4 py-2 rounded-full border text-xs font-bold transition-all duration-300 ${time === h
-                              ? 'bg-green-500/20 border-green-500 text-green-400 shadow-[0_0_10px_rgba(34,197,94,0.2)] scale-[1.05]'
-                              : 'bg-gray-800/40 border-gray-700 text-gray-400 hover:bg-gray-700/60'
-                            }`}
-                        >
-                          {h}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
           </div>
         </div>
         <div>

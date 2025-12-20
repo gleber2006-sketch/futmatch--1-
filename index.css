@@ -117,3 +117,43 @@ textarea:focus {
   text-orientation: mixed;
   transform: rotate(180deg);
 }
+
+/* iOS Picker Styles */
+.ios-picker-container {
+  height: 150px;
+  overflow-y: scroll;
+  scroll-snap-type: y mandatory;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  position: relative;
+  mask-image: linear-gradient(to bottom, transparent, black 40%, black 60%, transparent);
+  -webkit-mask-image: linear-gradient(to bottom, transparent, black 40%, black 60%, transparent);
+}
+
+.ios-picker-item {
+  height: 50px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  scroll-snap-align: center;
+  font-size: 1.1rem;
+  transition: all 0.2s;
+}
+
+.ios-picker-item.selected {
+  font-weight: bold;
+  color: #00FF94;
+  transform: scale(1.1);
+}
+
+.ios-picker-selection-overlay {
+  position: absolute;
+  top: 50px;
+  left: 0;
+  right: 0;
+  height: 50px;
+  background: rgba(255, 255, 255, 0.05);
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  pointer-events: none;
+}
