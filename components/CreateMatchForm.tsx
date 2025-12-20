@@ -5,8 +5,6 @@ import { searchLocalVenues } from '../services/geminiService';
 import ModernLoader from './ModernLoader';
 import { SearchIcon, LocationIcon } from './Icons';
 import { SPORTS_LIST } from '../constants';
-import { supabase } from '../services/supabaseClient';
-import ModernDateTimePicker from './ModernDateTimePicker';
 
 interface CreateMatchFormProps {
   onCreateMatch: (match: Omit<Match, 'id' | 'filled_slots' | 'created_by' | 'status' | 'cancellation_reason'>) => Promise<void>;
@@ -85,20 +83,9 @@ const CreateMatchForm: React.FC<CreateMatchFormProps> = ({ onCreateMatch, onUpda
     }
   }, []);
 
-  // Debounced Autocomplete for Location
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      if (location && location.length > 3 && !searchedLat) {
-        handleManualSearch();
-      }
-    }, 500); // 500ms debounce for faster response
-
-    return () => clearTimeout(timer);
-  }, [location, searchedLat]);
-
   const handleLocationChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setLocation(e.target.value);
-    // Reset coordinates when user types to trigger new search
+    // 1. Reset coordinates when user types to trigger new search
     setSearchedLat(null);
     setSearchedLng(null);
     setVenueCandidates([]);
@@ -120,13 +107,11 @@ const CreateMatchForm: React.FC<CreateMatchFormProps> = ({ onCreateMatch, onUpda
       if (venues && venues.length > 0) {
         setVenueCandidates(venues);
       } else {
-        // Silent failure for autocomplete - don't alert if it was auto-triggered
-        // But if manually triggered (via button), we might want feedback. 
-        // For simplicity, we just clear candidates.
-        setVenueCandidates([]);
+        alert("Não encontramos esse local no mapa. Tente ser mais específico ou digite o endereço.");
       }
     } catch (error) {
       console.error("Erro na busca de local:", error);
+      alert("Houve um problema ao consultar o mapa. Tente novamente em instantes.");
     } finally {
       setIsSearching(false);
     }
@@ -160,17 +145,14 @@ const CreateMatchForm: React.FC<CreateMatchFormProps> = ({ onCreateMatch, onUpda
         return;
       }
 
-      // TOKENS CHECK REMOVED - Handled by atomic RPC in App.tsx
-
+      console.log("Iniciando salvamento da partida...");
 
       // Use whatever coordinates we have (from selection or edit mode), or null.
       // We do NOT block to search anymore.
       let finalLat = searchedLat ?? (matchToEdit?.lat ?? null);
       let finalLng = searchedLng ?? (matchToEdit?.lng ?? null);
 
-      // If user changed location text but didn't select a suggestion, 
-      // we save with null coordinates (or previous ones if we want to be risky, but null is safer for "new" location).
-      // Logic: If location text matches matchToEdit, keep coords. Else, if searchedLat is set, use it. Else null.
+      // If user changed location text but didn't select a suggestion, we save with null coordinates.
       if (matchToEdit && location !== matchToEdit.location && !searchedLat) {
         finalLat = null;
         finalLng = null;
@@ -236,11 +218,11 @@ const CreateMatchForm: React.FC<CreateMatchFormProps> = ({ onCreateMatch, onUpda
       )}
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
-          <label className="block text-sm font-medium text-gray-100 mb-1">Nome do Jogo</label>
+          <label className="block text-sm font-medium text-gray-300 mb-1">Nome do Jogo</label>
           <input type="text" value={name} onChange={e => setName(e.target.value)} className={inputClasses} placeholder="Ex: Futebol de Quinta" required />
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-100 mb-1">Esporte</label>
+          <label className="block text-sm font-medium text-gray-300 mb-1">Esporte</label>
           <select value={sport} onChange={e => setSport(e.target.value)} className={inputClasses}>
             {SPORTS_LIST.map(s => (
               <option key={s} value={s}>{s}</option>
@@ -249,7 +231,7 @@ const CreateMatchForm: React.FC<CreateMatchFormProps> = ({ onCreateMatch, onUpda
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-100 mb-1">Local</label>
+          <label className="block text-sm font-medium text-gray-300 mb-1">Local</label>
           <div className="relative flex items-center">
             <input
               type="text"
@@ -266,7 +248,7 @@ const CreateMatchForm: React.FC<CreateMatchFormProps> = ({ onCreateMatch, onUpda
               className="absolute right-2 p-2 bg-gray-600 hover:bg-gray-500 rounded-md text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               title="Verificar local no mapa"
             >
-              {<SearchIcon />}
+              {isSearching ? <ModernLoader /> : <SearchIcon />}
             </button>
           </div>
 
@@ -323,33 +305,34 @@ const CreateMatchForm: React.FC<CreateMatchFormProps> = ({ onCreateMatch, onUpda
           )}
         </div>
 
-        <div className="mb-4">
-          <ModernDateTimePicker
-            selectedDate={date ? new Date(date + 'T12:00:00') : null}
-            onDateChange={(newDate) => setDate(newDate.toISOString().split('T')[0])}
-            selectedTime={time}
-            onTimeChange={setTime}
-          />
+        <div className="flex gap-4">
+          <div className="flex-1">
+            <label className="block text-sm font-medium text-gray-300 mb-1">Data</label>
+            <input type="date" value={date} onChange={e => setDate(e.target.value)} className={inputClasses} required />
+          </div>
+          <div className="flex-1">
+            <label className="block text-sm font-medium text-gray-300 mb-1">Horário</label>
+            <input type="time" value={time} onChange={e => setTime(e.target.value)} className={inputClasses} required />
+          </div>
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-100 mb-1">Número de Jogadores</label>
+          <label className="block text-sm font-medium text-gray-300 mb-1">Número de Jogadores</label>
           <input type="number" value={slots} onChange={e => setSlots(Number(e.target.value))} className={inputClasses} min="2" />
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-100 mb-1">Regras (opcional)</label>
+          <label className="block text-sm font-medium text-gray-300 mb-1">Regras (opcional)</label>
           <input type="text" value={rules} onChange={e => setRules(e.target.value)} className={inputClasses} placeholder="Ex: 7x7, 10 min por tempo" />
         </div>
-
         {/* Privacy Toggle */}
         <div>
-          <label className="block text-sm font-medium text-gray-100 mb-2">Visibilidade da Partida</label>
+          <label className="block text-sm font-medium text-gray-300 mb-2">Visibilidade da Partida</label>
           <div className="flex gap-3">
             <button
               type="button"
               onClick={() => setIsPrivate(false)}
-              className={`flex-1 py-3 px-4 rounded-lg font-semibold transition-all duration-200 border ${!isPrivate
-                ? 'bg-gradient-to-r from-green-600 to-green-500 text-white shadow-lg border-transparent'
-                : 'bg-gray-800 text-gray-200 border-gray-600 hover:bg-gray-700'
+              className={`flex-1 py-3 px-4 rounded-lg font-semibold transition-all duration-200 ${!isPrivate
+                ? 'bg-gradient-to-r from-green-600 to-green-500 text-white shadow-lg'
+                : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
                 }`}
             >
               <div className="flex flex-col items-center">
@@ -360,9 +343,9 @@ const CreateMatchForm: React.FC<CreateMatchFormProps> = ({ onCreateMatch, onUpda
             <button
               type="button"
               onClick={() => setIsPrivate(true)}
-              className={`flex-1 py-3 px-4 rounded-lg font-semibold transition-all duration-200 border ${isPrivate
-                ? 'bg-gradient-to-r from-purple-600 to-purple-500 text-white shadow-lg border-transparent'
-                : 'bg-gray-800 text-gray-200 border-gray-600 hover:bg-gray-700'
+              className={`flex-1 py-3 px-4 rounded-lg font-semibold transition-all duration-200 ${isPrivate
+                ? 'bg-gradient-to-r from-purple-600 to-purple-500 text-white shadow-lg'
+                : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
                 }`}
             >
               <div className="flex-col items-center">
@@ -377,6 +360,7 @@ const CreateMatchForm: React.FC<CreateMatchFormProps> = ({ onCreateMatch, onUpda
             </p>
           )}
         </div>
+
         <div className="flex gap-4 pt-4">
           {isEditMode && onCancelEdit && (
             <button
@@ -393,10 +377,13 @@ const CreateMatchForm: React.FC<CreateMatchFormProps> = ({ onCreateMatch, onUpda
             disabled={isSubmitting}
             className="flex-1 bg-gradient-to-r from-green-600 to-blue-600 text-white font-bold py-3 rounded-lg shadow-lg hover:brightness-110 transition-all flex justify-center items-center"
           >
-            {isSubmitting ? 'Processando...' : (isEditMode ? 'Salvar Alterações' : 'Criar Partida (3 Tokens)')}
+            {isSubmitting ? (
+              <><ModernLoader /><span className="ml-2">Processando...</span></>
+            ) : (
+              isEditMode ? 'Salvar Alterações' : 'Criar Partida (3 Tokens)'
+            )}
           </button>
         </div>
-        {(isSubmitting || isSearching) && <ModernLoader />}
       </form>
     </div>
   );

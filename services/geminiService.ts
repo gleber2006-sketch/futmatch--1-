@@ -158,7 +158,7 @@ export const getBotResponse = async (
     // 1. Primeira chamada ao modelo (Decision Making)
     const ai = getAI();
     const model = ai.getGenerativeModel({
-      model: "gemini-2.5-flash",
+      model: "gemini-1.5-flash",
       tools: [
         { googleMaps: {} } as any,
         { functionDeclarations: [draftMatchTool, searchMatchesTool, searchArenasTool] }
@@ -281,90 +281,48 @@ export const searchLocalVenues = async (
   location: { latitude: number; longitude: number }
 ): Promise<VenueLocation[]> => {
   try {
-    const prompt = `Você é um assistente especializado em encontrar locais esportivos.
-    
-    TAREFA: Encontre até 3 locais esportivos reais (quadras, ginásios, campos, arenas) que correspondam à busca: "${query}"
-    
-    LOCALIZAÇÃO BASE: Latitude ${location.latitude}, Longitude ${location.longitude}
-    
-    CRITÉRIOS:
-    - Priorize locais próximos às coordenadas fornecidas
-    - Busque locais que realmente existam e sejam adequados para práticas esportivas
-    - Se a busca mencionar um esporte específico (futebol, vôlei, etc.), priorize locais que ofereçam essa modalidade
-    
-    FORMATO DE RESPOSTA:
-    Retorne APENAS um array JSON válido (sem markdown, sem \`\`\`json). Cada objeto deve ter:
-    - "name": Nome oficial e completo do local
-    - "address": Endereço completo com rua, número, bairro e cidade
-    - "lat": Latitude em formato numérico
-    - "lng": Longitude em formato numérico
-    - "uri": Link do Google Maps (obrigatório)
-    
-    Se não encontrar nenhum local relevante, retorne: []
-    
-    EXEMPLO DE RESPOSTA VÁLIDA:
-    [{"name":"Quadra Poliesportiva do Parque","address":"Rua das Flores, 123 - Centro, São Paulo - SP","lat":-23.5505,"lng":-46.6333,"uri":"https://maps.google.com/?q=-23.5505,-46.6333"}]`;
+    // Usando Nominatim (OpenStreetMap)
+    // Documentação: https://nominatim.org/release-docs/develop/api/Search/
 
-    const ai = getAI();
-    const model = ai.getGenerativeModel({
-      model: "gemini-2.5-flash",
-      tools: [{ googleMaps: {} } as any],
-      toolConfig: {
-        // @ts-ignore
-        retrievalConfig: {
-          latLng: {
-            latitude: location.latitude,
-            longitude: location.longitude,
-          }
-        }
+    // Viewbox ajuda a priorizar a região do usuário, mas não restringe totalmente
+    // Criamos uma caixa simples ao redor da coordenada do usuário (~50km)
+    const viewbox = [
+      location.longitude - 0.5, // left
+      location.latitude + 0.5,  // top
+      location.longitude + 0.5, // right
+      location.latitude - 0.5   // bottom
+    ].join(',');
+
+    const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=5&addressdetails=1&viewbox=${viewbox}&bounded=0`;
+
+    // É boa prática enviar um User-Agent para o Nominatim
+    const response = await fetch(url, {
+      headers: {
+        'User-Agent': 'FutMatch-App/1.0',
+        'Accept-Language': 'pt-BR'
       }
     });
 
-    const result = await model.generateContent({
-      contents: [{ role: 'user', parts: [{ text: prompt }] }],
-    });
-
-    const response = result.response;
-
-    const text = response.text().trim();
-    const cleanText = text.replace(/^```json\s*/, '').replace(/\s*```$/, '');
-
-    if (!cleanText) {
+    if (!response.ok) {
+      console.warn("Erro na resposta do Nominatim:", response.statusText);
       return [];
     }
 
-    try {
-      const result = JSON.parse(cleanText);
+    const data = await response.json();
 
-      if (Array.isArray(result)) {
-        const candidates = response.candidates;
-        const groundingChunks = (candidates?.[0]?.groundingMetadata as any)?.groundingChunks || [];
-        const genericUri = groundingChunks.find((chunk: any) => chunk.maps?.uri)?.maps?.uri;
+    if (!Array.isArray(data)) return [];
 
-        return result.map((item: any) => ({
-          name: item.name,
-          address: item.address,
-          lat: item.lat,
-          lng: item.lng,
-          uri: item.uri || genericUri
-        })) as VenueLocation[];
-      } else if (result && typeof result === 'object' && result.name) {
-        return [{
-          name: result.name,
-          address: result.address,
-          lat: result.lat,
-          lng: result.lng,
-          uri: result.uri
-        }] as VenueLocation[];
-      }
+    return data.map((item: any) => ({
+      name: item.name || item.display_name.split(',')[0], // Tenta pegar nome curto ou o primeiro termo
+      address: item.display_name,
+      lat: parseFloat(item.lat),
+      lng: parseFloat(item.lon), // Nominatim usa 'lon'
+      uri: `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(item.display_name)}`
+      // Linkamos pro Google Maps por conveniência do usuário final, mesmo usando dados OSM
+    })) as VenueLocation[];
 
-      return [];
-    } catch (parseError) {
-      return [];
-    }
-
-  } catch (apiError) {
-    console.error("Error searching for local venues with Gemini:", (apiError as Error)?.message ?? apiError);
+  } catch (error) {
+    console.error("Erro na busca Nominatim:", error);
     return [];
   }
 };
@@ -380,7 +338,7 @@ export const findVenueImage = async (venueName: string, city: string): Promise<s
 
     const ai = getAI();
     const model = ai.getGenerativeModel({
-      model: "gemini-2.5-flash",
+      model: "gemini-1.5-flash",
       tools: [{ googleSearch: {} } as any],
     });
 

@@ -361,7 +361,7 @@ Bora jogar? 🚀`;
                   : 'bg-neon-green hover:bg-[#00e686] hover:shadow-[0_0_20px_rgba(0,255,148,0.4)]'
                 }`}
             >
-              buttonState.text
+              {buttonState.text}
             </button>
 
             {/* Organizer Actions */}
