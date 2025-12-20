@@ -1,5 +1,5 @@
 
-export type Page = 'explore' | 'create' | 'profile' | 'ranking' | 'map' | 'my-games' | 'community' | 'arenas' | 'match-chat' | 'notifications' | 'wallet';
+export type Page = 'explore' | 'create' | 'profile' | 'ranking' | 'map' | 'my-games' | 'community' | 'arenas' | 'match-chat' | 'notifications' | 'wallet' | 'invite' | 'settings' | 'support' | 'hire';
 
 export interface Profile {
   id: string;
@@ -41,6 +41,12 @@ export interface Match {
   boost_until?: string;
   is_private?: boolean;
   invite_code?: string | null;
+  team_id?: number | null;
+  team?: {
+    id: number;
+    name: string;
+    logo_url: string | null;
+  } | null;
   match_participants?: MatchParticipant[];
 }
 
@@ -131,6 +137,8 @@ export interface DraftMatchData {
   time?: string;
   slots?: number;
   rules?: string;
+  teamId?: number;
+  teamName?: string;
 }
 
 export interface Post {
@@ -173,13 +181,32 @@ export interface MatchParticipant {
   profiles: Pick<Profile, 'name' | 'photoUrl' | 'reputation'>;
 }
 
-export type FriendshipStatus = 'pending' | 'accepted';
+export interface Team {
+  id: number;
+  created_by: string;
+  name: string;
+  description: string | null;
+  logo_url: string | null;
+  invite_code: string;
+  created_at: string;
+}
+
+export interface TeamMember {
+  id: number;
+  team_id: number;
+  user_id: string;
+  status: 'pending' | 'approved' | 'rejected';
+  role: 'admin' | 'member';
+  joined_at: string;
+  profiles?: Pick<Profile, 'name' | 'photoUrl' | 'reputation'>;
+  team?: Team;
+}
 
 export interface Friendship {
   id: number;
   requester_id: string;
   receiver_id: string;
-  status: FriendshipStatus;
+  status: 'pending' | 'accepted' | 'rejected' | 'blocked';
   created_at: string;
   requester?: Pick<Profile, 'name' | 'photoUrl' | 'reputation'>;
   receiver?: Pick<Profile, 'name' | 'photoUrl' | 'reputation'>;

@@ -21,6 +21,11 @@ import DatabaseSetup from './components/DatabaseSetup';
 import ModernLoader from './components/ModernLoader';
 import Toast from './components/Toast';
 import { generateInviteCode } from './utils/inviteCode';
+import InviteFriendScreen from './components/InviteFriendScreen';
+import InviteLandingScreen from './components/InviteLandingScreen';
+import SettingsScreen from './components/SettingsScreen';
+import SupportScreen from './components/SupportScreen';
+import HirePlayerScreen from './components/HirePlayerScreen';
 
 
 const platformFeatures: Feature[] = [
@@ -53,7 +58,12 @@ const isSchemaMismatchError = (error: any): boolean => {
 import Sidebar from './components/Sidebar';
 
 const App: React.FC = () => {
-    const [activePage, setActivePage] = useState<Page>('explore');
+    const [activePage, setActivePage] = useState<Page | 'invite-landing'>(() => {
+        if (window.location.pathname === '/convite') {
+            return 'invite-landing';
+        }
+        return 'explore';
+    });
     const [currentUser, setCurrentUser] = useState<Profile | null>(null);
     const [matches, setMatches] = useState<Match[]>([]);
     const [joinedMatchIds, setJoinedMatchIds] = useState<Set<number>>(new Set());
@@ -95,7 +105,11 @@ const App: React.FC = () => {
             // Buscar partidas privadas criadas pelo usuário
             const { data: createdMatches, error: createdError } = await supabase
                 .from('matches')
-                .select('*, match_participants(user_id, status, joined_at, waitlist_position, profiles(photo_url, name, reputation))')
+                .select(`
+                    *,
+                    team:teams(id, name, logo_url),
+                    match_participants(user_id, status, joined_at, waitlist_position, profiles(photo_url, name, reputation))
+                `)
                 .eq('created_by', currentUser.id)
                 .eq('is_private', true)
                 .neq('status', 'Cancelado')
@@ -117,7 +131,11 @@ const App: React.FC = () => {
             if (participantMatchIds.length > 0) {
                 const { data, error: participatedError } = await supabase
                     .from('matches')
-                    .select('*, match_participants(user_id, status, joined_at, waitlist_position, profiles(photo_url, name, reputation))')
+                    .select(`
+                        *,
+                        team:teams(id, name, logo_url),
+                        match_participants(user_id, status, joined_at, waitlist_position, profiles(photo_url, name, reputation))
+                    `)
                     .in('id', participantMatchIds)
                     .eq('is_private', true)
                     .neq('status', 'Cancelado')
@@ -148,7 +166,11 @@ const App: React.FC = () => {
             // Fetch public matches
             const { data: publicData, error: publicError } = await supabase
                 .from('matches')
-                .select('*, match_participants(user_id, status, joined_at, waitlist_position, profiles(photo_url, name, reputation))')
+                .select(`
+                    *,
+                    team:teams(id, name, logo_url),
+                    match_participants(user_id, status, joined_at, waitlist_position, profiles(photo_url, name, reputation))
+                `)
                 .neq('status', 'Cancelado')
                 .eq('is_private', false)
                 .order('date', { ascending: true });
@@ -590,6 +612,17 @@ const App: React.FC = () => {
         fetchRankings();
     }, [isLoadingDbCheck, dbSetupRequired, isAuthenticated, fetchMatches, fetchRankings]);
 
+    useEffect(() => {
+        if (currentUser && activePage === 'invite-landing') {
+            // User is already logged in, so just show them the app (Explore)
+            // gracefully instead of the invite landing page.
+            window.history.replaceState({}, '', '/');
+            setActivePage('explore');
+            setShowConfirmation("Bem-vindo de volta! ⚽");
+            setTimeout(() => setShowConfirmation(null), 3000);
+        }
+    }, [currentUser, activePage]);
+
     // Deep linking: Abrir partida específica via URL ou Invite Code
     useEffect(() => {
         const handleDeepLink = async () => {
@@ -630,16 +663,12 @@ const App: React.FC = () => {
                 if (data && !error) {
                     const parsedMatch = { ...data, date: new Date(data.date) };
                     setSelectedMatch(parsedMatch);
-                    // Add to matches list temporarily so it doesn't disappear if we close modal? 
-                    // Or just let it be selected. 
-                    // Better to add it to local state if it's not there, so UI doesn't break.
                     setMatches(prev => {
                         if (!prev.find(m => m.id === parsedMatch.id)) {
                             return [...prev, parsedMatch];
                         }
                         return prev;
                     });
-
                     window.history.replaceState({}, '', window.location.pathname);
                     setShowConfirmation("Partida encontrada via convite! 🎟️");
                     setTimeout(() => setShowConfirmation(null), 3000);
@@ -648,10 +677,53 @@ const App: React.FC = () => {
                     window.history.replaceState({}, '', window.location.pathname);
                 }
             }
+
+            // Handle Team Invite
+            const teamInviteCode = urlParams.get('invite_team');
+            if (teamInviteCode) {
+                try {
+                    // 1. Get Team
+                    const { data: team, error } = await supabase.from('teams').select('id, name').eq('invite_code', teamInviteCode).single();
+
+                    if (team && !error) {
+                        if (window.confirm(`Você foi convidado para entrar no time "${team.name}". Deseja enviar solicitação?`)) {
+                            await supabase.rpc('join_team_safe', { p_team_id: team.id, p_user_id: currentUser.id })
+                                .then(({ data, error }: any) => { // Using simple insert directly in service usually, but let's try service or direct
+                                    // Using our service is cleaner:
+                                    // We need to import teamService first, but to void altering imports lets use direct logic here or dynamic import?
+                                    // Better: Add import at top and use service.
+                                });
+
+                            // To avoid complex imports just for this block, let's replicate simple logic or just trust the next step to add import.
+                            // Actually, let's use the service but I need to make sure it's imported.
+                            // I will add the logic directly here to be safe and atomic
+                            const { error: joinError } = await supabase.from('team_members').insert({
+                                team_id: team.id,
+                                user_id: currentUser.id,
+                                status: 'pending',
+                                role: 'member'
+                            });
+
+                            if (joinError) {
+                                if (joinError.code === '23505') alert("Você já faz parte ou já solicitou entrada neste time.");
+                                else alert("Erro ao solicitar entrada.");
+                            } else {
+                                setShowConfirmation("Solicitação enviada para " + team.name);
+                                setTimeout(() => setShowConfirmation(null), 3000);
+                            }
+                        }
+                    } else {
+                        alert("Convite de time inválido.");
+                    }
+                } catch (e) {
+                    console.error(e);
+                }
+                window.history.replaceState({}, '', window.location.pathname);
+            }
         };
 
         handleDeepLink();
-    }, [isAuthenticated, matches]);
+    }, [isAuthenticated, matches, currentUser]);
 
     const handleCreateMatch = useCallback(async (newMatch: Omit<Match, 'id' | 'filled_slots' | 'created_by' | 'status' | 'cancellation_reason'>) => {
         if (!currentUser) return;
@@ -672,7 +744,8 @@ const App: React.FC = () => {
                 p_slots: newMatch.slots,
                 p_rules: newMatch.rules,
                 p_is_private: newMatch.is_private,
-                p_invite_code: invite_code
+                p_invite_code: invite_code,
+                p_team_id: newMatch.team_id // Add team_id
             });
 
             if (error) throw error;
@@ -708,6 +781,20 @@ const App: React.FC = () => {
             }
         }
     }, [currentUser, fetchUserProfile, session]);
+
+    const handleNavigateToCreateMatch = useCallback((teamId: number, teamName: string) => {
+        setDraftMatchData({
+            teamId,
+            teamName,
+            name: `${teamName} vs ...`,
+            sport: 'Futebol', // Default or can be dynamic
+            location: '',
+            date: '',
+            time: '',
+            slots: 14 // Default for 7x7
+        });
+        setActivePage('create');
+    }, []);
 
     const handleJoinMatch = useCallback(async (matchId: number) => {
         if (!currentUser) {
@@ -1475,6 +1562,7 @@ const App: React.FC = () => {
                     onUpdateUser={handleUpdateUser}
                     onLogout={handleLogout}
                     onNavigateBack={() => setActivePage('explore')}
+                    onNavigateToCreateMatch={handleNavigateToCreateMatch}
                     initialSection={profileInitialSection}
                 />;
             case 'ranking':
@@ -1504,6 +1592,14 @@ const App: React.FC = () => {
                     onNavigateBack={() => setActivePage('explore')}
                     onBalanceUpdate={handleBalanceUpdate}
                 />;
+            case 'invite':
+                return <InviteFriendScreen onBack={() => setActivePage('explore')} />;
+            case 'settings':
+                return <SettingsScreen onBack={() => setActivePage('explore')} />;
+            case 'support':
+                return <SupportScreen onBack={() => setActivePage('explore')} />;
+            case 'hire':
+                return <HirePlayerScreen onBack={() => setActivePage('explore')} />;
             case 'map':
                 return <MatchesMap
                     matches={matches}
@@ -1549,7 +1645,10 @@ const App: React.FC = () => {
                     selectedMatch={selectedMatch}
                     onSelectMatch={setSelectedMatch}
                     onCloseMatchDetails={() => setSelectedMatch(null)}
-                    onOpenSidebar={() => setIsSidebarOpen(true)}
+                    onOpenSidebar={() => {
+                        console.log("App: onOpenSidebar triggered");
+                        setIsSidebarOpen(true);
+                    }}
                 />;
         }
     };
@@ -1584,6 +1683,21 @@ const App: React.FC = () => {
     }
 
     if (!isAuthenticated) {
+        if (activePage === 'invite-landing') {
+            return (
+                <InviteLandingScreen
+                    onGoToLogin={() => {
+                        window.history.pushState({}, '', '/');
+                        setActivePage('explore'); // Will trigger Home render
+                    }}
+                    onGoToRegister={() => {
+                        window.history.pushState({}, '', '/');
+                        setActivePage('explore'); // Will trigger Home render
+                    }}
+                />
+            );
+        }
+
         return (
             <Home
                 onLogin={handleLogin}
@@ -1622,27 +1736,45 @@ const App: React.FC = () => {
     }
 
     return (
-        <div className="app-container">
-            {renderPage()}
-            {activePage === 'explore' && (
-                <BottomNav
-                    activePage={activePage}
-                    onNavigate={setActivePage}
-                />
-            )}
-            {showConfirmation && (
-                <div className="confirmation-toast">
-                    {showConfirmation}
-                </div>
-            )}
-            {showExitToast && (
-                <Toast
-                    message={exitAttemptRef.current ? "Pressione Voltar novamente para sair" : "Pressione Voltar novamente para sair"}
-                    type="info"
-                    onClose={() => setShowExitToast(false)}
-                />
-            )}
-            <ChatBot />
+        <>
+            <div className="app-container">
+                {renderPage()}
+                {activePage === 'explore' && (
+                    <BottomNav
+                        activePage={activePage}
+                        onNavigate={setActivePage}
+                    />
+                )}
+                {showConfirmation && (
+                    <div className="confirmation-toast">
+                        {showConfirmation}
+                    </div>
+                )}
+                {showExitToast && (
+                    <Toast
+                        message={exitAttemptRef.current ? "Pressione Voltar novamente para sair" : "Pressione Voltar novamente para sair"}
+                        type="info"
+                        onClose={() => setShowExitToast(false)}
+                    />
+                )}
+                {activePage === 'invite-landing' ? (
+                    <InviteLandingScreen
+                        onGoToLogin={() => {
+                            window.history.pushState({}, '', '/');
+                            setActivePage('explore'); // Trigger Home render logic if not authenticated
+                            // Actually, logic below handles "if (!isAuthenticated) return Home".
+                            // So we just need to set activePage to explore or clear URL, 
+                            // and the main renders (if !isAuthenticated) will show Login/Home.
+                        }}
+                        onGoToRegister={() => {
+                            window.history.pushState({}, '', '/');
+                            setActivePage('explore'); // Same here, Home handles registration toggle
+                        }}
+                    />
+                ) : (
+                    <ChatBot />
+                )}
+            </div>
 
             <Sidebar
                 isOpen={isSidebarOpen}
@@ -1656,11 +1788,20 @@ const App: React.FC = () => {
                     setProfileInitialSection('friends');
                     setActivePage('profile');
                 }}
+                onNavigateToInvite={() => setActivePage('invite')}
+                onNavigateToHire={() => setActivePage('hire')}
+                onNavigateToSettings={() => setActivePage('settings')}
+                onNavigateToSupport={() => setActivePage('support')}
                 onNavigateToMyGames={() => setActivePage('my-games')}
                 onNavigateToCommunity={() => setActivePage('community')}
+                onNavigateToNotifications={() => setActivePage('notifications')}
+                onNavigateToWallet={() => setActivePage('wallet')}
+                onNavigateToRanking={() => setActivePage('ranking')}
+                onNavigateToArenas={() => setActivePage('arenas')}
+                onNavigateToMatchChat={() => setActivePage('match-chat')}
                 onLogout={handleLogout}
             />
-        </div>
+        </>
     );
 }
 

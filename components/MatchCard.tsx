@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { Match, Profile } from '../types';
 import { LocationIcon, CalendarIcon, UsersIcon, EditIcon, ChatIcon, ShareIcon, LockIcon } from './Icons';
 import ModernLoader from './ModernLoader';
+import TeamLogo from './TeamLogo';
+import ParticipantAvatar from './ParticipantAvatar';
 import { SPORT_EMOJIS } from '../constants';
 
 interface MatchCardProps {
@@ -184,12 +186,12 @@ Bora jogar? 🚀`;
             onClick={() => !isCanceled && onCardClick(match)}
             className={`relative rounded-xl shadow-lg overflow-hidden mb-4 transition-all duration-300 w-full backdrop-blur-md border ${className}
         ${match.is_private && !isCanceled
-                    ? 'bg-purple-900/20 border-purple-500/30 hover:border-purple-400/50'
+                    ? 'bg-gradient-to-br from-purple-900/40 via-[#2e1065]/50 to-purple-800/20 border-purple-500/50 hover:border-purple-400 shadow-[0_0_15px_rgba(168,85,247,0.15)]'
                     : !isCanceled
-                        ? 'bg-[#112240]/60 border-white/10 hover:border-neon-green/50'
+                        ? 'bg-gradient-to-br from-[#022c22]/40 via-[#064e3b]/30 to-[#065f46]/20 border-neon-green/50 shadow-[0_0_15px_rgba(0,255,148,0.2)] hover:border-neon-green hover:shadow-[0_0_25px_rgba(0,255,148,0.3)]'
                         : 'bg-gray-800/50 border-gray-700'}
-        ${isCanceled ? 'opacity-60 grayscale-[50%]' : 'transform hover:scale-[1.02] cursor-pointer hover:shadow-[0_0_20px_rgba(0,255,148,0.15)]'}
-        ${isBoosted && !isCanceled ? 'border-neon-green/80 shadow-[0_0_20px_rgba(0,255,148,0.3)]' : ''}
+        ${isCanceled ? 'opacity-60 grayscale-[50%]' : 'transform hover:scale-[1.02] cursor-pointer'}
+        ${isBoosted && !isCanceled ? 'border-neon-green shadow-[0_0_25px_rgba(0,255,148,0.5)] ring-1 ring-neon-green/30' : ''}
         `}
             aria-disabled={isCanceled}
         >
@@ -231,6 +233,20 @@ Bora jogar? 🚀`;
                             {sportEmoji} {match.sport}
                         </p>
                         <h3 className="text-lg font-bold text-white mt-1 leading-tight">{match.name}</h3>
+
+                        {/* Team Logo Display */}
+                        {match.team && (
+                            <div className="flex items-center gap-2 mt-2">
+                                <TeamLogo
+                                    logoUrl={match.team.logo_url}
+                                    teamName={match.team.name}
+                                    size="small"
+                                />
+                                <span className="text-xs text-gray-400 font-medium">
+                                    {match.team.name}
+                                </span>
+                            </div>
+                        )}
                     </div>
 
                     <div className="flex items-start gap-2 pt-2 flex-shrink-0">
@@ -255,12 +271,12 @@ Bora jogar? 🚀`;
                             {match.match_participants && match.match_participants.length > 0 && (
                                 <div className="flex -space-x-2 overflow-hidden">
                                     {match.match_participants.slice(0, 3).map((p, i) => (
-                                        <img
+                                        <ParticipantAvatar
                                             key={p.user_id || i}
-                                            className="inline-block h-6 w-6 rounded-full ring-2 ring-gray-800"
-                                            src={p.profile?.photo_url || `https://ui-avatars.com/api/?name=${p.profile?.name || 'User'}`}
-                                            alt={p.profile?.name}
-                                            title={p.profile?.name}
+                                            photoUrl={p.profile?.photo_url}
+                                            name={p.profile?.name || 'Usuário'}
+                                            size="small"
+                                            className="inline-block"
                                         />
                                     ))}
                                     {match.match_participants.length > 3 && (
