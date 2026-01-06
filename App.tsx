@@ -688,30 +688,21 @@ const App: React.FC = () => {
                     const { data: team, error } = await supabase.from('teams').select('id, name').eq('invite_code', teamInviteCode).single();
 
                     if (team && !error) {
-                        if (window.confirm(`Você foi convidado para entrar no time "${team.name}". Deseja enviar solicitação?`)) {
-                            await supabase.rpc('join_team_safe', { p_team_id: team.id, p_user_id: currentUser.id })
-                                .then(({ data, error }: any) => { // Using simple insert directly in service usually, but let's try service or direct
-                                    // Using our service is cleaner:
-                                    // We need to import teamService first, but to void altering imports lets use direct logic here or dynamic import?
-                                    // Better: Add import at top and use service.
-                                });
-
-                            // To avoid complex imports just for this block, let's replicate simple logic or just trust the next step to add import.
-                            // Actually, let's use the service but I need to make sure it's imported.
-                            // I will add the logic directly here to be safe and atomic
+                        if (window.confirm(`Você foi convidado para entrar no time "${team.name}". Deseja entrar?`)) {
                             const { error: joinError } = await supabase.from('team_members').insert({
                                 team_id: team.id,
                                 user_id: currentUser.id,
-                                status: 'pending',
+                                status: 'approved',
                                 role: 'member'
                             });
 
                             if (joinError) {
-                                if (joinError.code === '23505') alert("Você já faz parte ou já solicitou entrada neste time.");
-                                else alert("Erro ao solicitar entrada.");
+                                if (joinError.code === '23505') alert("Você já faz parte deste time.");
+                                else alert("Erro ao entrar no time.");
                             } else {
-                                setShowConfirmation("Solicitação enviada para " + team.name);
+                                setShowConfirmation("Você entrou no time " + team.name + "! 🛡️");
                                 setTimeout(() => setShowConfirmation(null), 3000);
+                                fetchMatches();
                             }
                         }
                     } else {
