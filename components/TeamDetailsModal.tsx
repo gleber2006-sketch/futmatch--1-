@@ -207,31 +207,35 @@ const TeamDetailsModal: React.FC<TeamDetailsModalProps> = ({ teamId, currentUser
                         </div>
                     </div>
 
-                    {team.description && <p className="text-gray-400 text-sm mb-4">{team.description}</p>}
+                    {!showInviteCard && (
+                        <>
+                            {team.description && <p className="text-gray-400 text-sm mb-4">{team.description}</p>}
 
-                    {/* Team Matches Section (Preview) */}
-                    {teamMatches.length > 0 && (
-                        <div className="mb-6">
-                            <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Próximos Jogos</h3>
-                            <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
-                                {teamMatches.map(match => (
-                                    <div key={match.id} className="min-w-[120px] bg-gray-700/50 p-2 rounded-lg border border-gray-600/50 flex flex-col items-center text-center">
-                                        <div className="text-green-400 font-bold text-xs mb-1">
-                                            {/* Format Date: DD/MM - HH:mm */}
-                                            {match.date instanceof Date
-                                                ? `${match.date.getDate()}/${match.date.getMonth() + 1} - ${match.date.getHours()}:${String(match.date.getMinutes()).padStart(2, '0')}`
-                                                : 'Data inválida'}
-                                        </div>
-                                        <div className="text-white text-xs font-semibold truncate w-full">{match.name}</div>
-                                        <div className="text-gray-500 text-[10px] mt-1">{match.filled_slots}/{match.slots} Confirmados</div>
+                            {/* Team Matches Section (Preview) */}
+                            {teamMatches.length > 0 && (
+                                <div className="mb-6">
+                                    <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Próximos Jogos</h3>
+                                    <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
+                                        {teamMatches.map(match => (
+                                            <div key={match.id} className="min-w-[120px] bg-gray-700/50 p-2 rounded-lg border border-gray-600/50 flex flex-col items-center text-center">
+                                                <div className="text-green-400 font-bold text-xs mb-1">
+                                                    {/* Format Date: DD/MM - HH:mm */}
+                                                    {match.date instanceof Date
+                                                        ? `${match.date.getDate()}/${match.date.getMonth() + 1} - ${match.date.getHours()}:${String(match.date.getMinutes()).padStart(2, '0')}`
+                                                        : 'Data inválida'}
+                                                </div>
+                                                <div className="text-white text-xs font-semibold truncate w-full">{match.name}</div>
+                                                <div className="text-gray-500 text-[10px] mt-1">{match.filled_slots}/{match.slots} Confirmados</div>
+                                            </div>
+                                        ))}
                                     </div>
-                                ))}
-                            </div>
-                        </div>
+                                </div>
+                            )}
+                        </>
                     )}
 
                     {showInviteCard ? (
-                        <div className="py-4 flex justify-center">
+                        <div className="py-2 flex justify-center flex-1 overflow-y-auto min-h-0">
                             <TeamInviteCard
                                 team={team}
                                 inviteLink={`${window.location.origin}/time/${team.invite_code}`}
