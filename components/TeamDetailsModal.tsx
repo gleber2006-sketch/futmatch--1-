@@ -2,6 +2,8 @@ import React, { useEffect, useState, useRef } from 'react';
 import { teamService } from '../services/teamService';
 import { Team, TeamMember } from '../types';
 import { supabase } from '../services/supabaseClient';
+import TeamInviteCard from './TeamInviteCard';
+import TeamLogo from './TeamLogo';
 
 interface TeamDetailsModalProps {
     teamId: number;
@@ -17,6 +19,7 @@ const TeamDetailsModal: React.FC<TeamDetailsModalProps> = ({ teamId, currentUser
     const [pendingRequests, setPendingRequests] = useState<TeamMember[]>([]);
     const [loading, setLoading] = useState(true);
     const [activeTab, setActiveTab] = useState<'members' | 'requests'>('members');
+    const [showInviteCard, setShowInviteCard] = useState(false);
     const [isRefreshing, setIsRefreshing] = useState(false);
     const [isUploading, setIsUploading] = useState(false);
     const fileInputRef = useRef<HTMLInputElement>(null);
@@ -227,39 +230,49 @@ const TeamDetailsModal: React.FC<TeamDetailsModalProps> = ({ teamId, currentUser
                         </div>
                     )}
 
-                    <div className="flex gap-2 mb-6">
-                        <button
-                            onClick={handleShareWhatsapp}
-                            className="flex-1 bg-green-600 hover:bg-green-500 text-white text-sm font-semibold py-2 px-4 rounded-lg flex items-center justify-center gap-2 transition-colors"
-                        >
-                            <span>📲</span> Convidar via Zap
-                        </button>
-                        <button
-                            onClick={handleCopyInvite}
-                            className="bg-gray-700 hover:bg-gray-600 text-white p-2 rounded-lg transition-colors"
-                            title="Copiar Link"
-                        >
-                            🔗
-                        </button>
+                    {showInviteCard ? (
+                        <div className="py-4 flex justify-center">
+                            <TeamInviteCard
+                                team={team}
+                                inviteLink={`${window.location.origin}/?invite_team=${team.invite_code}`}
+                                onClose={() => setShowInviteCard(false)}
+                            />
+                        </div>
+                    ) : (
+                        <div className="flex gap-2 mb-6">
+                            <button
+                                onClick={handleShareWhatsapp}
+                                className="flex-1 bg-green-600 hover:bg-green-500 text-white text-sm font-semibold py-3 px-4 rounded-xl flex items-center justify-center gap-2 transition-all shadow-lg active:scale-95"
+                            >
+                                <span>📲</span> Convidar via Zap
+                            </button>
+                            <button
+                                onClick={() => setShowInviteCard(true)}
+                                className="bg-[#112240] border border-white/10 hover:bg-[#1a2f55] text-white p-3 rounded-xl transition-all shadow-md active:scale-95"
+                                title="Gerar Card de Convite"
+                            >
+                                ✨ Ver Card
+                            </button>
 
-                        {isAdmin && (
-                            <button
-                                onClick={handleCreateMatch}
-                                className="flex-1 bg-[#112240] border border-white/10 hover:bg-[#1a2f55] text-white text-sm font-semibold py-2 px-4 rounded-lg transition-colors"
-                            >
-                                ⚽ Criar Partida
-                            </button>
-                        )}
-                        {!isAdmin && (
-                            <button
-                                onClick={handleLeaveTeam}
-                                className="bg-red-500/10 border border-red-500/30 text-red-400 hover:bg-red-500/20 p-2 rounded-lg transition-colors"
-                                title="Sair do Time"
-                            >
-                                🚪
-                            </button>
-                        )}
-                    </div>
+                            {isAdmin && (
+                                <button
+                                    onClick={handleCreateMatch}
+                                    className="flex-1 bg-gradient-to-r from-green-600 to-blue-600 hover:brightness-110 text-white text-sm font-semibold py-3 px-4 rounded-xl transition-all shadow-lg active:scale-95"
+                                >
+                                    ⚽ Criar Partida
+                                </button>
+                            )}
+                            {!isAdmin && (
+                                <button
+                                    onClick={handleLeaveTeam}
+                                    className="bg-red-500/10 border border-red-500/30 text-red-400 hover:bg-red-500/20 p-3 rounded-xl transition-all"
+                                    title="Sair do Time"
+                                >
+                                    🚪
+                                </button>
+                            )}
+                        </div>
+                    )}
 
                     {/* Tabs if Admin */}
                     {isAdmin && (
