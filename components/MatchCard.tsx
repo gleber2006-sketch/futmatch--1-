@@ -35,7 +35,7 @@ const StatusBadge: React.FC<{ status: Match['status'] }> = ({ status }) => {
     );
 };
 
-const MatchCard: React.FC<MatchCardProps> = ({
+const MatchCard: React.FC<MatchCardProps> = React.memo(({
     match,
     onCardClick,
     onJoinMatch,
@@ -355,6 +355,6 @@ Bora jogar? 🚀`;
             {isLoading && <ModernLoader />}
         </div >
     );
-};
+});
 
 export default MatchCard;

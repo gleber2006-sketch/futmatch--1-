@@ -1,18 +1,5 @@
-﻿import React, { useState, useCallback, useEffect, useRef } from 'react';
+﻿import React, { useState, useCallback, useEffect, useRef, lazy, Suspense } from 'react';
 import BottomNav from './components/BottomNav';
-import Explore from './components/Explore';
-import CreateMatchForm from './components/CreateMatchForm';
-import UserProfile from './components/UserProfile';
-import RankingList from './components/RankingList';
-import ChatBot from './components/ChatBot';
-import Home from './components/Home';
-import MatchesMap from './components/MatchesMap';
-import MyGames from './components/MyGames';
-import Community from './components/Community';
-import Arenas from './components/Arenas';
-import MatchChat from './components/MatchChat';
-import Notifications from './components/Notifications';
-import Wallet from './components/Wallet';
 import { Page, Feature, Profile, Match, Ranking, DraftMatchData, NewUserRegistrationData, MatchParticipant } from './types';
 import { supabase } from './services/supabaseClient';
 import { initGemini } from './services/geminiService';
@@ -21,11 +8,27 @@ import DatabaseSetup from './components/DatabaseSetup';
 import ModernLoader from './components/ModernLoader';
 import Toast from './components/Toast';
 import { generateInviteCode } from './utils/inviteCode';
-import InviteFriendScreen from './components/InviteFriendScreen';
-import InviteLandingScreen from './components/InviteLandingScreen';
-import SettingsScreen from './components/SettingsScreen';
-import SupportScreen from './components/SupportScreen';
-import HirePlayerScreen from './components/HirePlayerScreen';
+import Sidebar from './components/Sidebar';
+
+// Lazy load components
+const Explore = lazy(() => import('./components/Explore'));
+const CreateMatchForm = lazy(() => import('./components/CreateMatchForm'));
+const UserProfile = lazy(() => import('./components/UserProfile'));
+const RankingList = lazy(() => import('./components/RankingList'));
+const ChatBot = lazy(() => import('./components/ChatBot'));
+const Home = lazy(() => import('./components/Home'));
+const MatchesMap = lazy(() => import('./components/MatchesMap'));
+const MyGames = lazy(() => import('./components/MyGames'));
+const Community = lazy(() => import('./components/Community'));
+const Arenas = lazy(() => import('./components/Arenas'));
+const MatchChat = lazy(() => import('./components/MatchChat'));
+const Notifications = lazy(() => import('./components/Notifications'));
+const Wallet = lazy(() => import('./components/Wallet'));
+const InviteFriendScreen = lazy(() => import('./components/InviteFriendScreen'));
+const InviteLandingScreen = lazy(() => import('./components/InviteLandingScreen'));
+const SettingsScreen = lazy(() => import('./components/SettingsScreen'));
+const SupportScreen = lazy(() => import('./components/SupportScreen'));
+const HirePlayerScreen = lazy(() => import('./components/HirePlayerScreen'));
 
 
 const platformFeatures: Feature[] = [
@@ -55,7 +58,6 @@ const isSchemaMismatchError = (error: any): boolean => {
         error.code === '42P01';
 };
 
-import Sidebar from './components/Sidebar';
 
 const App: React.FC = () => {
     const [activePage, setActivePage] = useState<Page | 'invite-landing'>(() => {
@@ -1699,13 +1701,15 @@ const App: React.FC = () => {
         }
 
         return (
-            <Home
-                onLogin={handleLogin}
-                onRegister={handleRegister}
-                onGoogleLogin={handleGoogleLogin}
-                loginError={loginError}
-                clearLoginError={clearLoginError}
-            />
+            <Suspense fallback={<ModernLoader />}>
+                <Home
+                    onLogin={handleLogin}
+                    onRegister={handleRegister}
+                    onGoogleLogin={handleGoogleLogin}
+                    loginError={loginError}
+                    clearLoginError={clearLoginError}
+                />
+            </Suspense>
         );
     }
 
@@ -1738,7 +1742,9 @@ const App: React.FC = () => {
     return (
         <>
             <div className="app-container">
-                {renderPage()}
+                <Suspense fallback={<ModernLoader />}>
+                    {renderPage()}
+                </Suspense>
                 {activePage === 'explore' && (
                     <BottomNav
                         activePage={activePage}

@@ -40,11 +40,15 @@ const MyGames: React.FC<MyGamesProps> = ({
 }) => {
   const [activeTab, setActiveTab] = useState<'playing' | 'organizing'>('playing');
 
-  const myOrganizedMatches = matches.filter(match => match.created_by === currentUser?.id);
+  const myOrganizedMatches = React.useMemo(() =>
+    matches.filter(match => match.created_by === currentUser?.id),
+    [matches, currentUser?.id]);
 
-  const myParticipatingMatches = matches.filter(match =>
-    joinedMatchIds?.has(match.id) && match.created_by !== currentUser?.id
-  );
+  const myParticipatingMatches = React.useMemo(() =>
+    matches.filter(match =>
+      joinedMatchIds?.has(match.id) && match.created_by !== currentUser?.id
+    ),
+    [matches, joinedMatchIds, currentUser?.id]);
 
   const displayedMatches = activeTab === 'organizing' ? myOrganizedMatches : myParticipatingMatches;
 

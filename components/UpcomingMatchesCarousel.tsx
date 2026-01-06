@@ -7,7 +7,7 @@ interface UpcomingMatchesCarouselProps {
     onMatchClick: (match: Match) => void;
 }
 
-const UpcomingMatchesCarousel: React.FC<UpcomingMatchesCarouselProps> = ({ matches, onMatchClick }) => {
+const UpcomingMatchesCarousel: React.FC<UpcomingMatchesCarouselProps> = React.memo(({ matches, onMatchClick }) => {
     const scrollRef = useRef<HTMLDivElement>(null);
 
     const upcomingMatches = matches
@@ -159,6 +159,6 @@ const UpcomingMatchesCarousel: React.FC<UpcomingMatchesCarouselProps> = ({ match
       `}</style>
         </div>
     );
-};
+});
 
 export default UpcomingMatchesCarousel;

@@ -128,67 +128,53 @@ const Explore: React.FC<ExploreProps> = ({ matches, platformFeatures, onJoinMatc
     }
   };
 
-  const sortedAndFilteredMatches = matches
-    .map(match => {
-      const distance = userLocation && match.lat != null && match.lng != null ? haversineDistance(userLocation, { lat: match.lat, lng: match.lng }) : Infinity;
-      return { ...match, distance };
-    })
-    .filter(match => {
-      // Filtro de visibilidade baseado no botão selecionado
-      if (visibilityFilter === 'private') {
-        // Mostrar apenas privadas
-        return match.is_private === true;
-      } else if (visibilityFilter === 'public') {
-        // Mostrar apenas públicas
-        return match.is_private === false || !match.is_private;
-      }
-      // 'all': Mostrar todas (públicas + privadas do usuário)
-      return true;
-    })
-    .filter(match => {
-      const matchesSearch =
-        match.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        match.location.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        match.sport.toLowerCase().includes(searchTerm.toLowerCase());
-
-      const matchesDistance = match.distance <= distanceFilter;
-
-      const matchesStatus = statusFilter === 'all' || match.status === statusFilter;
-
-      const matchesSport = sportFilter === 'all' || match.sport === sportFilter;
-
-      return matchesSearch && matchesDistance && matchesStatus && matchesSport;
-    })
-    .sort((a, b) => {
-      // 1. Priority: Boosted (Active)
-      const aIsBoosted = a.is_boosted && a.boost_until && new Date(a.boost_until) > new Date();
-      const bIsBoosted = b.is_boosted && b.boost_until && new Date(b.boost_until) > new Date();
-
-      if (aIsBoosted && !bIsBoosted) return -1;
-      if (!aIsBoosted && bIsBoosted) return 1;
-
-      // 2. Priority: Privadas antes de públicas (apenas no filtro "Todas")
-      if (visibilityFilter === 'all') {
-        const aIsPrivate = a.is_private === true;
-        const bIsPrivate = b.is_private === true;
-        if (aIsPrivate && !bIsPrivate) return -1;
-        if (!aIsPrivate && bIsPrivate) return 1;
-      }
-
-      // 3. Priority: Status
-      const statusOrder: { [key in Match['status']]: number } = {
-        'Convocando': 1,
-        'Confirmado': 2,
-        'Cancelado': 3,
-        'Finalizada': 4,
-      };
-      if (statusOrder[a.status] !== statusOrder[b.status]) {
-        return statusOrder[a.status] - statusOrder[b.status];
-      }
-
-      // 4. Priority: Distance
-      return a.distance - b.distance;
-    });
+  const sortedAndFilteredMatches = React.useMemo(() => {
+    return matches
+      .map(match => {
+        const distance = userLocation && match.lat != null && match.lng != null ? haversineDistance(userLocation, { lat: match.lat, lng: match.lng }) : Infinity;
+        return { ...match, distance };
+      })
+      .filter(match => {
+        if (visibilityFilter === 'private') {
+          return match.is_private === true;
+        } else if (visibilityFilter === 'public') {
+          return match.is_private === false || !match.is_private;
+        }
+        return true;
+      })
+      .filter(match => {
+        const matchesSearch =
+          match.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          match.location.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          match.sport.toLowerCase().includes(searchTerm.toLowerCase());
+        const matchesDistance = match.distance <= distanceFilter;
+        const matchesStatus = statusFilter === 'all' || match.status === statusFilter;
+        const matchesSport = sportFilter === 'all' || match.sport === sportFilter;
+        return matchesSearch && matchesDistance && matchesStatus && matchesSport;
+      })
+      .sort((a, b) => {
+        const aIsBoosted = a.is_boosted && a.boost_until && new Date(a.boost_until) > new Date();
+        const bIsBoosted = b.is_boosted && b.boost_until && new Date(b.boost_until) > new Date();
+        if (aIsBoosted && !bIsBoosted) return -1;
+        if (!aIsBoosted && bIsBoosted) return 1;
+        if (visibilityFilter === 'all') {
+          const aIsPrivate = a.is_private === true;
+          const bIsPrivate = b.is_private === true;
+          if (aIsPrivate && !bIsPrivate) return -1;
+          if (!aIsPrivate && bIsPrivate) return 1;
+        }
+        const statusOrder: { [key in Match['status']]: number } = {
+          'Convocando': 1,
+          'Confirmado': 2,
+          'Cancelado': 3,
+          'Finalizada': 4,
+        };
+        if (statusOrder[a.status] !== statusOrder[b.status]) {
+          return statusOrder[a.status] - statusOrder[b.status];
+        }
+        return a.distance - b.distance;
+      });
+  }, [matches, userLocation, visibilityFilter, searchTerm, distanceFilter, statusFilter, sportFilter]);
 
   return (
     <div className="bg-gradient-to-b from-[#0a1628] to-[#0f1824] min-h-screen">
