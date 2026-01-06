@@ -1,48 +1,50 @@
 import { createClient } from '@supabase/supabase-js';
 
 export default async function handler(req, res) {
-    // Pegar o código do convite da query string
-    const { code } = req.query;
+  // Pegar o código do convite da query string
+  const { code } = req.query;
 
-    // Se não houver código, redireciona para a home
-    if (!code) {
-        return res.redirect('/');
+  // Se não houver código, redireciona para a home
+  if (!code) {
+    return res.redirect('/');
+  }
+
+  // Configuração do Supabase (Vercel injeta as variáveis de ambiente VITE_...)
+  const supabaseUrl = process.env.VITE_SUPABASE_URL;
+  const supabaseKey = process.env.VITE_SUPABASE_ANON_KEY;
+
+  if (!supabaseUrl || !supabaseKey) {
+    console.error('Missing Supabase environment variables in function');
+    return res.redirect(`/?invite_team=${code}`);
+  }
+
+  const supabase = createClient(supabaseUrl, supabaseKey);
+
+  try {
+    // Buscar o time pelo código de convite
+    const { data: team, error } = await supabase
+      .from('teams')
+      .select('name, logo_url')
+      .eq('invite_code', code)
+      .single();
+
+    // Se houver erro ou não achar o time, redireciona para a home com o parâmetro
+    if (error || !team) {
+      console.warn('Team not found for code:', code);
+      return res.redirect(`/?invite_team=${code}`);
     }
 
-    // Configuração do Supabase (Vercel injeta as variáveis de ambiente VITE_...)
-    const supabaseUrl = process.env.VITE_SUPABASE_URL;
-    const supabaseKey = process.env.VITE_SUPABASE_ANON_KEY;
+    const title = `🛡️ Entre no time ${team.name}!`;
+    const description = `Você foi convidado para o elenco do ${team.name}. Clique para entrar no time pelo FutMatch! ⚽`;
+    const image = team.logo_url || 'https://futmatch-1.vercel.app/logo.jpg';
+    const host = req.headers.host || 'futmatch-1.vercel.app';
+    const protocol = req.headers['x-forwarded-proto'] || 'https';
+    const appUrl = `${protocol}://${host}/?invite_team=${code}`;
 
-    if (!supabaseUrl || !supabaseKey) {
-        console.error('Missing Supabase environment variables in function');
-        return res.redirect(`/?invite_team=${code}`);
-    }
-
-    const supabase = createClient(supabaseUrl, supabaseKey);
-
-    try {
-        // Buscar o time pelo código de convite
-        const { data: team, error } = await supabase
-            .from('teams')
-            .select('name, logo_url')
-            .eq('invite_code', code)
-            .single();
-
-        // Se houver erro ou não achar o time, redireciona para a home com o parâmetro
-        if (error || !team) {
-            console.warn('Team not found for code:', code);
-            return res.redirect(`/?invite_team=${code}`);
-        }
-
-        const title = `🛡️ Entre no time ${team.name}!`;
-        const description = `Você foi convidado para o elenco do ${team.name}. Clique para entrar no time pelo FutMatch! ⚽`;
-        const image = team.logo_url || 'https://futmatch.vercel.app/logo.jpg';
-        const appUrl = `https://futmatch.vercel.app/?invite_team=${code}`;
-
-        // Retornamos um HTML com as meta tags para o WhatsApp ler
-        // E um script para redirecionar o usuário real
-        res.setHeader('Content-Type', 'text/html');
-        return res.status(200).send(`
+    // Retornamos um HTML com as meta tags para o WhatsApp ler
+    // E um script para redirecionar o usuário real
+    res.setHeader('Content-Type', 'text/html');
+    return res.status(200).send(`
       <!DOCTYPE html>
       <html lang="pt-BR">
       <head>
@@ -107,8 +109,8 @@ export default async function handler(req, res) {
       </html>
     `);
 
-    } catch (err) {
-        console.error('Error in team-invite handler:', err);
-        return res.redirect(`/?invite_team=${code}`);
-    }
+  } catch (err) {
+    console.error('Error in team-invite handler:', err);
+    return res.redirect(`/?invite_team=${code}`);
+  }
 }
