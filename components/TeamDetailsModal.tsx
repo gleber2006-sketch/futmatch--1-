@@ -59,14 +59,14 @@ const TeamDetailsModal: React.FC<TeamDetailsModalProps> = ({ teamId, currentUser
 
     const handleCopyInvite = () => {
         if (!team) return;
-        const link = `${window.location.origin}/?invite_team=${team.invite_code}`;
+        const link = `${window.location.origin}/time/${team.invite_code}`;
         navigator.clipboard.writeText(link);
         alert("Link de convite copiado!");
     };
 
     const handleShareWhatsapp = () => {
         if (!team) return;
-        const link = `${window.location.origin}/?invite_team=${team.invite_code}`;
+        const link = `${window.location.origin}/time/${team.invite_code}`;
         const text = `Venha fazer parte do meu time *${team.name}* no FutMatch! ⚽\n\nAcesse: ${link}`;
         window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
     };
@@ -234,7 +234,7 @@ const TeamDetailsModal: React.FC<TeamDetailsModalProps> = ({ teamId, currentUser
                         <div className="py-4 flex justify-center">
                             <TeamInviteCard
                                 team={team}
-                                inviteLink={`${window.location.origin}/?invite_team=${team.invite_code}`}
+                                inviteLink={`${window.location.origin}/time/${team.invite_code}`}
                                 onClose={() => setShowInviteCard(false)}
                             />
                         </div>

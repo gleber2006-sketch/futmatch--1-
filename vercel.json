@@ -1,6 +1,10 @@
 {
     "rewrites": [
         {
+            "source": "/time/:code",
+            "destination": "/api/team-invite?code=:code"
+        },
+        {
             "source": "/(.*)",
             "destination": "/index.html"
         }
