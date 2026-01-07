@@ -24,6 +24,8 @@ interface MatchesMapProps {
   onNavigateToDirectChat?: (matchId: number) => void;
   onBalanceUpdate?: (amount: number) => void;
   onBoostMatch?: (matchId: number) => Promise<boolean>;
+  userLocation: { lat: number; lng: number } | null;
+  locationStatus: 'idle' | 'loading' | 'success' | 'error';
 }
 
 const MatchesMap: React.FC<MatchesMapProps> = ({
@@ -40,47 +42,27 @@ const MatchesMap: React.FC<MatchesMapProps> = ({
   onEditMatch,
   onNavigateToDirectChat,
   onBalanceUpdate,
-  onBoostMatch
+  onBoostMatch,
+  userLocation,
+  locationStatus
 }) => {
   const mapRef = useRef<HTMLDivElement>(null);
   const mapInstance = useRef<any>(null);
-  const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
 
-  // 1. Get User Location
-  useEffect(() => {
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          setUserLocation({
-            lat: position.coords.latitude,
-            lng: position.coords.longitude,
-          });
-          setIsLoading(false);
-        },
-        (error) => {
-          console.error("Error getting location for map", error);
-          // Default location (Sao Paulo center) if permission denied
-          setUserLocation({ lat: -23.5505, lng: -46.6333 });
-          setIsLoading(false);
-        }
-      );
-    } else {
-      setUserLocation({ lat: -23.5505, lng: -46.6333 });
-      setIsLoading(false);
-    }
-  }, []);
+  // Fallback to Sao Paulo if location unavailable
+  const effectiveLocation = userLocation || { lat: -23.5505, lng: -46.6333 };
+  const isLoading = locationStatus === 'loading' || locationStatus === 'idle';
 
-  // 2. Initialize Map
+  // 1. Initialize Map
   useEffect(() => {
-    if (isLoading || !userLocation || !mapRef.current || typeof L === 'undefined') return;
+    if (isLoading || !effectiveLocation || !mapRef.current || typeof L === 'undefined') return;
 
     if (mapInstance.current) {
       mapInstance.current.remove();
     }
 
     try {
-      const map = L.map(mapRef.current).setView([userLocation.lat, userLocation.lng], 13);
+      const map = L.map(mapRef.current).setView([effectiveLocation.lat, effectiveLocation.lng], 13);
       mapInstance.current = map;
 
       L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -95,7 +77,7 @@ const MatchesMap: React.FC<MatchesMapProps> = ({
         iconSize: [16, 16],
         iconAnchor: [8, 8]
       });
-      L.marker([userLocation.lat, userLocation.lng], { icon: userIcon }).addTo(map).bindPopup("Você está aqui");
+      L.marker([effectiveLocation.lat, effectiveLocation.lng], { icon: userIcon }).addTo(map).bindPopup("Você está aqui");
 
       // Match Markers
       matches.forEach(match => {

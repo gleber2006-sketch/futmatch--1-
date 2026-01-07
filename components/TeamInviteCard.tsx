@@ -19,7 +19,7 @@ const TeamInviteCard: React.FC<TeamInviteCardProps> = ({ team, inviteLink, onClo
     return (
         <div className="flex flex-col items-center animate-fade-in-up">
             {/* The Card */}
-            <div className="relative w-full max-w-[320px] bg-gradient-to-br from-[#0a1628] to-[#112240] rounded-[2rem] p-6 sm:p-8 border-2 border-green-500/30 shadow-[0_20px_50px_rgba(0,0,0,0.5)] overflow-hidden group origin-top scale-[0.85] sm:scale-100 transition-transform duration-300">
+            <div className="relative w-full max-w-[320px] bg-gradient-to-br from-[#0a1628] to-[#112240] rounded-[2rem] p-6 sm:p-8 border-2 border-green-500/30 shadow-[0_20px_50px_rgba(0,0,0,0.5)] overflow-hidden group origin-top scale-[0.8] sm:scale-100 transition-transform duration-300 mt-4 mb-2">
 
                 {/* Decorative Elements */}
                 <div className="absolute -top-24 -right-24 w-48 h-48 bg-green-500/10 rounded-full blur-3xl group-hover:bg-green-500/20 transition-all duration-700"></div>

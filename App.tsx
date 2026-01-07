@@ -83,6 +83,8 @@ const App: React.FC = () => {
     const [selectedChatMatchId, setSelectedChatMatchId] = useState<number | null>(null);
     const [editingMatch, setEditingMatch] = useState<Match | null>(null);
     const [showExitToast, setShowExitToast] = useState(false);
+    const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
+    const [locationStatus, setLocationStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
     const exitAttemptRef = useRef(false);
     const isPopping = useRef(false);
 
@@ -1470,13 +1472,39 @@ const App: React.FC = () => {
         setActivePage('match-chat');
     }, []);
 
-    const renderPage = () => {
-        if (!currentUser && activePage !== 'explore') {
-            // Allow explore without login, but other pages might require it.
-            // Actually, Home handles login/register.
-            // If activePage is 'explore', we render Explore.
-        }
+    useEffect(() => {
+        if (isLoadingDbCheck || dbSetupRequired || !isAuthenticated) return;
 
+        fetchMatches();
+        fetchRankings();
+    }, [isLoadingDbCheck, dbSetupRequired, isAuthenticated, fetchMatches, fetchRankings]);
+
+    // Fetch user location once authenticated
+    useEffect(() => {
+        if (isAuthenticated && locationStatus === 'idle') {
+            setLocationStatus('loading');
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(
+                    (position) => {
+                        setUserLocation({
+                            lat: position.coords.latitude,
+                            lng: position.coords.longitude,
+                        });
+                        setLocationStatus('success');
+                    },
+                    (error) => {
+                        console.error("Error getting location:", error);
+                        setLocationStatus('error');
+                    },
+                    { enableHighAccuracy: false, timeout: 10000, maximumAge: Infinity }
+                );
+            } else {
+                setLocationStatus('error');
+            }
+        }
+    }, [isAuthenticated, locationStatus]);
+
+    const renderPage = () => {
         switch (activePage) {
             case 'explore':
                 return <Explore
@@ -1485,7 +1513,7 @@ const App: React.FC = () => {
                     onJoinMatch={handleJoinMatch}
                     onLeaveMatch={handleLeaveMatch}
                     joinedMatchIds={joinedMatchIds}
-                    currentUser={currentUser}
+                    currentUser={currentUser!}
                     onCancelMatch={handleCancelMatch}
                     onDeleteCanceledMatches={handleDeleteCanceledMatches}
                     onEditMatch={handleStartEditMatch}
@@ -1507,6 +1535,8 @@ const App: React.FC = () => {
                     onSelectMatch={setSelectedMatch}
                     onCloseMatchDetails={() => setSelectedMatch(null)}
                     onOpenSidebar={() => setIsSidebarOpen(true)}
+                    userLocation={userLocation}
+                    locationStatus={locationStatus}
                 />;
             case 'create':
                 return <CreateMatchForm
@@ -1523,7 +1553,7 @@ const App: React.FC = () => {
                     onJoinMatch={handleJoinMatch}
                     onLeaveMatch={handleLeaveMatch}
                     joinedMatchIds={joinedMatchIds}
-                    currentUser={currentUser}
+                    currentUser={currentUser!}
                     onCancelMatch={handleCancelMatch}
                     onDeleteCanceledMatches={handleDeleteCanceledMatches}
                     onEditMatch={handleStartEditMatch}
@@ -1539,6 +1569,7 @@ const App: React.FC = () => {
                     selectedMatch={selectedMatch}
                     onSelectMatch={setSelectedMatch}
                     onCloseMatchDetails={() => setSelectedMatch(null)}
+                    userLocation={userLocation}
                 />;
             case 'match-chat':
                 return <MatchChat
@@ -1609,6 +1640,8 @@ const App: React.FC = () => {
                     onMatchClick={setSelectedMatch}
                     selectedMatch={selectedMatch}
                     onCloseMatchDetails={() => setSelectedMatch(null)}
+                    userLocation={userLocation}
+                    locationStatus={locationStatus}
                 />;
             default:
                 return <Explore
@@ -1617,7 +1650,7 @@ const App: React.FC = () => {
                     onJoinMatch={handleJoinMatch}
                     onLeaveMatch={handleLeaveMatch}
                     joinedMatchIds={joinedMatchIds}
-                    currentUser={currentUser}
+                    currentUser={currentUser!}
                     onCancelMatch={handleCancelMatch}
                     onDeleteCanceledMatches={handleDeleteCanceledMatches}
                     onEditMatch={handleStartEditMatch}
@@ -1642,6 +1675,8 @@ const App: React.FC = () => {
                         console.log("App: onOpenSidebar triggered");
                         setIsSidebarOpen(true);
                     }}
+                    userLocation={userLocation}
+                    locationStatus={locationStatus}
                 />;
         }
     };

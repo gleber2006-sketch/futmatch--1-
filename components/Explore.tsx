@@ -40,6 +40,8 @@ interface ExploreProps {
   onSelectMatch: (match: Match | null) => void;
   onCloseMatchDetails: () => void;
   onOpenSidebar: () => void;
+  userLocation: { lat: number; lng: number } | null;
+  locationStatus: 'idle' | 'loading' | 'success' | 'error';
 }
 
 const haversineDistance = (
@@ -62,10 +64,8 @@ const haversineDistance = (
   return R * c;
 };
 
-const Explore: React.FC<ExploreProps> = ({ matches, platformFeatures, onJoinMatch, onLeaveMatch, onCancelMatch, onDeleteCanceledMatches, onEditMatch, joinedMatchIds, currentUser, onNavigateToCreate, onRefreshMatches, onNavigateToProfile, onNavigateToMap, onNavigateToMyGames, onNavigateToRanking, onNavigateToCommunity, onNavigateToArenas, onNavigateToMatchChat, onNavigateToDirectChat, onNavigateToNotifications, onNavigateToWallet, onBalanceUpdate, onBoostMatch, selectedMatch, onSelectMatch, onCloseMatchDetails, onOpenSidebar }) => {
+const Explore: React.FC<ExploreProps> = ({ matches, platformFeatures, onJoinMatch, onLeaveMatch, onCancelMatch, onDeleteCanceledMatches, onEditMatch, joinedMatchIds, currentUser, onNavigateToCreate, onRefreshMatches, onNavigateToProfile, onNavigateToMap, onNavigateToMyGames, onNavigateToRanking, onNavigateToCommunity, onNavigateToArenas, onNavigateToMatchChat, onNavigateToDirectChat, onNavigateToNotifications, onNavigateToWallet, onBalanceUpdate, onBoostMatch, selectedMatch, onSelectMatch, onCloseMatchDetails, onOpenSidebar, userLocation, locationStatus }) => {
   const [searchTerm, setSearchTerm] = useState('');
-  const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
-  const [locationStatus, setLocationStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
   const [distanceFilter, setDistanceFilter] = useState<number>(Infinity);
   const [statusFilter, setStatusFilter] = useState<Match['status'] | 'all'>('Convocando');
   const [sportFilter, setSportFilter] = useState<string>('all');
@@ -74,26 +74,6 @@ const Explore: React.FC<ExploreProps> = ({ matches, platformFeatures, onJoinMatc
   const matchesSectionRef = useRef<HTMLDivElement>(null);
 
 
-
-  useEffect(() => {
-    setLocationStatus('loading');
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          setUserLocation({
-            lat: position.coords.latitude,
-            lng: position.coords.longitude,
-          });
-          setLocationStatus('success');
-        },
-        () => {
-          setLocationStatus('error');
-        }
-      );
-    } else {
-      setLocationStatus('error');
-    }
-  }, []);
 
   const handleCardClick = (match: Match) => {
     onSelectMatch(match);

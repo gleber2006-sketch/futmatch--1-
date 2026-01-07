@@ -20,6 +20,7 @@ interface MyGamesProps {
   selectedMatch: Match | null;
   onSelectMatch: (match: Match | null) => void;
   onCloseMatchDetails: () => void;
+  userLocation?: { lat: number; lng: number } | null;
 }
 
 const MyGames: React.FC<MyGamesProps> = ({
@@ -36,7 +37,8 @@ const MyGames: React.FC<MyGamesProps> = ({
   onBalanceUpdate,
   selectedMatch,
   onSelectMatch,
-  onCloseMatchDetails
+  onCloseMatchDetails,
+  userLocation
 }) => {
   const [activeTab, setActiveTab] = useState<'playing' | 'organizing'>('playing');
 
