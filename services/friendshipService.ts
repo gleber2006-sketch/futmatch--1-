@@ -56,77 +56,109 @@ export const friendshipService = {
 
     // Get accepted friends
     async getFriends(userId: string): Promise<Friendship[]> {
-        const { data, error } = await supabase
+        const { data: friendships, error } = await supabase
             .from('friendships')
-            .select(`
-        *,
-        requester:profiles!requester_id(name, photo_url, reputation),
-        receiver:profiles!receiver_id(name, photo_url, reputation)
-      `)
+            .select('*')
             .eq('status', 'accepted')
             .or(`requester_id.eq.${userId},receiver_id.eq.${userId}`);
 
         if (error) throw error;
+        if (!friendships || friendships.length === 0) return [];
 
-        return (data as any[]).map(f => ({
-            ...f,
-            requester: {
-                name: f.requester?.name,
-                photoUrl: f.requester?.photo_url,
-                reputation: f.requester?.reputation
-            },
-            receiver: {
-                name: f.receiver?.name,
-                photoUrl: f.receiver?.photo_url,
-                reputation: f.receiver?.reputation
-            }
-        }));
+        // Collect all unique profile IDs we need to fetch
+        const profileIds = Array.from(new Set(friendships.flatMap(f => [f.requester_id, f.receiver_id])));
+
+        // Fetch profiles separately
+        const { data: profiles, error: profilesError } = await supabase
+            .from('profiles')
+            .select('id, name, photo_url, reputation')
+            .in('id', profileIds);
+
+        if (profilesError) throw profilesError;
+
+        // Map profiles back to friendships
+        return friendships.map(f => {
+            const reqProfile = profiles?.find(p => p.id === f.requester_id);
+            const recProfile = profiles?.find(p => p.id === f.receiver_id);
+
+            return {
+                ...f,
+                requester: reqProfile ? {
+                    name: reqProfile.name,
+                    photoUrl: reqProfile.photo_url,
+                    reputation: reqProfile.reputation
+                } : undefined,
+                receiver: recProfile ? {
+                    name: recProfile.name,
+                    photoUrl: recProfile.photo_url,
+                    reputation: recProfile.reputation
+                } : undefined
+            };
+        });
     },
 
     // Get pending requests (received)
     async getPendingRequests(userId: string): Promise<Friendship[]> {
-        const { data, error } = await supabase
+        const { data: friendships, error } = await supabase
             .from('friendships')
-            .select(`
-        *,
-        requester:profiles!requester_id(name, photo_url, reputation)
-      `)
+            .select('*')
             .eq('status', 'pending')
             .eq('receiver_id', userId);
 
         if (error) throw error;
+        if (!friendships || friendships.length === 0) return [];
 
-        return (data as any[]).map(f => ({
-            ...f,
-            requester: {
-                name: f.requester?.name,
-                photoUrl: f.requester?.photo_url,
-                reputation: f.requester?.reputation
-            }
-        }));
+        const requesterIds = friendships.map(f => f.requester_id);
+        const { data: profiles, error: profilesError } = await supabase
+            .from('profiles')
+            .select('id, name, photo_url, reputation')
+            .in('id', requesterIds);
+
+        if (profilesError) throw profilesError;
+
+        return friendships.map(f => {
+            const profile = profiles?.find(p => p.id === f.requester_id);
+            return {
+                ...f,
+                requester: profile ? {
+                    name: profile.name,
+                    photoUrl: profile.photo_url,
+                    reputation: profile.reputation
+                } : undefined
+            };
+        });
     },
 
     // Get pending requests (sent)
     async getSentRequests(userId: string): Promise<Friendship[]> {
-        const { data, error } = await supabase
+        const { data: friendships, error } = await supabase
             .from('friendships')
-            .select(`
-        *,
-        receiver:profiles!receiver_id(name, photo_url, reputation)
-      `)
+            .select('*')
             .eq('status', 'pending')
             .eq('requester_id', userId);
 
         if (error) throw error;
+        if (!friendships || friendships.length === 0) return [];
 
-        return (data as any[]).map(f => ({
-            ...f,
-            receiver: {
-                name: f.receiver?.name,
-                photoUrl: f.receiver?.photo_url,
-                reputation: f.receiver?.reputation
-            }
-        }));
+        const receiverIds = friendships.map(f => f.receiver_id);
+        const { data: profiles, error: profilesError } = await supabase
+            .from('profiles')
+            .select('id, name, photo_url, reputation')
+            .in('id', receiverIds);
+
+        if (profilesError) throw profilesError;
+
+        return friendships.map(f => {
+            const profile = profiles?.find(p => p.id === f.receiver_id);
+            return {
+                ...f,
+                receiver: profile ? {
+                    name: profile.name,
+                    photoUrl: profile.photo_url,
+                    reputation: profile.reputation
+                } : undefined
+            };
+        });
     },
 
     // Check friendship status between two users
