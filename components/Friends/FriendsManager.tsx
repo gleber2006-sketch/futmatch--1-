@@ -9,9 +9,10 @@ interface FriendsManagerProps {
     currentUser: Profile;
     onClose: () => void;
     onViewPublicProfile?: (userId: string) => void;
+    onNavigateToDirectChat?: (userId: string) => void;
 }
 
-const FriendsManager: React.FC<FriendsManagerProps> = ({ currentUser, onClose, onViewPublicProfile }) => {
+const FriendsManager: React.FC<FriendsManagerProps> = ({ currentUser, onClose, onViewPublicProfile, onNavigateToDirectChat }) => {
     const [activeTab, setActiveTab] = useState<'list' | 'requests' | 'search'>('list');
 
     return (
@@ -61,7 +62,7 @@ const FriendsManager: React.FC<FriendsManagerProps> = ({ currentUser, onClose, o
 
                 {/* Content */}
                 <div className="flex-1 overflow-y-auto p-4 bg-[#0a1628]">
-                    {activeTab === 'list' && <FriendList currentUser={currentUser} onViewPublicProfile={onViewPublicProfile} />}
+                    {activeTab === 'list' && <FriendList currentUser={currentUser} onViewPublicProfile={onViewPublicProfile} onNavigateToDirectChat={onNavigateToDirectChat} />}
                     {activeTab === 'requests' && <FriendRequests currentUser={currentUser} onViewPublicProfile={onViewPublicProfile} />}
                     {activeTab === 'search' && <UserSearch currentUser={currentUser} />}
                 </div>

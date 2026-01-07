@@ -9,9 +9,10 @@ interface PublicProfileModalProps {
     userId: string;
     currentUser: Profile;
     onClose: () => void;
+    onNavigateToDirectChat?: (userId: string) => void;
 }
 
-const PublicProfileModal: React.FC<PublicProfileModalProps> = ({ userId, currentUser, onClose }) => {
+const PublicProfileModal: React.FC<PublicProfileModalProps> = ({ userId, currentUser, onClose, onNavigateToDirectChat }) => {
     const [profile, setProfile] = useState<Profile | null>(null);
     const [friendStatus, setFriendStatus] = useState<{ id: number, status: string, isRequester: boolean } | null>(null);
     const [isLoading, setIsLoading] = useState(true);
@@ -205,8 +206,16 @@ const PublicProfileModal: React.FC<PublicProfileModalProps> = ({ userId, current
                     {userId !== currentUser.id && (
                         <div className="mt-8">
                             {friendStatus?.status === 'accepted' ? (
-                                <div className="w-full bg-green-500/10 text-green-400 font-black text-xs uppercase py-4 rounded-2xl border border-green-500/20 text-center flex items-center justify-center gap-2">
-                                    <span>✅ Amigo</span>
+                                <div className="flex flex-col gap-2">
+                                    <div className="w-full bg-green-500/10 text-green-400 font-black text-xs uppercase py-4 rounded-2xl border border-green-500/20 text-center flex items-center justify-center gap-2">
+                                        <span>✅ Amigo</span>
+                                    </div>
+                                    <button
+                                        onClick={() => onNavigateToDirectChat?.(userId)}
+                                        className="w-full bg-[#00FF94] hover:bg-white text-black font-black text-xs uppercase py-4 rounded-2xl transition-all shadow-xl shadow-[#00FF94]/20 flex items-center justify-center gap-2"
+                                    >
+                                        💬 Mandar Mensagem
+                                    </button>
                                 </div>
                             ) : friendStatus?.status === 'pending' ? (
                                 friendStatus.isRequester ? (

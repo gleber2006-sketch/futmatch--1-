@@ -6,9 +6,10 @@ import { ChatIcon } from '../Icons'; // Assuming ChatIcon exists
 interface FriendListProps {
     currentUser: Profile;
     onViewPublicProfile?: (userId: string) => void;
+    onNavigateToDirectChat?: (userId: string) => void;
 }
 
-const FriendList: React.FC<FriendListProps> = ({ currentUser, onViewPublicProfile }) => {
+const FriendList: React.FC<FriendListProps> = ({ currentUser, onViewPublicProfile, onNavigateToDirectChat }) => {
     const [friends, setFriends] = useState<Friendship[]>([]);
     const [isLoading, setIsLoading] = useState(true);
 
@@ -86,10 +87,16 @@ const FriendList: React.FC<FriendListProps> = ({ currentUser, onViewPublicProfil
                             </div>
                         </div>
 
-                        <div className="flex items-center gap-3" onClick={(e) => e.stopPropagation()}>
+                        <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
+                            <button
+                                onClick={() => onNavigateToDirectChat?.(friendId)}
+                                className="bg-[#00FF94] hover:bg-[#00e686] text-black text-[10px] font-black uppercase px-3 py-2 rounded-lg transition-all shadow-lg active:scale-95 flex items-center gap-1"
+                            >
+                                <ChatIcon /> Mensagem
+                            </button>
                             <button
                                 onClick={() => handleRemove(friendship.id, friendProfile.name || 'Usuário')}
-                                className="bg-red-600 hover:bg-red-500 text-white text-[10px] font-black uppercase px-3 py-2 rounded-lg transition-all shadow-lg active:scale-95"
+                                className="bg-red-500/10 hover:bg-red-500/20 text-red-400 text-[10px] font-black uppercase px-3 py-2 rounded-lg transition-all border border-red-500/20 active:scale-95"
                             >
                                 Remover
                             </button>

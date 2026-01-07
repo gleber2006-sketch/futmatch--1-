@@ -30,6 +30,7 @@ const SettingsScreen = lazy(() => import('./components/SettingsScreen'));
 const SupportScreen = lazy(() => import('./components/SupportScreen'));
 const HirePlayerScreen = lazy(() => import('./components/HirePlayerScreen'));
 const PublicProfileModal = lazy(() => import('./components/PublicProfileModal'));
+const DirectChat = lazy(() => import('./components/DirectChat'));
 
 
 const platformFeatures: Feature[] = [
@@ -85,6 +86,8 @@ const App: React.FC = () => {
     const [editingMatch, setEditingMatch] = useState<Match | null>(null);
     const [showExitToast, setShowExitToast] = useState(false);
     const [viewingPublicProfileId, setViewingPublicProfileId] = useState<string | null>(null);
+    const [selectedDirectChatUserId, setSelectedDirectChatUserId] = useState<string | null>(null);
+    const [prevPage, setPrevPage] = useState<Page>('explore');
     const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
     const [locationStatus, setLocationStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
     const exitAttemptRef = useRef(false);
@@ -1474,6 +1477,13 @@ const App: React.FC = () => {
         setActivePage('match-chat');
     }, []);
 
+    const handleNavigateToDirectChat = useCallback((userId: string) => {
+        setPrevPage(activePage);
+        setSelectedDirectChatUserId(userId);
+        setActivePage('direct-chat');
+        setViewingPublicProfileId(null); // Close modal if open
+    }, [activePage]);
+
     useEffect(() => {
         if (isLoadingDbCheck || dbSetupRequired || !isAuthenticated) return;
 
@@ -1584,6 +1594,15 @@ const App: React.FC = () => {
                     }}
                     initialMatchId={selectedChatMatchId}
                 />;
+            case 'direct-chat':
+                return <DirectChat
+                    currentUser={currentUser!}
+                    recipientId={selectedDirectChatUserId!}
+                    onNavigateBack={() => {
+                        setSelectedDirectChatUserId(null);
+                        setActivePage(prevPage);
+                    }}
+                />;
             case 'profile':
                 return <UserProfile
                     user={currentUser!}
@@ -1592,6 +1611,7 @@ const App: React.FC = () => {
                     onNavigateBack={() => setActivePage('explore')}
                     onNavigateToCreateMatch={handleNavigateToCreateMatch}
                     onViewPublicProfile={setViewingPublicProfileId}
+                    onNavigateToDirectChat={handleNavigateToDirectChat}
                     initialSection={profileInitialSection}
                 />;
             case 'ranking':
@@ -1785,6 +1805,7 @@ const App: React.FC = () => {
                             userId={viewingPublicProfileId}
                             currentUser={currentUser}
                             onClose={() => setViewingPublicProfileId(null)}
+                            onNavigateToDirectChat={handleNavigateToDirectChat}
                         />
                     </Suspense>
                 )}
