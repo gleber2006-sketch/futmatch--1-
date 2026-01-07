@@ -285,12 +285,12 @@ const App: React.FC = () => {
 
     const fetchUserProfile = useCallback(async (user: User): Promise<Profile | null> => {
         // Mapper function to convert snake_case from DB to camelCase for the app
-        const mapProfileData = (data: any, balance: number = 0): Profile | null => {
+        const mapProfileData = (data: any, balance: number = 0, emailFromAuth?: string): Profile | null => {
             if (!data) return null;
             return {
                 id: data.id,
                 name: data.name,
-                email: data.email,
+                email: data.email || emailFromAuth,
                 photoUrl: data.photo_url,
                 dateOfBirth: data.date_of_birth,
                 city: data.city,
@@ -319,7 +319,7 @@ const App: React.FC = () => {
                         const { data: tokenData } = await supabase.from('tokens').select('balance').eq('user_id', user.id).single();
                         const balance = tokenData?.balance || 0;
 
-                        profile = mapProfileData(data, balance);
+                        profile = mapProfileData(data, balance, user.email);
                         break;
                     }
 
@@ -352,7 +352,7 @@ const App: React.FC = () => {
                     return null;
                 }
                 // Fallback profile usually starts with 10 coins due to trigger, but we can default to 0 safely here
-                profile = mapProfileData(data, 10);
+                profile = mapProfileData(data, 10, user.email);
             } catch (fallbackError) {
                 console.error("Failed to create fallback profile:", fallbackError);
                 setProfileError(true);
