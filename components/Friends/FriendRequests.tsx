@@ -52,6 +52,14 @@ const FriendRequests: React.FC<FriendRequestsProps> = ({ currentUser }) => {
 
     return (
         <div className="space-y-6">
+            <div className="flex justify-end">
+                <button
+                    onClick={fetchRequests}
+                    className="text-[10px] font-black uppercase tracking-tighter bg-white/5 hover:bg-white/10 text-gray-300 px-3 py-1.5 rounded-lg border border-white/10 transition-all active:scale-95"
+                >
+                    🔄 Atualizar
+                </button>
+            </div>
             {/* Incoming Requests */}
             <div>
                 <h3 className="text-sm font-bold text-gray-400 uppercase mb-3">Recebidas ({incoming.length})</h3>

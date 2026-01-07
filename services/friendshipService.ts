@@ -60,25 +60,16 @@ export const friendshipService = {
             .from('friendships')
             .select(`
         *,
-        requester:requester_id(name, photo_url, reputation),
-        receiver:receiver_id(name, photo_url, reputation)
+        requester:profiles!requester_id(name, photo_url, reputation),
+        receiver:profiles!receiver_id(name, photo_url, reputation)
       `)
             .eq('status', 'accepted')
             .or(`requester_id.eq.${userId},receiver_id.eq.${userId}`);
 
         if (error) throw error;
 
-        // Map to properly shape the data if needed (profiles names are snake_case in DB usually, but our type expects camelCase if we aliased it or if types match)
-        // Actually, in types.ts we defined profile props like photoUrl. Supabase returns columns as they are in DB.
-        // We might need to map snake_case to camelCase if the Profile type uses camelCase but DB uses snake_case.
-        // 'profiles' table usually has 'photo_url'. Our 'Profile' type has 'photoUrl'.
-        // We should be careful with formatting.
-
         return (data as any[]).map(f => ({
             ...f,
-            // Determine which profile is the "other" person
-            // But for the UI, we might just want to know who the friend is.
-            // Let's keep it raw here and let UI helper handle "who is the friend".
             requester: {
                 name: f.requester?.name,
                 photoUrl: f.requester?.photo_url,
@@ -98,7 +89,7 @@ export const friendshipService = {
             .from('friendships')
             .select(`
         *,
-        requester:requester_id(name, photo_url, reputation)
+        requester:profiles!requester_id(name, photo_url, reputation)
       `)
             .eq('status', 'pending')
             .eq('receiver_id', userId);
@@ -121,7 +112,7 @@ export const friendshipService = {
             .from('friendships')
             .select(`
         *,
-        receiver:receiver_id(name, photo_url, reputation)
+        receiver:profiles!receiver_id(name, photo_url, reputation)
       `)
             .eq('status', 'pending')
             .eq('requester_id', userId);
