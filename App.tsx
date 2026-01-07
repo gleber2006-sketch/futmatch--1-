@@ -31,6 +31,7 @@ const SupportScreen = lazy(() => import('./components/SupportScreen'));
 const HirePlayerScreen = lazy(() => import('./components/HirePlayerScreen'));
 const PublicProfileModal = lazy(() => import('./components/PublicProfileModal'));
 const DirectChat = lazy(() => import('./components/DirectChat'));
+const DirectMessagesList = lazy(() => import('./components/DirectMessagesList'));
 
 
 const platformFeatures: Feature[] = [
@@ -1486,6 +1487,10 @@ const App: React.FC = () => {
         setViewingPublicProfileId(null); // Close modal if open
     }, [activePage]);
 
+    const handleNavigateToDirectMessagesList = useCallback(() => {
+        setActivePage('direct-messages-list');
+    }, []);
+
     useEffect(() => {
         if (isLoadingDbCheck || dbSetupRequired || !isAuthenticated) return;
 
@@ -1626,7 +1631,7 @@ const App: React.FC = () => {
                     onNavigateToCommunity={() => setActivePage('community')}
                     onNavigateToArenas={() => setActivePage('arenas')}
                     onNavigateToMatchChat={() => setActivePage('match-chat')}
-                    onNavigateToDirectChat={handleNavigateToMatchChat}
+                    onNavigateToDirectChat={handleNavigateToDirectMessagesList}
                     onNavigateToNotifications={() => setActivePage('notifications')}
                     onNavigateToWallet={() => setActivePage('wallet')}
                     onBalanceUpdate={handleBalanceUpdate}
@@ -1684,15 +1689,15 @@ const App: React.FC = () => {
                     }}
                     initialMatchId={selectedChatMatchId}
                 />;
+            case 'direct-messages-list':
+                return <Suspense fallback={<ModernLoader />}>
+                    <DirectMessagesList
+                        currentUser={currentUser!}
+                        onNavigateBack={() => setActivePage('explore')}
+                        onNavigateToChat={handleNavigateToDirectChat}
+                    />
+                </Suspense>;
             case 'direct-chat':
-                return <DirectChat
-                    currentUser={currentUser!}
-                    recipientId={selectedDirectChatUserId!}
-                    onNavigateBack={() => {
-                        setSelectedDirectChatUserId(null);
-                        setActivePage(prevPage);
-                    }}
-                />;
             case 'profile':
                 return <UserProfile
                     user={currentUser!}
@@ -1960,6 +1965,7 @@ const App: React.FC = () => {
                 onNavigateToRanking={() => setActivePage('ranking')}
                 onNavigateToArenas={() => setActivePage('arenas')}
                 onNavigateToMatchChat={() => setActivePage('match-chat')}
+                onNavigateToDirectChat={handleNavigateToDirectMessagesList}
                 onLogout={handleLogout}
                 unreadDMsCount={unreadDMsCount}
                 pendingFriendRequestsCount={pendingFriendRequestsCount}

@@ -34,7 +34,7 @@ interface SidebarProps {
     onNavigateToWallet: () => void;
     onNavigateToRanking: () => void;
     onNavigateToArenas: () => void;
-    onNavigateToMatchChat: () => void;
+    onNavigateToDirectChat: () => void;
     unreadDMsCount?: number;
     pendingFriendRequestsCount?: number;
 }
@@ -56,6 +56,7 @@ const Sidebar: React.FC<SidebarProps> = ({
     onNavigateToRanking,
     onNavigateToArenas,
     onNavigateToMatchChat,
+    onNavigateToDirectChat,
     onLogout,
     unreadDMsCount = 0,
     pendingFriendRequestsCount = 0
@@ -103,8 +104,8 @@ const Sidebar: React.FC<SidebarProps> = ({
                 },
                 {
                     icon: <ChatIcon />,
-                    title: 'Mensagens',
-                    action: () => { onNavigateToMatchChat(); onClose(); },
+                    title: 'Mensagens DMs',
+                    action: () => { onNavigateToDirectChat(); onClose(); },
                     badge: unreadDMsCount > 0 ? unreadDMsCount : undefined
                 },
                 {
