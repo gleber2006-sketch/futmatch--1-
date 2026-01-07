@@ -75,8 +75,8 @@ const FriendRequests: React.FC<FriendRequestsProps> = ({ currentUser }) => {
                                     </div>
                                 </div>
                                 <div className="flex gap-2">
-                                    <button onClick={() => handleAccept(req.id)} className="bg-green-500 hover:bg-green-600 text-white p-2 rounded-lg transition-colors" aria-label="Aceitar">✔️</button>
-                                    <button onClick={() => handleDecline(req.id)} className="bg-red-500/20 hover:bg-red-500/40 text-red-400 p-2 rounded-lg transition-colors border border-red-500/30" aria-label="Recusar">❌</button>
+                                    <button onClick={() => handleAccept(req.id)} className="bg-green-500 hover:bg-green-600 text-white p-2 rounded-lg transition-colors shadow-lg" aria-label="Aceitar">✔️</button>
+                                    <button onClick={() => handleDecline(req.id)} className="bg-red-500/30 hover:bg-red-600 text-white p-2 rounded-lg transition-colors border-2 border-red-500/50 shadow-lg" aria-label="Recusar">❌</button>
                                 </div>
                             </div>
                         ))}
@@ -92,7 +92,7 @@ const FriendRequests: React.FC<FriendRequestsProps> = ({ currentUser }) => {
                 ) : (
                     <div className="space-y-3">
                         {outgoing.map(req => (
-                            <div key={req.id} className="bg-[#112240] p-3 rounded-lg flex items-center justify-between border border-gray-700 opacity-75">
+                            <div key={req.id} className="bg-[#112240] p-3 rounded-lg flex items-center justify-between border border-gray-700">
                                 <div className="flex items-center gap-3">
                                     <div className="w-10 h-10 rounded-full bg-gray-600 overflow-hidden">
                                         {req.receiver?.photoUrl ? (
@@ -103,10 +103,9 @@ const FriendRequests: React.FC<FriendRequestsProps> = ({ currentUser }) => {
                                     </div>
                                     <div>
                                         <h4 className="font-bold text-white text-sm">{req.receiver?.name}</h4>
-                                        <p className="text-xs text-gray-400">Aguardando resposta...</p>
                                     </div>
                                 </div>
-                                <button onClick={() => handleCancel(req.id)} className="text-gray-400 hover:text-white text-xs underline">Cancelar</button>
+                                <button onClick={() => handleCancel(req.id)} className="text-gray-300 hover:text-white text-[10px] font-bold uppercase bg-gray-700 hover:bg-gray-600 px-2 py-1.5 rounded border border-white/10 transition-colors">Cancelar</button>
                             </div>
                         ))}
                     </div>

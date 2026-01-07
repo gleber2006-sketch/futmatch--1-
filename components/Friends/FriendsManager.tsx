@@ -32,8 +32,8 @@ const FriendsManager: React.FC<FriendsManagerProps> = ({ currentUser, onClose })
                     <button
                         onClick={() => setActiveTab('list')}
                         className={`flex-1 py-2 text-sm font-bold rounded-lg transition-all ${activeTab === 'list'
-                                ? 'bg-neon-green text-[#0a1628] shadow-lg'
-                                : 'bg-gray-800 text-gray-400 hover:text-white'
+                            ? 'bg-neon-green text-[#0a1628] shadow-lg'
+                            : 'bg-gray-800 text-gray-200 hover:text-white'
                             }`}
                     >
                         Amigos
@@ -41,8 +41,8 @@ const FriendsManager: React.FC<FriendsManagerProps> = ({ currentUser, onClose })
                     <button
                         onClick={() => setActiveTab('requests')}
                         className={`flex-1 py-2 text-sm font-bold rounded-lg transition-all ${activeTab === 'requests'
-                                ? 'bg-neon-green text-[#0a1628] shadow-lg'
-                                : 'bg-gray-800 text-gray-400 hover:text-white'
+                            ? 'bg-neon-green text-[#0a1628] shadow-lg'
+                            : 'bg-gray-800 text-gray-200 hover:text-white'
                             }`}
                     >
                         Solicitações
@@ -50,8 +50,8 @@ const FriendsManager: React.FC<FriendsManagerProps> = ({ currentUser, onClose })
                     <button
                         onClick={() => setActiveTab('search')}
                         className={`flex-1 py-2 text-sm font-bold rounded-lg transition-all ${activeTab === 'search'
-                                ? 'bg-neon-green text-[#0a1628] shadow-lg'
-                                : 'bg-gray-800 text-gray-400 hover:text-white'
+                            ? 'bg-neon-green text-[#0a1628] shadow-lg'
+                            : 'bg-gray-800 text-gray-200 hover:text-white'
                             }`}
                     >
                         Buscar

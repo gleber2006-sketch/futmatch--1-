@@ -101,7 +101,7 @@ const UserSearch: React.FC<UserSearchProps> = ({ currentUser }) => {
                                 ) : (
                                     <button
                                         onClick={() => handleAddFriend(user.id)}
-                                        className="bg-neon-green text-[#0a1628] text-xs font-bold px-3 py-1.5 rounded-lg hover:bg-[#00e686] transition-colors"
+                                        className="bg-neon-green text-black text-xs font-black px-4 py-2 rounded-lg hover:bg-white transition-all shadow-lg active:scale-95 uppercase tracking-tight"
                                     >
                                         Adicionar
                                     </button>
