@@ -1,3 +1,4 @@
+import React from 'react';
 import { Ranking, Profile } from '../types';
 import { friendshipService } from '../services/friendshipService';
 
