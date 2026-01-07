@@ -104,7 +104,7 @@ const Sidebar: React.FC<SidebarProps> = ({
                 },
                 {
                     icon: <ChatIcon />,
-                    title: 'Mensagens DMs',
+                    title: 'Mensagens Privadas',
                     action: () => { onNavigateToDirectChat(); onClose(); },
                     badge: unreadDMsCount > 0 ? unreadDMsCount : undefined
                 },
