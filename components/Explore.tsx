@@ -40,6 +40,7 @@ interface ExploreProps {
   onSelectMatch: (match: Match | null) => void;
   onCloseMatchDetails: () => void;
   onOpenSidebar: () => void;
+  onViewPublicProfile?: (userId: string) => void;
   userLocation: { lat: number; lng: number } | null;
   locationStatus: 'idle' | 'loading' | 'success' | 'error';
 }
@@ -64,7 +65,7 @@ const haversineDistance = (
   return R * c;
 };
 
-const Explore: React.FC<ExploreProps> = ({ matches, platformFeatures, onJoinMatch, onLeaveMatch, onCancelMatch, onDeleteCanceledMatches, onEditMatch, joinedMatchIds, currentUser, onNavigateToCreate, onRefreshMatches, onNavigateToProfile, onNavigateToMap, onNavigateToMyGames, onNavigateToRanking, onNavigateToCommunity, onNavigateToArenas, onNavigateToMatchChat, onNavigateToDirectChat, onNavigateToNotifications, onNavigateToWallet, onBalanceUpdate, onBoostMatch, selectedMatch, onSelectMatch, onCloseMatchDetails, onOpenSidebar, userLocation, locationStatus }) => {
+const Explore: React.FC<ExploreProps> = ({ matches, platformFeatures, onJoinMatch, onLeaveMatch, onCancelMatch, onDeleteCanceledMatches, onEditMatch, joinedMatchIds, currentUser, onNavigateToCreate, onRefreshMatches, onNavigateToProfile, onNavigateToMap, onNavigateToMyGames, onNavigateToRanking, onNavigateToCommunity, onNavigateToArenas, onNavigateToMatchChat, onNavigateToDirectChat, onNavigateToNotifications, onNavigateToWallet, onBalanceUpdate, onBoostMatch, selectedMatch, onSelectMatch, onCloseMatchDetails, onOpenSidebar, onViewPublicProfile, userLocation, locationStatus }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [distanceFilter, setDistanceFilter] = useState<number>(Infinity);
   const [statusFilter, setStatusFilter] = useState<Match['status'] | 'all'>('Convocando');
@@ -189,6 +190,7 @@ const Explore: React.FC<ExploreProps> = ({ matches, platformFeatures, onJoinMatc
       <UpcomingMatchesCarousel
         matches={sortedAndFilteredMatches}
         onMatchClick={handleCardClick}
+        onViewPublicProfile={onViewPublicProfile}
       />
 
       <div ref={matchesSectionRef} className="mb-6 bg-transparent py-2 max-w-md mx-auto md:max-w-7xl overflow-hidden px-4">
@@ -331,6 +333,7 @@ const Explore: React.FC<ExploreProps> = ({ matches, platformFeatures, onJoinMatc
             onNavigateToDirectChat={onNavigateToDirectChat}
             onBalanceUpdate={onBalanceUpdate}
             onBoostMatch={onBoostMatch}
+            onViewPublicProfile={onViewPublicProfile}
           />
         );
       })()}

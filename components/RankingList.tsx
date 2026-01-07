@@ -6,9 +6,10 @@ interface RankingListProps {
     rankings: Ranking[];
     currentUser?: Profile | null;
     onNavigateBack?: () => void;
+    onViewPublicProfile?: (userId: string) => void;
 }
 
-const RankingList: React.FC<RankingListProps> = ({ rankings, currentUser, onNavigateBack }) => {
+const RankingList: React.FC<RankingListProps> = ({ rankings, currentUser, onNavigateBack, onViewPublicProfile }) => {
     const [friendStatuses, setFriendStatuses] = React.useState<Record<string, { id: number, status: string, isRequester: boolean } | null>>({});
 
     React.useEffect(() => {
@@ -79,9 +80,10 @@ const RankingList: React.FC<RankingListProps> = ({ rankings, currentUser, onNavi
                     {rankings.map((item) => (
                         <div
                             key={item.user.id}
-                            className={`flex items-center p-3 rounded-xl transition-all duration-300 border ${item.rank <= 3
+                            onClick={() => onViewPublicProfile?.(item.user.id)}
+                            className={`flex items-center p-3 rounded-xl transition-all duration-300 border cursor-pointer hover:border-neon-green/50 group/item ${item.rank <= 3
                                 ? 'bg-gradient-to-r from-[#0a1628] to-[#112240] border-neon-green/30 shadow-[0_0_15px_rgba(0,255,148,0.1)]'
-                                : 'bg-[#0a1628]/50 border-white/5 hover:bg-[#0a1628]/80 hover:border-white/20'
+                                : 'bg-[#0a1628]/50 border-white/5 hover:bg-[#0a1628]/80'
                                 }`}
                         >
                             <div className={`text-2xl font-bold w-10 text-center ${item.rank === 1 ? 'scale-125 drop-shadow-lg' : ''}`}>

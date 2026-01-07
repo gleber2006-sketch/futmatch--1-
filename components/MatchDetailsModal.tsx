@@ -23,6 +23,7 @@ interface MatchDetailsModalProps {
   onDeclineParticipant?: (matchId: number, userId: string) => Promise<void>;
   onRemoveParticipant?: (matchId: number, userId: string) => Promise<void>;
   onPromoteFromWaitlist?: (matchId: number, userId: string) => Promise<void>;
+  onViewPublicProfile?: (userId: string) => void;
 }
 
 const StatusBadge: React.FC<{ status: Match['status'] }> = ({ status }) => {
@@ -58,6 +59,7 @@ const MatchDetailsModal: React.FC<MatchDetailsModalProps> = ({
   onDeclineParticipant,
   onRemoveParticipant,
   onPromoteFromWaitlist,
+  onViewPublicProfile,
 }) => {
   const mapRef = useRef<HTMLDivElement>(null);
   const mapInstance = useRef<any>(null);
@@ -500,6 +502,7 @@ Bora jogar? 🚀`;
             onDeclineParticipant={onDeclineParticipant}
             onRemoveParticipant={onRemoveParticipant}
             onPromoteFromWaitlist={onPromoteFromWaitlist}
+            onViewPublicProfile={onViewPublicProfile}
           />
         )}
 

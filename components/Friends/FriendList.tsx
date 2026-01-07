@@ -5,9 +5,10 @@ import { ChatIcon } from '../Icons'; // Assuming ChatIcon exists
 
 interface FriendListProps {
     currentUser: Profile;
+    onViewPublicProfile?: (userId: string) => void;
 }
 
-const FriendList: React.FC<FriendListProps> = ({ currentUser }) => {
+const FriendList: React.FC<FriendListProps> = ({ currentUser, onViewPublicProfile }) => {
     const [friends, setFriends] = useState<Friendship[]>([]);
     const [isLoading, setIsLoading] = useState(true);
 
@@ -61,14 +62,18 @@ const FriendList: React.FC<FriendListProps> = ({ currentUser }) => {
 
                 const isRequester = friendship.requester_id === currentUser.id;
                 const friendProfile = isRequester ? friendship.receiver : friendship.requester;
-                // friendProfile might be undefined if join failed, though unlikely with correct foreign keys
+                const friendId = isRequester ? friendship.receiver_id : friendship.requester_id;
 
                 if (!friendProfile) return null;
 
                 return (
-                    <div key={friendship.id} className="bg-[#112240] p-3 rounded-lg flex items-center justify-between border border-gray-700 hover:border-gray-500 transition-colors">
+                    <div
+                        key={friendship.id}
+                        onClick={() => onViewPublicProfile?.(friendId)}
+                        className="bg-[#112240] p-3 rounded-lg flex items-center justify-between border border-gray-700 hover:border-neon-green/50 transition-colors cursor-pointer group/item"
+                    >
                         <div className="flex items-center gap-3">
-                            <div className="w-12 h-12 rounded-full bg-gray-600 overflow-hidden border-2 border-neon-green/30">
+                            <div className="w-12 h-12 rounded-full bg-gray-600 overflow-hidden border-2 border-neon-green/30 group-hover/item:border-neon-green transition-all">
                                 {friendProfile.photoUrl ? (
                                     <img src={friendProfile.photoUrl} alt={friendProfile.name} className="w-full h-full object-cover" />
                                 ) : (
@@ -76,15 +81,12 @@ const FriendList: React.FC<FriendListProps> = ({ currentUser }) => {
                                 )}
                             </div>
                             <div>
-                                <h4 className="font-bold text-white">{friendProfile.name}</h4>
+                                <h4 className="font-bold text-white group-hover/item:text-neon-green transition-colors">{friendProfile.name}</h4>
                                 <p className="text-xs text-neon-green font-semibold">{friendProfile.reputation}</p>
                             </div>
                         </div>
 
-                        <div className="flex items-center gap-3">
-                            {/* Future: Chat button */}
-                            {/* <button className="text-gray-400 hover:text-white p-2" title="Conversar"><ChatIcon /></button> */}
-
+                        <div className="flex items-center gap-3" onClick={(e) => e.stopPropagation()}>
                             <button
                                 onClick={() => handleRemove(friendship.id, friendProfile.name || 'Usuário')}
                                 className="bg-red-600 hover:bg-red-500 text-white text-[10px] font-black uppercase px-3 py-2 rounded-lg transition-all shadow-lg active:scale-95"

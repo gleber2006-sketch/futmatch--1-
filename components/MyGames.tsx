@@ -20,6 +20,7 @@ interface MyGamesProps {
   selectedMatch: Match | null;
   onSelectMatch: (match: Match | null) => void;
   onCloseMatchDetails: () => void;
+  onViewPublicProfile?: (userId: string) => void;
   userLocation?: { lat: number; lng: number } | null;
 }
 
@@ -38,6 +39,7 @@ const MyGames: React.FC<MyGamesProps> = ({
   selectedMatch,
   onSelectMatch,
   onCloseMatchDetails,
+  onViewPublicProfile,
   userLocation
 }) => {
   const [activeTab, setActiveTab] = useState<'playing' | 'organizing'>('playing');
@@ -150,6 +152,7 @@ const MyGames: React.FC<MyGamesProps> = ({
             onEditMatch={onEditMatch}
             onNavigateToDirectChat={onNavigateToDirectChat}
             onBalanceUpdate={onBalanceUpdate}
+            onViewPublicProfile={onViewPublicProfile}
           />
         );
       })()}

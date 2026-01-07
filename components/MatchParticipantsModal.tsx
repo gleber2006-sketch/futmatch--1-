@@ -10,6 +10,7 @@ interface MatchParticipantsModalProps {
     onDeclineParticipant?: (matchId: number, userId: string) => Promise<void>;
     onRemoveParticipant?: (matchId: number, userId: string) => Promise<void>;
     onPromoteFromWaitlist?: (matchId: number, userId: string) => Promise<void>;
+    onViewPublicProfile?: (userId: string) => void;
 }
 
 const MatchParticipantsModal: React.FC<MatchParticipantsModalProps> = ({
@@ -20,6 +21,7 @@ const MatchParticipantsModal: React.FC<MatchParticipantsModalProps> = ({
     onDeclineParticipant,
     onRemoveParticipant,
     onPromoteFromWaitlist,
+    onViewPublicProfile,
 }) => {
     const [isProcessing, setIsProcessing] = useState(false);
     const isHost = match.created_by === currentUser.id;
@@ -55,7 +57,10 @@ const MatchParticipantsModal: React.FC<MatchParticipantsModalProps> = ({
         }) : '';
 
         return (
-            <div className="flex items-center justify-between p-3 bg-gray-800/50 rounded-lg hover:bg-gray-800/70 transition-colors">
+            <div
+                className="flex items-center justify-between p-3 bg-gray-800/50 rounded-lg hover:bg-gray-800/70 transition-colors cursor-pointer group/item"
+                onClick={() => onViewPublicProfile?.(participant.user_id)}
+            >
                 <div className="flex items-center gap-3 flex-1">
                     {waitlistPosition !== undefined && (
                         <div className="flex items-center justify-center w-8 h-8 bg-yellow-500/20 text-yellow-300 rounded-full text-sm font-bold">
@@ -65,10 +70,10 @@ const MatchParticipantsModal: React.FC<MatchParticipantsModalProps> = ({
                     <img
                         src={profile?.photo_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(profile?.name || 'User')}&background=random`}
                         alt={profile?.name || 'Participante'}
-                        className="w-10 h-10 rounded-full object-cover border-2 border-gray-700"
+                        className="w-10 h-10 rounded-full object-cover border-2 border-gray-700 group-hover/item:border-neon-green transition-all"
                     />
                     <div className="flex-1">
-                        <p className="font-medium text-white">{profile?.name || 'Jogador'}</p>
+                        <p className="font-medium text-white group-hover/item:text-neon-green transition-colors">{profile?.name || 'Jogador'}</p>
                         {joinedDate && (
                             <p className="text-xs text-gray-400">Entrou em {joinedDate}</p>
                         )}
@@ -76,7 +81,7 @@ const MatchParticipantsModal: React.FC<MatchParticipantsModalProps> = ({
                 </div>
 
                 {showActions && isHost && !isProcessing && (
-                    <div className="flex gap-2">
+                    <div className="flex gap-2" onClick={(e) => e.stopPropagation()}>
                         {participant.status === 'pending' && (
                             <>
                                 <button

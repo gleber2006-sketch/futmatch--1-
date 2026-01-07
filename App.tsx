@@ -29,6 +29,7 @@ const InviteLandingScreen = lazy(() => import('./components/InviteLandingScreen'
 const SettingsScreen = lazy(() => import('./components/SettingsScreen'));
 const SupportScreen = lazy(() => import('./components/SupportScreen'));
 const HirePlayerScreen = lazy(() => import('./components/HirePlayerScreen'));
+const PublicProfileModal = lazy(() => import('./components/PublicProfileModal'));
 
 
 const platformFeatures: Feature[] = [
@@ -83,6 +84,7 @@ const App: React.FC = () => {
     const [selectedChatMatchId, setSelectedChatMatchId] = useState<number | null>(null);
     const [editingMatch, setEditingMatch] = useState<Match | null>(null);
     const [showExitToast, setShowExitToast] = useState(false);
+    const [viewingPublicProfileId, setViewingPublicProfileId] = useState<string | null>(null);
     const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
     const [locationStatus, setLocationStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
     const exitAttemptRef = useRef(false);
@@ -1535,6 +1537,7 @@ const App: React.FC = () => {
                     onSelectMatch={setSelectedMatch}
                     onCloseMatchDetails={() => setSelectedMatch(null)}
                     onOpenSidebar={() => setIsSidebarOpen(true)}
+                    onViewPublicProfile={setViewingPublicProfileId}
                     userLocation={userLocation}
                     locationStatus={locationStatus}
                 />;
@@ -1569,6 +1572,7 @@ const App: React.FC = () => {
                     selectedMatch={selectedMatch}
                     onSelectMatch={setSelectedMatch}
                     onCloseMatchDetails={() => setSelectedMatch(null)}
+                    onViewPublicProfile={setViewingPublicProfileId}
                     userLocation={userLocation}
                 />;
             case 'match-chat':
@@ -1587,6 +1591,7 @@ const App: React.FC = () => {
                     onLogout={handleLogout}
                     onNavigateBack={() => setActivePage('explore')}
                     onNavigateToCreateMatch={handleNavigateToCreateMatch}
+                    onViewPublicProfile={setViewingPublicProfileId}
                     initialSection={profileInitialSection}
                 />;
             case 'ranking':
@@ -1594,6 +1599,7 @@ const App: React.FC = () => {
                     rankings={rankings}
                     currentUser={currentUser}
                     onNavigateBack={() => setActivePage('explore')}
+                    onViewPublicProfile={setViewingPublicProfileId}
                 />;
             case 'community':
                 return <Community
@@ -1638,6 +1644,7 @@ const App: React.FC = () => {
                     onBoostMatch={handleBoostMatch}
                     onNavigateToDirectChat={handleNavigateToMatchChat}
                     onMatchClick={setSelectedMatch}
+                    onViewPublicProfile={setViewingPublicProfileId}
                     selectedMatch={selectedMatch}
                     onCloseMatchDetails={() => setSelectedMatch(null)}
                     userLocation={userLocation}
@@ -1675,6 +1682,7 @@ const App: React.FC = () => {
                         console.log("App: onOpenSidebar triggered");
                         setIsSidebarOpen(true);
                     }}
+                    onViewPublicProfile={setViewingPublicProfileId}
                     userLocation={userLocation}
                     locationStatus={locationStatus}
                 />;
@@ -1771,6 +1779,15 @@ const App: React.FC = () => {
                 <Suspense fallback={<ModernLoader />}>
                     {renderPage()}
                 </Suspense>
+                {viewingPublicProfileId && (
+                    <Suspense fallback={null}>
+                        <PublicProfileModal
+                            userId={viewingPublicProfileId}
+                            currentUser={currentUser}
+                            onClose={() => setViewingPublicProfileId(null)}
+                        />
+                    </Suspense>
+                )}
                 {activePage === 'explore' && (
                     <BottomNav
                         activePage={activePage}

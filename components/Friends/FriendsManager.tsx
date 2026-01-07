@@ -8,9 +8,10 @@ import { CloseIcon } from '../Icons';
 interface FriendsManagerProps {
     currentUser: Profile;
     onClose: () => void;
+    onViewPublicProfile?: (userId: string) => void;
 }
 
-const FriendsManager: React.FC<FriendsManagerProps> = ({ currentUser, onClose }) => {
+const FriendsManager: React.FC<FriendsManagerProps> = ({ currentUser, onClose, onViewPublicProfile }) => {
     const [activeTab, setActiveTab] = useState<'list' | 'requests' | 'search'>('list');
 
     return (
@@ -60,8 +61,8 @@ const FriendsManager: React.FC<FriendsManagerProps> = ({ currentUser, onClose })
 
                 {/* Content */}
                 <div className="flex-1 overflow-y-auto p-4 bg-[#0a1628]">
-                    {activeTab === 'list' && <FriendList currentUser={currentUser} />}
-                    {activeTab === 'requests' && <FriendRequests currentUser={currentUser} />}
+                    {activeTab === 'list' && <FriendList currentUser={currentUser} onViewPublicProfile={onViewPublicProfile} />}
+                    {activeTab === 'requests' && <FriendRequests currentUser={currentUser} onViewPublicProfile={onViewPublicProfile} />}
                     {activeTab === 'search' && <UserSearch currentUser={currentUser} />}
                 </div>
             </div>
