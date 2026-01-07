@@ -207,14 +207,14 @@ const PublicProfileModal: React.FC<PublicProfileModalProps> = ({ userId, current
                         <div className="mt-8">
                             {friendStatus?.status === 'accepted' ? (
                                 <div className="flex flex-col gap-2">
-                                    <div className="w-full bg-green-500/10 text-green-400 font-black text-xs uppercase py-4 rounded-2xl border border-green-500/20 text-center flex items-center justify-center gap-2">
+                                    <div className="w-full bg-green-500/10 text-green-400 font-black text-[10px] uppercase py-3 rounded-2xl border border-green-500/20 text-center flex items-center justify-center gap-2">
                                         <span>✅ Amigo</span>
                                     </div>
                                     <button
                                         onClick={() => onNavigateToDirectChat?.(userId)}
-                                        className="w-full bg-[#00FF94] hover:bg-white text-black font-black text-xs uppercase py-4 rounded-2xl transition-all shadow-xl shadow-[#00FF94]/20 flex items-center justify-center gap-2"
+                                        className="w-full bg-[#00FF94] hover:bg-white text-black font-black text-xs uppercase py-3.5 rounded-2xl transition-all shadow-xl shadow-[#00FF94]/20 flex items-center justify-center gap-2 active:scale-95"
                                     >
-                                        💬 Mandar Mensagem
+                                        💬 Mensagem Direta
                                     </button>
                                 </div>
                             ) : friendStatus?.status === 'pending' ? (

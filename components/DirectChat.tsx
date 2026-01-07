@@ -116,29 +116,47 @@ const DirectChat: React.FC<DirectChatProps> = ({ currentUser, recipientId, onNav
     const handleSendMessage = async () => {
         if (!newMessage.trim()) return;
 
+        const messageText = newMessage.trim();
+        setNewMessage(''); // Clear immediately for better UX
         setIsSending(true);
+
+        // Optimistic UI update
+        const tempId = Date.now();
+        const optimisticMsg: DirectMessage = {
+            id: tempId,
+            sender_id: currentUser.id,
+            receiver_id: recipientId,
+            message: messageText,
+            sent_at: new Date().toISOString()
+        };
+        setMessages(prev => [...prev, optimisticMsg]);
+        setTimeout(scrollToBottom, 50);
+
         try {
             const { data, error } = await supabase
                 .from('direct_messages')
                 .insert({
                     sender_id: currentUser.id,
                     receiver_id: recipientId,
-                    message: newMessage.trim()
+                    message: messageText
                 })
-                .select()
-                .single();
+                .select();
 
             if (error) throw error;
 
-            if (data) {
-                setMessages(prev => [...prev, data as DirectMessage]);
-                setNewMessage('');
-                setTimeout(scrollToBottom, 100);
+            if (data && data[0]) {
+                // Replace optimistic message with the real one from DB
+                setMessages(prev => prev.map(m => m.id === tempId ? (data[0] as DirectMessage) : m));
             }
         } catch (error) {
             console.error("Error sending direct message:", error);
+            alert("Erro ao enviar mensagem. Verifique sua conexão.");
+            // Remove optimistic message on failure
+            setMessages(prev => prev.filter(m => m.id !== tempId));
+            setNewMessage(messageText); // Restore text
         } finally {
             setIsSending(false);
+            setTimeout(scrollToBottom, 50);
         }
     };
 
@@ -156,22 +174,22 @@ const DirectChat: React.FC<DirectChatProps> = ({ currentUser, recipientId, onNav
     return (
         <div className="flex flex-col h-[100dvh] bg-[#0a1628]">
             {/* Header */}
-            <div className="flex items-center bg-[#0a1628]/95 backdrop-blur-md p-4 shadow-lg shrink-0 border-b border-white/5 z-10">
+            <div className="flex items-center bg-[#0a1628]/95 backdrop-blur-md p-3 sm:p-4 shadow-lg shrink-0 border-b border-white/5 z-10">
                 <button
                     onClick={onNavigateBack}
-                    className="mr-3 text-gray-400 hover:text-white text-lg transition-colors"
+                    className="mr-2 sm:mr-3 text-gray-400 hover:text-white text-lg p-1 transition-colors"
                 >
                     ←
                 </button>
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-2 sm:gap-3">
                     <img
                         src={recipient?.photoUrl || `https://ui-avatars.com/api/?name=${recipient?.name || 'User'}`}
-                        className="w-10 h-10 rounded-full object-cover border border-white/10"
+                        className="w-8 h-8 sm:w-10 sm:h-10 rounded-full object-cover border border-white/10"
                         alt={recipient?.name}
                     />
                     <div>
-                        <h2 className="text-md font-bold text-white leading-tight drop-shadow-sm">{recipient?.name}</h2>
-                        <p className="text-[10px] text-[#00ff88] animate-pulse">Online</p>
+                        <h2 className="text-sm sm:text-md font-bold text-white leading-tight drop-shadow-sm">{recipient?.name}</h2>
+                        <p className="text-[9px] sm:text-[10px] text-[#00ff88] animate-pulse">Online</p>
                     </div>
                 </div>
             </div>
@@ -206,22 +224,29 @@ const DirectChat: React.FC<DirectChatProps> = ({ currentUser, recipientId, onNav
             </div>
 
             {/* Input */}
-            <div className="bg-[#0a1628]/95 backdrop-blur-md border-t border-white/5 p-3 shrink-0" style={{ paddingBottom: 'max(0.75rem, env(safe-area-inset-bottom))' }}>
-                <div className="flex items-center gap-2 max-w-4xl mx-auto">
+            <div className="bg-[#0a1628]/95 backdrop-blur-md border-t border-white/5 px-3 py-2 sm:p-3 shrink-0"
+                style={{ paddingBottom: 'max(0.6rem, env(safe-area-inset-bottom))' }}>
+                <div className="flex items-center gap-2 w-full max-w-4xl mx-auto">
                     <input
                         type="text"
                         value={newMessage}
                         onChange={(e) => setNewMessage(e.target.value)}
                         onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
                         placeholder="Mensagem..."
-                        className="flex-1 bg-[#112240] text-white rounded-full px-4 py-3 focus:outline-none focus:ring-2 focus:ring-neon-green/50 border border-white/10 placeholder-gray-500 transition-all"
+                        className="flex-1 bg-[#112240] text-white rounded-full px-4 py-2.5 sm:py-3 text-[13px] sm:text-sm focus:outline-none focus:ring-1 focus:ring-neon-green/50 border border-white/5 placeholder-gray-500 transition-all"
                     />
                     <button
                         onClick={handleSendMessage}
                         disabled={isSending || !newMessage.trim()}
-                        className="bg-neon-green hover:bg-[#00e686] text-[#0a1628] p-3 rounded-full shadow-[0_0_15px_rgba(0,255,148,0.3)] disabled:opacity-50 disabled:shadow-none transition-all active:scale-95 shrink-0"
+                        className="bg-neon-green hover:bg-[#00e686] text-[#0a1628] p-2.5 sm:p-3 rounded-full shadow-lg disabled:opacity-40 transition-all active:scale-90 shrink-0 flex items-center justify-center"
                     >
-                        {isSending ? <div className="animate-pulse">...</div> : <SendIcon />}
+                        {isSending ? (
+                            <div className="w-5 h-5 border-2 border-[#0a1628]/30 border-t-[#0a1628] rounded-full animate-spin" />
+                        ) : (
+                            <div className="w-5 h-5 flex items-center justify-center">
+                                <SendIcon />
+                            </div>
+                        )}
                     </button>
                 </div>
             </div>
