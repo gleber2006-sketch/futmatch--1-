@@ -1698,6 +1698,14 @@ const App: React.FC = () => {
                     />
                 </Suspense>;
             case 'direct-chat':
+                return <DirectChat
+                    currentUser={currentUser!}
+                    recipientId={selectedDirectChatUserId!}
+                    onNavigateBack={() => {
+                        setSelectedDirectChatUserId(null);
+                        setActivePage(prevPage);
+                    }}
+                />;
             case 'profile':
                 return <UserProfile
                     user={currentUser!}
