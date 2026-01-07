@@ -75,8 +75,8 @@ const FriendRequests: React.FC<FriendRequestsProps> = ({ currentUser }) => {
                                     </div>
                                 </div>
                                 <div className="flex gap-2">
-                                    <button onClick={() => handleAccept(req.id)} className="bg-green-500 hover:bg-green-600 text-white p-2 rounded-lg transition-colors shadow-lg" aria-label="Aceitar">✔️</button>
-                                    <button onClick={() => handleDecline(req.id)} className="bg-red-500/30 hover:bg-red-600 text-white p-2 rounded-lg transition-colors border-2 border-red-500/50 shadow-lg" aria-label="Recusar">❌</button>
+                                    <button onClick={() => handleAccept(req.id)} className="bg-[#00FF94] hover:bg-white text-black text-[10px] font-black px-3 py-2 rounded-lg transition-all shadow-lg uppercase">ACEITAR</button>
+                                    <button onClick={() => handleDecline(req.id)} className="bg-gray-700 hover:bg-red-600 text-white text-[10px] font-black px-3 py-2 rounded-lg transition-all border border-white/20 shadow-lg uppercase">RECUSAR</button>
                                 </div>
                             </div>
                         ))}
@@ -105,7 +105,7 @@ const FriendRequests: React.FC<FriendRequestsProps> = ({ currentUser }) => {
                                         <h4 className="font-bold text-white text-sm">{req.receiver?.name}</h4>
                                     </div>
                                 </div>
-                                <button onClick={() => handleCancel(req.id)} className="text-gray-300 hover:text-white text-[10px] font-bold uppercase bg-gray-700 hover:bg-gray-600 px-2 py-1.5 rounded border border-white/10 transition-colors">Cancelar</button>
+                                <button onClick={() => handleCancel(req.id)} className="bg-red-600/20 hover:bg-red-600 text-red-500 hover:text-white text-[9px] font-black uppercase px-3 py-1.5 rounded border border-red-500/30 transition-all">Cancelar</button>
                             </div>
                         ))}
                     </div>

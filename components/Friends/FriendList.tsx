@@ -87,7 +87,7 @@ const FriendList: React.FC<FriendListProps> = ({ currentUser }) => {
 
                             <button
                                 onClick={() => handleRemove(friendship.id, friendProfile.name || 'Usuário')}
-                                className="text-red-400 hover:text-white text-xs font-bold border-2 border-red-500/50 px-3 py-1.5 rounded-lg hover:bg-red-500/30 transition-all bg-red-500/10"
+                                className="bg-red-600 hover:bg-red-500 text-white text-[10px] font-black uppercase px-3 py-2 rounded-lg transition-all shadow-lg active:scale-95"
                             >
                                 Remover
                             </button>
