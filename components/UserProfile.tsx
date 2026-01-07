@@ -280,7 +280,11 @@ const UserProfile: React.FC<UserProfileProps> = ({ user, onUpdateUser, onLogout,
 
                             <h2 className="text-3xl font-bold text-white drop-shadow-md text-center px-4">{user.name}</h2>
 
-                            <p className="text-gray-300 text-sm flex items-center justify-center gap-1 mb-3 drop-shadow-md">
+                            {user.email && (
+                                <p className="text-gray-400 text-xs mt-1 font-medium drop-shadow-md">{user.email}</p>
+                            )}
+
+                            <p className="text-gray-300 text-sm flex items-center justify-center gap-1 mb-3 mt-2 drop-shadow-md">
                                 📍 {user.city || 'Cidade não informada'}, {user.state || 'SP'}
                             </p>
 
