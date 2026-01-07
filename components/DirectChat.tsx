@@ -148,9 +148,9 @@ const DirectChat: React.FC<DirectChatProps> = ({ currentUser, recipientId, onNav
                 // Replace optimistic message with the real one from DB
                 setMessages(prev => prev.map(m => m.id === tempId ? (data[0] as DirectMessage) : m));
             }
-        } catch (error) {
+        } catch (error: any) {
             console.error("Error sending direct message:", error);
-            alert("Erro ao enviar mensagem. Verifique sua conexão.");
+            alert(`Erro no banco: ${error.message || 'Verifique sua conexão'}. Certifique-se de que executou o script SQL de mensagens.`);
             // Remove optimistic message on failure
             setMessages(prev => prev.filter(m => m.id !== tempId));
             setNewMessage(messageText); // Restore text
@@ -238,7 +238,7 @@ const DirectChat: React.FC<DirectChatProps> = ({ currentUser, recipientId, onNav
                     <button
                         onClick={handleSendMessage}
                         disabled={isSending || !newMessage.trim()}
-                        className="bg-neon-green hover:bg-[#00e686] text-[#0a1628] p-2.5 sm:p-3 rounded-full shadow-lg disabled:opacity-40 transition-all active:scale-90 shrink-0 flex items-center justify-center"
+                        className="bg-neon-green hover:bg-[#00e686] text-[#0a1628] p-2.5 sm:p-3 rounded-full shadow-lg disabled:opacity-50 transition-all active:scale-90 shrink-0 flex items-center justify-center"
                     >
                         {isSending ? (
                             <div className="w-5 h-5 border-2 border-[#0a1628]/30 border-t-[#0a1628] rounded-full animate-spin" />
