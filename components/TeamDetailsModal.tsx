@@ -196,183 +196,185 @@ const TeamDetailsModal: React.FC<TeamDetailsModalProps> = ({ teamId, currentUser
                     </div>
                 </div>
 
-                <div className="pt-12 px-6 pb-4">
-                    <div className="flex justify-between items-start">
-                        <div>
-                            <h2 className="text-2xl font-bold text-white mb-1">{team.name}</h2>
-                            <div className="flex items-center gap-2 mb-2">
-                                <span className="bg-gray-700 text-gray-300 text-[10px] px-2 py-0.5 rounded-full uppercase tracking-wider font-bold">Futebol</span>
-                                <span className="text-gray-500 text-xs">• {members.length} Membros</span>
+                <div className="flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-700">
+                    <div className="pt-12 px-6 pb-4">
+                        <div className="flex justify-between items-start">
+                            <div>
+                                <h2 className="text-2xl font-bold text-white mb-1">{team.name}</h2>
+                                <div className="flex items-center gap-2 mb-2">
+                                    <span className="bg-gray-700 text-gray-300 text-[10px] px-2 py-0.5 rounded-full uppercase tracking-wider font-bold">Futebol</span>
+                                    <span className="text-gray-500 text-xs">• {members.length} Membros</span>
+                                </div>
                             </div>
                         </div>
+
+                        {!showInviteCard && (
+                            <>
+                                {team.description && <p className="text-gray-400 text-sm mb-4">{team.description}</p>}
+
+                                {/* Team Matches Section (Preview) */}
+                                {teamMatches.length > 0 && (
+                                    <div className="mb-6">
+                                        <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Próximos Jogos</h3>
+                                        <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
+                                            {teamMatches.map(match => (
+                                                <div key={match.id} className="min-w-[120px] bg-gray-700/50 p-2 rounded-lg border border-gray-600/50 flex flex-col items-center text-center">
+                                                    <div className="text-green-400 font-bold text-xs mb-1">
+                                                        {/* Format Date: DD/MM - HH:mm */}
+                                                        {match.date instanceof Date
+                                                            ? `${match.date.getDate()}/${match.date.getMonth() + 1} - ${match.date.getHours()}:${String(match.date.getMinutes()).padStart(2, '0')}`
+                                                            : 'Data inválida'}
+                                                    </div>
+                                                    <div className="text-white text-xs font-semibold truncate w-full">{match.name}</div>
+                                                    <div className="text-gray-500 text-[10px] mt-1">{match.filled_slots}/{match.slots} Confirmados</div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
+                            </>
+                        )}
+
+                        {showInviteCard ? (
+                            <div className="pt-12 pb-6 flex justify-center flex-1 overflow-y-auto min-h-[400px]">
+                                <TeamInviteCard
+                                    team={team}
+                                    inviteLink={`${window.location.origin}/time/${team.invite_code}`}
+                                    onClose={() => setShowInviteCard(false)}
+                                />
+                            </div>
+                        ) : (
+                            <div className="flex gap-2 mb-6">
+                                <button
+                                    onClick={handleShareWhatsapp}
+                                    className="flex-1 bg-green-600 hover:bg-green-500 text-white text-sm font-semibold py-3 px-4 rounded-xl flex items-center justify-center gap-2 transition-all shadow-lg active:scale-95"
+                                >
+                                    <span>📲</span> Convidar via Zap
+                                </button>
+                                <button
+                                    onClick={() => setShowInviteCard(true)}
+                                    className="bg-[#112240] border border-white/10 hover:bg-[#1a2f55] text-white p-3 rounded-xl transition-all shadow-md active:scale-95"
+                                    title="Gerar Card de Convite"
+                                >
+                                    ✨ Ver Card
+                                </button>
+
+                                {isAdmin && (
+                                    <button
+                                        onClick={handleCreateMatch}
+                                        className="flex-1 bg-gradient-to-r from-green-600 to-blue-600 hover:brightness-110 text-white text-sm font-semibold py-3 px-4 rounded-xl transition-all shadow-lg active:scale-95"
+                                    >
+                                        ⚽ Criar Partida
+                                    </button>
+                                )}
+                                {!isAdmin && (
+                                    <button
+                                        onClick={handleLeaveTeam}
+                                        className="bg-red-500/10 border border-red-500/30 text-red-400 hover:bg-red-500/20 p-3 rounded-xl transition-all"
+                                        title="Sair do Time"
+                                    >
+                                        🚪
+                                    </button>
+                                )}
+                            </div>
+                        )}
+
+                        {/* Tabs if Admin */}
+                        {isAdmin && (
+                            <div className="flex border-b border-gray-700 mb-4">
+                                <button
+                                    onClick={() => setActiveTab('members')}
+                                    className={`flex-1 py-2 text-sm font-medium transition-colors ${activeTab === 'members' ? 'text-green-500 border-b-2 border-green-500' : 'text-gray-400 hover:text-white'}`}
+                                >
+                                    Membros ({members.length})
+                                </button>
+                                <button
+                                    onClick={() => setActiveTab('requests')}
+                                    className={`flex-1 py-2 text-sm font-medium transition-colors ${activeTab === 'requests' ? 'text-green-500 border-b-2 border-green-500' : 'text-gray-400 hover:text-white'} relative`}
+                                >
+                                    Solicitações
+                                    {pendingRequests.length > 0 && (
+                                        <span className="absolute top-1 right-2 w-2 h-2 bg-red-500 rounded-full animate-pulse"></span>
+                                    )}
+                                </button>
+                            </div>
+                        )}
                     </div>
 
-                    {!showInviteCard && (
-                        <>
-                            {team.description && <p className="text-gray-400 text-sm mb-4">{team.description}</p>}
-
-                            {/* Team Matches Section (Preview) */}
-                            {teamMatches.length > 0 && (
-                                <div className="mb-6">
-                                    <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Próximos Jogos</h3>
-                                    <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
-                                        {teamMatches.map(match => (
-                                            <div key={match.id} className="min-w-[120px] bg-gray-700/50 p-2 rounded-lg border border-gray-600/50 flex flex-col items-center text-center">
-                                                <div className="text-green-400 font-bold text-xs mb-1">
-                                                    {/* Format Date: DD/MM - HH:mm */}
-                                                    {match.date instanceof Date
-                                                        ? `${match.date.getDate()}/${match.date.getMonth() + 1} - ${match.date.getHours()}:${String(match.date.getMinutes()).padStart(2, '0')}`
-                                                        : 'Data inválida'}
+                    {/* List Content */}
+                    <div className="px-6 pb-6">
+                        {isAdmin && activeTab === 'requests' ? (
+                            <div className="space-y-3">
+                                {pendingRequests.length === 0 ? (
+                                    <p className="text-center text-gray-500 py-4">Nenhuma solicitação pendente.</p>
+                                ) : (
+                                    pendingRequests.map(req => (
+                                        <div key={req.id} className="flex items-center justify-between bg-gray-700/30 p-3 rounded-xl border border-gray-700">
+                                            <div className="flex items-center gap-3">
+                                                <div className="w-10 h-10 rounded-full bg-gray-600 overflow-hidden">
+                                                    {req.profiles?.photoUrl ? (
+                                                        <img src={req.profiles.photoUrl} alt={req.profiles.name} className="w-full h-full object-cover" />
+                                                    ) : (
+                                                        <span className="w-full h-full flex items-center justify-center text-xs">👤</span>
+                                                    )}
                                                 </div>
-                                                <div className="text-white text-xs font-semibold truncate w-full">{match.name}</div>
-                                                <div className="text-gray-500 text-[10px] mt-1">{match.filled_slots}/{match.slots} Confirmados</div>
+                                                <div>
+                                                    <div className="font-semibold text-white text-sm">{req.profiles?.name}</div>
+                                                    <div className="text-xs text-gray-500">{req.profiles?.reputation || 'Novo'}</div>
+                                                </div>
                                             </div>
-                                        ))}
-                                    </div>
-                                </div>
-                            )}
-                        </>
-                    )}
-
-                    {showInviteCard ? (
-                        <div className="pt-12 pb-6 flex justify-center flex-1 overflow-y-auto min-h-[400px]">
-                            <TeamInviteCard
-                                team={team}
-                                inviteLink={`${window.location.origin}/time/${team.invite_code}`}
-                                onClose={() => setShowInviteCard(false)}
-                            />
-                        </div>
-                    ) : (
-                        <div className="flex gap-2 mb-6">
-                            <button
-                                onClick={handleShareWhatsapp}
-                                className="flex-1 bg-green-600 hover:bg-green-500 text-white text-sm font-semibold py-3 px-4 rounded-xl flex items-center justify-center gap-2 transition-all shadow-lg active:scale-95"
-                            >
-                                <span>📲</span> Convidar via Zap
-                            </button>
-                            <button
-                                onClick={() => setShowInviteCard(true)}
-                                className="bg-[#112240] border border-white/10 hover:bg-[#1a2f55] text-white p-3 rounded-xl transition-all shadow-md active:scale-95"
-                                title="Gerar Card de Convite"
-                            >
-                                ✨ Ver Card
-                            </button>
-
-                            {isAdmin && (
-                                <button
-                                    onClick={handleCreateMatch}
-                                    className="flex-1 bg-gradient-to-r from-green-600 to-blue-600 hover:brightness-110 text-white text-sm font-semibold py-3 px-4 rounded-xl transition-all shadow-lg active:scale-95"
-                                >
-                                    ⚽ Criar Partida
-                                </button>
-                            )}
-                            {!isAdmin && (
-                                <button
-                                    onClick={handleLeaveTeam}
-                                    className="bg-red-500/10 border border-red-500/30 text-red-400 hover:bg-red-500/20 p-3 rounded-xl transition-all"
-                                    title="Sair do Time"
-                                >
-                                    🚪
-                                </button>
-                            )}
-                        </div>
-                    )}
-
-                    {/* Tabs if Admin */}
-                    {isAdmin && (
-                        <div className="flex border-b border-gray-700 mb-4">
-                            <button
-                                onClick={() => setActiveTab('members')}
-                                className={`flex-1 py-2 text-sm font-medium transition-colors ${activeTab === 'members' ? 'text-green-500 border-b-2 border-green-500' : 'text-gray-400 hover:text-white'}`}
-                            >
-                                Membros ({members.length})
-                            </button>
-                            <button
-                                onClick={() => setActiveTab('requests')}
-                                className={`flex-1 py-2 text-sm font-medium transition-colors ${activeTab === 'requests' ? 'text-green-500 border-b-2 border-green-500' : 'text-gray-400 hover:text-white'} relative`}
-                            >
-                                Solicitações
-                                {pendingRequests.length > 0 && (
-                                    <span className="absolute top-1 right-2 w-2 h-2 bg-red-500 rounded-full animate-pulse"></span>
+                                            <div className="flex gap-2">
+                                                <button
+                                                    onClick={() => handleApprove(req.id)}
+                                                    className="bg-green-500/20 text-green-400 hover:bg-green-500 hover:text-white p-2 rounded-lg transition-colors text-xs font-bold"
+                                                >
+                                                    ACEITAR
+                                                </button>
+                                                <button
+                                                    onClick={() => handleReject(req.id)}
+                                                    className="bg-red-500/20 text-red-400 hover:bg-red-500 hover:text-white p-2 rounded-lg transition-colors text-xs font-bold"
+                                                >
+                                                    ✕
+                                                </button>
+                                            </div>
+                                        </div>
+                                    ))
                                 )}
-                            </button>
-                        </div>
-                    )}
-                </div>
-
-                {/* List Content */}
-                <div className="flex-1 overflow-y-auto px-6 pb-6">
-                    {isAdmin && activeTab === 'requests' ? (
-                        <div className="space-y-3">
-                            {pendingRequests.length === 0 ? (
-                                <p className="text-center text-gray-500 py-4">Nenhuma solicitação pendente.</p>
-                            ) : (
-                                pendingRequests.map(req => (
-                                    <div key={req.id} className="flex items-center justify-between bg-gray-700/30 p-3 rounded-xl border border-gray-700">
+                            </div>
+                        ) : (
+                            <div className="space-y-3">
+                                {members.map(member => (
+                                    <div key={member.id} className="flex items-center justify-between bg-gray-700/30 p-3 rounded-xl border border-gray-700/50">
                                         <div className="flex items-center gap-3">
                                             <div className="w-10 h-10 rounded-full bg-gray-600 overflow-hidden">
-                                                {req.profiles?.photoUrl ? (
-                                                    <img src={req.profiles.photoUrl} alt={req.profiles.name} className="w-full h-full object-cover" />
+                                                {member.profiles?.photoUrl ? (
+                                                    <img src={member.profiles.photoUrl} alt={member.profiles.name} className="w-full h-full object-cover" />
                                                 ) : (
                                                     <span className="w-full h-full flex items-center justify-center text-xs">👤</span>
                                                 )}
                                             </div>
                                             <div>
-                                                <div className="font-semibold text-white text-sm">{req.profiles?.name}</div>
-                                                <div className="text-xs text-gray-500">{req.profiles?.reputation || 'Novo'}</div>
+                                                <div className="font-semibold text-white text-sm flex items-center gap-2">
+                                                    {member.profiles?.name}
+                                                    {member.role === 'admin' && <span className="text-[10px] bg-yellow-500/20 text-yellow-500 px-1 rounded border border-yellow-500/30">ADM</span>}
+                                                </div>
+                                                <div className="text-xs text-gray-500">{member.profiles?.reputation || 'Jogador'}</div>
                                             </div>
                                         </div>
-                                        <div className="flex gap-2">
+                                        {isAdmin && member.user_id !== currentUserId && (
                                             <button
-                                                onClick={() => handleApprove(req.id)}
-                                                className="bg-green-500/20 text-green-400 hover:bg-green-500 hover:text-white p-2 rounded-lg transition-colors text-xs font-bold"
+                                                onClick={() => handleReject(member.id)}
+                                                className="text-gray-500 hover:text-red-400 p-2 transition-colors text-xs"
+                                                title="Remover membro"
                                             >
-                                                ACEITAR
+                                                Remover
                                             </button>
-                                            <button
-                                                onClick={() => handleReject(req.id)}
-                                                className="bg-red-500/20 text-red-400 hover:bg-red-500 hover:text-white p-2 rounded-lg transition-colors text-xs font-bold"
-                                            >
-                                                ✕
-                                            </button>
-                                        </div>
+                                        )}
                                     </div>
-                                ))
-                            )}
-                        </div>
-                    ) : (
-                        <div className="space-y-3">
-                            {members.map(member => (
-                                <div key={member.id} className="flex items-center justify-between bg-gray-700/30 p-3 rounded-xl border border-gray-700/50">
-                                    <div className="flex items-center gap-3">
-                                        <div className="w-10 h-10 rounded-full bg-gray-600 overflow-hidden">
-                                            {member.profiles?.photoUrl ? (
-                                                <img src={member.profiles.photoUrl} alt={member.profiles.name} className="w-full h-full object-cover" />
-                                            ) : (
-                                                <span className="w-full h-full flex items-center justify-center text-xs">👤</span>
-                                            )}
-                                        </div>
-                                        <div>
-                                            <div className="font-semibold text-white text-sm flex items-center gap-2">
-                                                {member.profiles?.name}
-                                                {member.role === 'admin' && <span className="text-[10px] bg-yellow-500/20 text-yellow-500 px-1 rounded border border-yellow-500/30">ADM</span>}
-                                            </div>
-                                            <div className="text-xs text-gray-500">{member.profiles?.reputation || 'Jogador'}</div>
-                                        </div>
-                                    </div>
-                                    {isAdmin && member.user_id !== currentUserId && (
-                                        <button
-                                            onClick={() => handleReject(member.id)}
-                                            className="text-gray-500 hover:text-red-400 p-2 transition-colors text-xs"
-                                            title="Remover membro"
-                                        >
-                                            Remover
-                                        </button>
-                                    )}
-                                </div>
-                            ))}
-                        </div>
-                    )}
+                                ))}
+                            </div>
+                        )}
+                    </div>
                 </div>
             </div>
         </div>
