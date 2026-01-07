@@ -31,27 +31,27 @@ const FriendsManager: React.FC<FriendsManagerProps> = ({ currentUser, onClose })
                 <div className="flex p-2 gap-2 bg-[#0a1628]">
                     <button
                         onClick={() => setActiveTab('list')}
-                        className={`flex-1 py-2 text-sm font-bold rounded-lg transition-all ${activeTab === 'list'
-                            ? 'bg-neon-green text-[#0a1628] shadow-lg'
-                            : 'bg-gray-800 text-gray-200 hover:text-white'
+                        className={`flex-1 py-3 text-[10px] font-black uppercase tracking-widest rounded-xl transition-all ${activeTab === 'list'
+                            ? 'bg-[#00FF94] text-black shadow-lg shadow-[#00FF94]/30'
+                            : 'bg-[#112240] text-gray-200 hover:text-white border border-white/5'
                             }`}
                     >
                         Amigos
                     </button>
                     <button
                         onClick={() => setActiveTab('requests')}
-                        className={`flex-1 py-2 text-sm font-bold rounded-lg transition-all ${activeTab === 'requests'
-                            ? 'bg-neon-green text-[#0a1628] shadow-lg'
-                            : 'bg-gray-800 text-gray-200 hover:text-white'
+                        className={`flex-1 py-3 text-[10px] font-black uppercase tracking-widest rounded-xl transition-all ${activeTab === 'requests'
+                            ? 'bg-[#00FF94] text-black shadow-lg shadow-[#00FF94]/30'
+                            : 'bg-[#112240] text-gray-200 hover:text-white border border-white/5'
                             }`}
                     >
                         Solicitações
                     </button>
                     <button
                         onClick={() => setActiveTab('search')}
-                        className={`flex-1 py-2 text-sm font-bold rounded-lg transition-all ${activeTab === 'search'
-                            ? 'bg-neon-green text-[#0a1628] shadow-lg'
-                            : 'bg-gray-800 text-gray-200 hover:text-white'
+                        className={`flex-1 py-3 text-[10px] font-black uppercase tracking-widest rounded-xl transition-all ${activeTab === 'search'
+                            ? 'bg-[#00FF94] text-black shadow-lg shadow-[#00FF94]/30'
+                            : 'bg-[#112240] text-gray-200 hover:text-white border border-white/5'
                             }`}
                     >
                         Buscar
