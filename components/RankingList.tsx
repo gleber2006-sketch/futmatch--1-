@@ -1,13 +1,52 @@
-
-import React from 'react';
-import { Ranking } from '../types';
+import { Ranking, Profile } from '../types';
+import { friendshipService } from '../services/friendshipService';
 
 interface RankingListProps {
     rankings: Ranking[];
+    currentUser?: Profile | null;
     onNavigateBack?: () => void;
 }
 
-const RankingList: React.FC<RankingListProps> = ({ rankings, onNavigateBack }) => {
+const RankingList: React.FC<RankingListProps> = ({ rankings, currentUser, onNavigateBack }) => {
+    const [friendStatuses, setFriendStatuses] = React.useState<Record<string, { id: number, status: string, isRequester: boolean } | null>>({});
+
+    React.useEffect(() => {
+        const fetchStatuses = async () => {
+            if (!currentUser || rankings.length === 0) return;
+            try {
+                const statusPromises = rankings
+                    .filter(item => item.user.id !== currentUser.id)
+                    .map(async item => {
+                        const status = await friendshipService.getFriendshipStatus(currentUser.id, item.user.id);
+                        return { userId: item.user.id, status };
+                    });
+
+                const results = await Promise.all(statusPromises);
+                const statusMap: Record<string, any> = {};
+                results.forEach(res => {
+                    statusMap[res.userId] = res.status;
+                });
+                setFriendStatuses(statusMap);
+            } catch (err) {
+                console.error("Error fetching friendship statuses in ranking:", err);
+            }
+        };
+        fetchStatuses();
+    }, [rankings, currentUser]);
+
+    const handleAddFriend = async (userId: string) => {
+        if (!currentUser) return;
+        try {
+            await friendshipService.sendFriendRequest(currentUser.id, userId);
+            setFriendStatuses(prev => ({
+                ...prev,
+                [userId]: { id: 0, status: 'pending', isRequester: true }
+            }));
+        } catch (error) {
+            console.error("Error sending friend request from ranking:", error);
+            alert('Erro ao enviar solicitação.');
+        }
+    };
 
     const getMedal = (rank: number) => {
         if (rank === 1) return '🥇';
@@ -40,8 +79,8 @@ const RankingList: React.FC<RankingListProps> = ({ rankings, onNavigateBack }) =
                         <div
                             key={item.user.id}
                             className={`flex items-center p-3 rounded-xl transition-all duration-300 border ${item.rank <= 3
-                                    ? 'bg-gradient-to-r from-[#0a1628] to-[#112240] border-neon-green/30 shadow-[0_0_15px_rgba(0,255,148,0.1)]'
-                                    : 'bg-[#0a1628]/50 border-white/5 hover:bg-[#0a1628]/80 hover:border-white/20'
+                                ? 'bg-gradient-to-r from-[#0a1628] to-[#112240] border-neon-green/30 shadow-[0_0_15px_rgba(0,255,148,0.1)]'
+                                : 'bg-[#0a1628]/50 border-white/5 hover:bg-[#0a1628]/80 hover:border-white/20'
                                 }`}
                         >
                             <div className={`text-2xl font-bold w-10 text-center ${item.rank === 1 ? 'scale-125 drop-shadow-lg' : ''}`}>
@@ -51,9 +90,9 @@ const RankingList: React.FC<RankingListProps> = ({ rankings, onNavigateBack }) =
                                 src={item.user.photoUrl || `https://ui-avatars.com/api/?name=${item.user.name}&background=random`}
                                 alt={item.user.name}
                                 className={`w-12 h-12 rounded-full ml-4 object-cover ${item.rank === 1 ? 'border-2 border-yellow-400 shadow-[0_0_10px_rgba(250,204,21,0.5)]' :
-                                        item.rank === 2 ? 'border-2 border-gray-300' :
-                                            item.rank === 3 ? 'border-2 border-orange-400' :
-                                                'border border-white/10'
+                                    item.rank === 2 ? 'border-2 border-gray-300' :
+                                        item.rank === 3 ? 'border-2 border-orange-400' :
+                                            'border border-white/10'
                                     }`}
                             />
                             <div className="ml-4 flex-grow">
@@ -69,8 +108,30 @@ const RankingList: React.FC<RankingListProps> = ({ rankings, onNavigateBack }) =
                                     }
                                 </p>
                             </div>
-                            <div className="text-lg font-bold text-neon-green whitespace-nowrap drop-shadow-[0_0_5px_rgba(0,255,148,0.3)]">
-                                {item.points} pts
+                            <div className="text-right ml-4">
+                                <div className="text-lg font-bold text-neon-green whitespace-nowrap drop-shadow-[0_0_5px_rgba(0,255,148,0.3)]">
+                                    {item.points} pts
+                                </div>
+                                {currentUser && item.user.id !== currentUser.id && (
+                                    <div className="mt-2 text-right">
+                                        {friendStatuses[item.user.id] ? (
+                                            friendStatuses[item.user.id]?.status === 'accepted' ? (
+                                                <span className="text-green-400 text-[10px] font-black uppercase tracking-tighter opacity-80">Amigo</span>
+                                            ) : (
+                                                <span className="text-yellow-500 text-[10px] font-black uppercase tracking-tighter bg-yellow-500/10 px-2 py-1 rounded-lg">
+                                                    {friendStatuses[item.user.id]?.isRequester ? 'Enviada' : 'Recebida'}
+                                                </span>
+                                            )
+                                        ) : (
+                                            <button
+                                                onClick={() => handleAddFriend(item.user.id)}
+                                                className="bg-[#00FF94] text-black text-[10px] font-black uppercase tracking-tighter px-3 py-1.5 rounded-lg hover:bg-white transition-all shadow-lg active:scale-95"
+                                            >
+                                                Adicionar
+                                            </button>
+                                        )}
+                                    </div>
+                                )}
                             </div>
                         </div>
                     ))}
