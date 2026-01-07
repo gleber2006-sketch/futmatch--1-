@@ -35,7 +35,8 @@ interface SidebarProps {
     onNavigateToRanking: () => void;
     onNavigateToArenas: () => void;
     onNavigateToMatchChat: () => void;
-    onLogout: () => void;
+    unreadDMsCount?: number;
+    pendingFriendRequestsCount?: number;
 }
 
 const Sidebar: React.FC<SidebarProps> = ({
@@ -55,12 +56,14 @@ const Sidebar: React.FC<SidebarProps> = ({
     onNavigateToRanking,
     onNavigateToArenas,
     onNavigateToMatchChat,
-    onLogout
+    onLogout,
+    unreadDMsCount = 0,
+    pendingFriendRequestsCount = 0
 }) => {
 
     // if (!currentUser) return null; // MOVED CHECK DOWN or REMOVED to debug visibility
 
-    const sections: { title: string; items: { icon: any; title: string; action: () => void; disabled?: boolean; isLogout?: boolean; }[] }[] = [
+    const sections: { title: string; items: { icon: any; title: string; action: () => void; disabled?: boolean; isLogout?: boolean; badge?: number | string; }[] }[] = [
         {
             title: "Conta",
             items: [
@@ -89,24 +92,25 @@ const Sidebar: React.FC<SidebarProps> = ({
                 */
             ]
         },
-        /*
         {
             title: "Social",
             items: [
                 {
                     icon: <UsersIcon />,
                     title: 'Amigos',
-                    action: () => { onNavigateToFriends(); onClose(); }
+                    action: () => { onNavigateToFriends(); onClose(); },
+                    badge: pendingFriendRequestsCount > 0 ? pendingFriendRequestsCount : undefined
+                },
+                {
+                    icon: <ChatIcon />,
+                    title: 'Mensagens',
+                    action: () => { onNavigateToMatchChat(); onClose(); },
+                    badge: unreadDMsCount > 0 ? unreadDMsCount : undefined
                 },
                 {
                     icon: <StarIcon />,
                     title: 'Comunidade',
                     action: () => { onNavigateToCommunity(); onClose(); }
-                },
-                {
-                    icon: <ChatIcon />,
-                    title: 'Chat',
-                    action: () => { onNavigateToMatchChat(); onClose(); }
                 }
             ]
         },
@@ -145,7 +149,6 @@ const Sidebar: React.FC<SidebarProps> = ({
                 }
             ]
         },
-        */
         {
             title: "Outros",
             items: [
@@ -215,8 +218,13 @@ const Sidebar: React.FC<SidebarProps> = ({
                                         <div className={`${item.isLogout ? 'text-red-500' : 'text-neon-green'}`}>
                                             {item.icon}
                                         </div>
-                                        <div>
+                                        <div className="flex-1 flex items-center justify-between">
                                             <h4 className={`font-medium text-sm ${item.isLogout ? 'text-red-400' : 'text-gray-200'}`}>{item.title}</h4>
+                                            {item.badge && (
+                                                <span className="bg-[#00FF94] text-[#0a1628] text-[10px] font-bold px-1.5 py-0.5 rounded-full min-w-[18px] text-center shadow-[0_0_8px_rgba(0,255,148,0.4)]">
+                                                    {item.badge}
+                                                </span>
+                                            )}
                                         </div>
                                     </button>
                                 ))}

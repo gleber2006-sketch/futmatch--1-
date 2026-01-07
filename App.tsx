@@ -90,6 +90,8 @@ const App: React.FC = () => {
     const [prevPage, setPrevPage] = useState<Page>('explore');
     const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
     const [locationStatus, setLocationStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
+    const [unreadDMsCount, setUnreadDMsCount] = useState(0);
+    const [pendingFriendRequestsCount, setPendingFriendRequestsCount] = useState(0);
     const exitAttemptRef = useRef(false);
     const isPopping = useRef(false);
 
@@ -1516,6 +1518,92 @@ const App: React.FC = () => {
         }
     }, [isAuthenticated, locationStatus]);
 
+    // Notification Listeners
+    useEffect(() => {
+        if (!currentUser) return;
+
+        const fetchCounts = async () => {
+            try {
+                // Unread DMs
+                const { count: dmCount } = await supabase
+                    .from('direct_messages')
+                    .select('*', { count: 'exact', head: true })
+                    .eq('receiver_id', currentUser.id)
+                    .is('read_at', null);
+                setUnreadDMsCount(dmCount || 0);
+
+                // Pending Friend Requests (where I am the recipient)
+                const { count: frCount } = await supabase
+                    .from('friendships')
+                    .select('*', { count: 'exact', head: true })
+                    .eq('friend_id', currentUser.id)
+                    .eq('status', 'pending');
+                setPendingFriendRequestsCount(frCount || 0);
+            } catch (error) {
+                console.error("Error fetching notification counts:", error);
+            }
+        };
+
+        fetchCounts();
+
+        // Listen for new DMs
+        const dmChannel = supabase.channel('global-dm-notifications')
+            .on('postgres_changes', {
+                event: 'INSERT',
+                schema: 'public',
+                table: 'direct_messages',
+                filter: `receiver_id=eq.${currentUser.id}`
+            }, () => {
+                setUnreadDMsCount(prev => prev + 1);
+            })
+            .on('postgres_changes', {
+                event: 'UPDATE',
+                schema: 'public',
+                table: 'direct_messages',
+                filter: `receiver_id=eq.${currentUser.id}`
+            }, (payload) => {
+                if (payload.new.read_at) {
+                    setUnreadDMsCount(prev => Math.max(0, prev - 1));
+                }
+            })
+            .subscribe();
+
+        // Listen for friend requests
+        const frChannel = supabase.channel('global-fr-notifications')
+            .on('postgres_changes', {
+                event: 'INSERT',
+                schema: 'public',
+                table: 'friendships',
+                filter: `friend_id=eq.${currentUser.id}`
+            }, () => {
+                setPendingFriendRequestsCount(prev => prev + 1);
+            })
+            .on('postgres_changes', {
+                event: 'UPDATE',
+                schema: 'public',
+                table: 'friendships',
+                filter: `friend_id=eq.${currentUser.id}`
+            }, (payload) => {
+                if (payload.new.status === 'accepted' || payload.new.status === 'declined') {
+                    setPendingFriendRequestsCount(prev => Math.max(0, prev - 1));
+                }
+            })
+            .on('postgres_changes', {
+                event: 'DELETE',
+                schema: 'public',
+                table: 'friendships',
+                filter: `friend_id=eq.${currentUser.id}`
+            }, () => {
+                setPendingFriendRequestsCount(prev => Math.max(0, prev - 1));
+            })
+            .subscribe();
+
+        return () => {
+            supabase.removeChannel(dmChannel);
+            supabase.removeChannel(frChannel);
+        };
+    }, [currentUser]);
+
     const renderPage = () => {
         switch (activePage) {
             case 'explore':
@@ -1550,6 +1638,8 @@ const App: React.FC = () => {
                     onViewPublicProfile={setViewingPublicProfileId}
                     userLocation={userLocation}
                     locationStatus={locationStatus}
+                    unreadDMsCount={unreadDMsCount}
+                    pendingFriendRequestsCount={pendingFriendRequestsCount}
                 />;
             case 'create':
                 return <CreateMatchForm
@@ -1813,6 +1903,7 @@ const App: React.FC = () => {
                     <BottomNav
                         activePage={activePage}
                         onNavigate={setActivePage}
+                        pendingFriendRequestsCount={pendingFriendRequestsCount}
                     />
                 )}
                 {showConfirmation && (
@@ -1870,6 +1961,8 @@ const App: React.FC = () => {
                 onNavigateToArenas={() => setActivePage('arenas')}
                 onNavigateToMatchChat={() => setActivePage('match-chat')}
                 onLogout={handleLogout}
+                unreadDMsCount={unreadDMsCount}
+                pendingFriendRequestsCount={pendingFriendRequestsCount}
             />
         </>
     );

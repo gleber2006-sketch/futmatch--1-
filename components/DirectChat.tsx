@@ -79,11 +79,14 @@ const DirectChat: React.FC<DirectChatProps> = ({ currentUser, recipientId, onNav
                         (msg.sender_id === currentUser.id && msg.receiver_id === recipientId) ||
                         (msg.sender_id === recipientId && msg.receiver_id === currentUser.id)
                     ) {
+                        if (msg.sender_id === recipientId) {
+                            markMessagesAsRead();
+                        }
                         setMessages(prev => {
                             if (prev.some(m => m.id === msg.id)) return prev;
                             return [...prev, msg];
                         });
-                        setTimeout(scrollToBottom, 100);
+                        setTimeout(scrollToBottom, 50);
                     }
                 }
             )
@@ -105,11 +108,29 @@ const DirectChat: React.FC<DirectChatProps> = ({ currentUser, recipientId, onNav
 
             if (error) throw error;
             setMessages(data || []);
-            setTimeout(scrollToBottom, 100);
+            setTimeout(scrollToBottom, 50);
+
+            // Mark as read if any messages are from the recipient
+            if (data?.some(m => m.sender_id === recipientId && !m.read_at)) {
+                markMessagesAsRead();
+            }
         } catch (error) {
             console.error("Error fetching direct messages:", error);
         } finally {
             setIsLoadingMessages(false);
+        }
+    };
+
+    const markMessagesAsRead = async () => {
+        try {
+            await supabase
+                .from('direct_messages')
+                .update({ read_at: new Date().toISOString() })
+                .eq('receiver_id', currentUser.id)
+                .eq('sender_id', recipientId)
+                .is('read_at', null);
+        } catch (error) {
+            console.error("Error marking messages as read:", error);
         }
     };
 
@@ -238,11 +259,10 @@ const DirectChat: React.FC<DirectChatProps> = ({ currentUser, recipientId, onNav
                     <button
                         onClick={handleSendMessage}
                         disabled={isSending || !newMessage.trim()}
-                        className={`p-2.5 sm:p-3 rounded-full shadow-lg transition-all active:scale-95 shrink-0 flex items-center justify-center ${
-                            !newMessage.trim() || isSending
+                        className={`p-2.5 sm:p-3 rounded-full shadow-lg transition-all active:scale-95 shrink-0 flex items-center justify-center ${!newMessage.trim() || isSending
                             ? 'bg-[#112240] text-gray-500 opacity-50 cursor-not-allowed'
                             : 'bg-[#00FF94] text-[#0a1628] shadow-[0_0_15px_rgba(0,255,148,0.4)]'
-                        }`}
+                            }`}
                     >
                         {isSending ? (
                             <div className="w-5 h-5 border-2 border-current border-t-transparent rounded-full animate-spin" />

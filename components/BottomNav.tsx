@@ -6,6 +6,7 @@ import { ExploreIcon, CreateIcon, RankingIcon, ProfileIcon } from './Icons';
 interface BottomNavProps {
   activePage: Page;
   onNavigate: (page: Page) => void;
+  pendingFriendRequestsCount?: number;
 }
 
 const NavItem: React.FC<{
@@ -13,7 +14,8 @@ const NavItem: React.FC<{
   icon: React.ReactNode;
   isActive: boolean;
   onClick: () => void;
-}> = ({ label, icon, isActive, onClick }) => {
+  hasDot?: boolean;
+}> = ({ label, icon, isActive, onClick, hasDot }) => {
   // Neon Style Logic
   const activeClasses = 'text-neon-green drop-shadow-[0_0_8px_rgba(0,255,148,0.6)] scale-110';
   const inactiveClasses = 'text-gray-300 hover:text-white hover:scale-105';
@@ -23,8 +25,11 @@ const NavItem: React.FC<{
       onClick={onClick}
       className={`flex flex-col items-center justify-center w-full transition-all duration-300 ${isActive ? activeClasses : inactiveClasses}`}
     >
-      <div className={`transition-transform duration-300 ${isActive ? '-translate-y-1' : ''}`}>
+      <div className={`transition-transform duration-300 relative ${isActive ? '-translate-y-1' : ''}`}>
         {icon}
+        {hasDot && (
+          <span className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 bg-[#00FF94] rounded-full border-2 border-[#0a1628] shadow-[0_0_5px_rgba(0,255,148,0.5)]" />
+        )}
       </div>
       <span className={`text-[10px] font-medium mt-1 transition-opacity duration-300 ${isActive ? 'opacity-100 text-neon-green' : 'opacity-85'}`}>
         {label}
@@ -33,7 +38,7 @@ const NavItem: React.FC<{
   );
 };
 
-const BottomNav: React.FC<BottomNavProps> = ({ activePage, onNavigate }) => {
+const BottomNav: React.FC<BottomNavProps> = ({ activePage, onNavigate, pendingFriendRequestsCount = 0 }) => {
   const [isVisible, setIsVisible] = useState(true);
   const [lastScrollY, setLastScrollY] = useState(0);
 
@@ -81,6 +86,7 @@ const BottomNav: React.FC<BottomNavProps> = ({ activePage, onNavigate }) => {
         icon={<ProfileIcon />}
         isActive={activePage === 'profile'}
         onClick={() => onNavigate('profile')}
+        hasDot={pendingFriendRequestsCount > 0}
       />
     </nav>
   );
