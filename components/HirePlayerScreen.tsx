@@ -161,7 +161,7 @@ const HirePlayerScreen: React.FC<HirePlayerScreenProps> = ({ onBack, currentUser
 
                     <button
                         onClick={handleSearch}
-                        className="w-full bg-gradient-to-r from-neon-green to-green-600 text-[#0a1628] font-bold py-3 rounded-lg hover:brightness-110 transition-all flex items-center justify-center gap-2 shadow-lg shadow-green-900/20"
+                        className="w-full bg-[#00ff88] hover:bg-[#00cc6a] text-black font-bold py-3 rounded-lg transition-all flex items-center justify-center gap-2 shadow-[0_0_20px_rgba(0,255,136,0.3)]"
                     >
                         {isLoading ? <ModernLoader /> : (
                             <>
