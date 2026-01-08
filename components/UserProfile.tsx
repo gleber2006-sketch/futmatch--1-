@@ -4,7 +4,7 @@ import { Profile, Team } from '../types';
 import { StarIcon, TrophyIcon, EditIcon } from './Icons';
 import { supabase } from '../services/supabaseClient';
 import ModernLoader from './ModernLoader';
-import { SPORTS_LIST, SPORT_POSITIONS, BRAZILIAN_TEAMS, CITY_LIST, AVAILABLE_ROLES } from '../constants';
+import { SPORTS_LIST, SPORT_POSITIONS, BRAZILIAN_TEAMS, CITY_LIST, AVAILABLE_ROLES, COACH_SPECIALTIES } from '../constants';
 import FriendsManager from './Friends/FriendsManager';
 import { friendshipService } from '../services/friendshipService';
 import { teamService } from '../services/teamService';
@@ -48,7 +48,8 @@ const UserProfile: React.FC<UserProfileProps> = ({ user, onUpdateUser, onLogout,
         bannerUrl: user.bannerUrl || '',
         favoriteTeam: user.favoriteTeam || '',
         favoriteTeamLogoUrl: user.favoriteTeamLogoUrl || '',
-        available_roles: user.available_roles || []
+        available_roles: user.available_roles || [],
+        coach_specialties: user.coach_specialties || []
     });
     const [availablePositions, setAvailablePositions] = useState<string[]>([]);
     const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
@@ -139,7 +140,7 @@ const UserProfile: React.FC<UserProfileProps> = ({ user, onUpdateUser, onLogout,
         }));
     };
 
-    const handleMultiSelectToggle = (field: 'sport' | 'position' | 'available_roles', value: string) => {
+    const handleMultiSelectToggle = (field: 'sport' | 'position' | 'available_roles' | 'coach_specialties', value: string) => {
         setFormData(prev => {
             const currentValues = prev[field] || [];
             const newValues = currentValues.includes(value)
@@ -478,6 +479,24 @@ const UserProfile: React.FC<UserProfileProps> = ({ user, onUpdateUser, onLogout,
                                         </button>
                                     ))}
                                 </div>
+
+                                {(formData.available_roles || []).includes('Treinador / Coach') && (
+                                    <div className="mt-4 pt-4 border-t border-white/10 animate-fade-in">
+                                        <label className={labelClasses}>Especialidades de Treinador</label>
+                                        <div className="flex flex-wrap gap-2 mt-2">
+                                            {COACH_SPECIALTIES.map(spec => (
+                                                <button
+                                                    key={spec}
+                                                    type="button"
+                                                    onClick={() => handleMultiSelectToggle('coach_specialties', spec)}
+                                                    className={multiSelectButtonClasses((formData.coach_specialties || []).includes(spec))}
+                                                >
+                                                    {spec}
+                                                </button>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
                             </div>
 
                             <div className="flex gap-4 pt-2">
@@ -544,6 +563,20 @@ const UserProfile: React.FC<UserProfileProps> = ({ user, onUpdateUser, onLogout,
                                         </div>
                                     </div>
                                 )}
+
+                                {user.coach_specialties && user.coach_specialties.length > 0 && user.available_roles?.includes('Treinador / Coach') && (
+                                    <div className="mb-6">
+                                        <h3 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3 text-center">Treinador de:</h3>
+                                        <div className="flex flex-wrap justify-center gap-2">
+                                            {user.coach_specialties.map(spec => (
+                                                <span key={spec} className="bg-gradient-to-r from-blue-600/20 to-blue-500/20 text-blue-200 border border-blue-500/30 px-3 py-1 rounded-full text-sm font-medium shadow-[0_0_10px_rgba(59,130,246,0.1)]">
+                                                    {spec}
+                                                </span>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
+
                                 {/* Seção de Times */}
                                 {!isEditing && (
                                     <div className="mb-6">

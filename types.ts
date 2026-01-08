@@ -22,6 +22,7 @@ export interface Profile {
   referred_by?: string | null;
   signup_bonus_claimed?: boolean;
   available_roles?: string[] | null;
+  coach_specialties?: string[] | null;
 }
 
 export interface Match {

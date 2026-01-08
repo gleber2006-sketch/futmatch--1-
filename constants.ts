@@ -27,16 +27,17 @@ export const AVAILABLE_ROLES = [
   'Goleiro',
   'Juiz / Árbitro',
   'Montador de Redes / Marcador de Quadra',
-  'Churrasqueiro',
-  'Fotógrafo / Videomaker',
-  'Organizador',
-  'Treinador de Goleiros',
-  'Treinador de Jogadores (Personal)',
-  'Treinador de Tênis',
-  'Treinador de Vôlei',
-  'Treinador de Basquete',
-  'Treinador de Corrida',
-  'Treinador / Coach (Outros)'
+  'Treinador / Coach'
+];
+
+export const COACH_SPECIALTIES = [
+  'Goleiro',
+  'Jogador',
+  'Tênis',
+  'Vôlei',
+  'Basquete',
+  'Corrida',
+  'Outros'
 ];
 
 export const CITY_LIST = [

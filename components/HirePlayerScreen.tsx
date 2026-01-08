@@ -3,7 +3,7 @@ import { SearchIcon } from './Icons';
 import { supabase } from '../services/supabaseClient';
 import { Profile } from '../types';
 import ModernLoader from './ModernLoader';
-import { CITY_LIST, SPORTS_LIST, SPORT_POSITIONS, AVAILABLE_ROLES } from '../constants';
+import { CITY_LIST, SPORTS_LIST, SPORT_POSITIONS, AVAILABLE_ROLES, COACH_SPECIALTIES } from '../constants';
 
 interface HirePlayerScreenProps {
     onBack: () => void;
@@ -15,6 +15,7 @@ const HirePlayerScreen: React.FC<HirePlayerScreenProps> = ({ onBack, currentUser
     const [sport, setSport] = useState('Futebol');
     const [position, setPosition] = useState('');
     const [role, setRole] = useState('');
+    const [coachSpecialty, setCoachSpecialty] = useState('');
     const [city, setCity] = useState('Sorocaba');
 
     const [players, setPlayers] = useState<Profile[]>([]);
@@ -48,6 +49,11 @@ const HirePlayerScreen: React.FC<HirePlayerScreenProps> = ({ onBack, currentUser
             if (role) {
                 // If a specific role (Juiz, Goleiro, etc) is selected
                 query = query.contains('available_roles', [role]);
+
+                // If it's a Coach and a specialty is selected
+                if (role === 'Treinador / Coach' && coachSpecialty) {
+                    query = query.contains('coach_specialties', [coachSpecialty]);
+                }
             } else if (position) {
                 // If a specific position is selected
                 query = query.contains('position', [position]);
@@ -120,12 +126,25 @@ const HirePlayerScreen: React.FC<HirePlayerScreenProps> = ({ onBack, currentUser
                             onChange={(e) => {
                                 setRole(e.target.value);
                                 if (e.target.value) setPosition(''); // Clear position if role is selected
+                                if (e.target.value !== 'Treinador / Coach') setCoachSpecialty(''); // Reset specialty
                             }}
                             className="w-full bg-gray-900 border border-gray-700 rounded-lg p-2.5 text-white focus:border-neon-green outline-none transition-colors mb-2"
                         >
                             <option value="">Buscar Jogador (Por Posição)</option>
                             {AVAILABLE_ROLES.map(r => <option key={r} value={r}>{r}</option>)}
                         </select>
+
+                        {/* Special select for Coach Specialties */}
+                        {role === 'Treinador / Coach' && (
+                            <select
+                                value={coachSpecialty}
+                                onChange={(e) => setCoachSpecialty(e.target.value)}
+                                className="w-full bg-gray-900 border border-gray-700 rounded-lg p-2.5 text-white text-sm focus:border-neon-green outline-none transition-colors mb-2 animate-fade-in"
+                            >
+                                <option value="">Qualquer Especialidade</option>
+                                {COACH_SPECIALTIES.map(s => <option key={s} value={s}>{s}</option>)}
+                            </select>
+                        )}
 
                         {/* Only show position select if no specific role is selected */}
                         {!role && (
@@ -196,9 +215,16 @@ const HirePlayerScreen: React.FC<HirePlayerScreenProps> = ({ onBack, currentUser
                             <div className="flex flex-wrap gap-1 mt-2">
                                 {/* Prioritize showing the searched role if user has it */}
                                 {role && player.available_roles?.includes(role) && (
-                                    <span className="bg-yellow-500/20 text-yellow-300 text-[10px] px-2 py-0.5 rounded border border-yellow-500/30 font-bold uppercase">
-                                        {role}
-                                    </span>
+                                    <>
+                                        <span className="bg-yellow-500/20 text-yellow-300 text-[10px] px-2 py-0.5 rounded border border-yellow-500/30 font-bold uppercase">
+                                            {role}
+                                        </span>
+                                        {role === 'Treinador / Coach' && player.coach_specialties?.map(s => (
+                                            <span key={s} className="bg-blue-500/20 text-blue-300 text-[10px] px-2 py-0.5 rounded border border-blue-500/30 font-bold uppercase ml-1">
+                                                {s}
+                                            </span>
+                                        ))}
+                                    </>
                                 )}
                                 {/* Show positions otherwise */}
                                 {!role && player.position?.slice(0, 3).map(p => (
