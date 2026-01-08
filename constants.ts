@@ -26,10 +26,17 @@ export const SPORT_EMOJIS: Record<string, string> = {
 export const AVAILABLE_ROLES = [
   'Goleiro',
   'Juiz / Árbitro',
-  'Montador / Marcador de Quadra',
+  'Montador de Redes / Marcador de Quadra',
   'Churrasqueiro',
   'Fotógrafo / Videomaker',
-  'Organizador'
+  'Organizador',
+  'Treinador de Goleiros',
+  'Treinador de Jogadores (Personal)',
+  'Treinador de Tênis',
+  'Treinador de Vôlei',
+  'Treinador de Basquete',
+  'Treinador de Corrida',
+  'Treinador / Coach (Outros)'
 ];
 
 export const CITY_LIST = [
