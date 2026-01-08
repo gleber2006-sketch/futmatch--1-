@@ -503,7 +503,7 @@ const UserProfile: React.FC<UserProfileProps> = ({ user, onUpdateUser, onLogout,
                                 <button onClick={handleCancel} className="flex-1 bg-gray-700 text-white font-bold py-3 rounded-lg hover:bg-gray-600 transition-all" disabled={isUploadingAvatar || isUploadingBanner || isSaving}>
                                     Cancelar
                                 </button>
-                                <button onClick={handleSave} className="flex-1 bg-neon-green text-[#0a1628] font-bold py-3 rounded-lg hover:bg-[#00e686] hover:shadow-[0_0_15px_rgba(0,255,148,0.4)] transition-all flex justify-center items-center" disabled={isUploadingAvatar || isUploadingBanner || isSaving}>
+                                <button onClick={handleSave} className="flex-1 bg-[#00ff88] hover:bg-[#00cc6a] text-black font-bold py-3 rounded-lg transition-all shadow-[0_0_20px_rgba(0,255,136,0.3)] flex justify-center items-center" disabled={isUploadingAvatar || isUploadingBanner || isSaving}>
                                     {isSaving ? 'Salvando...' : 'Salvar Perfil'}
                                 </button>
                                 {isSaving && <ModernLoader />}
