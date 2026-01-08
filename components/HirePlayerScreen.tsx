@@ -69,7 +69,7 @@ const HirePlayerScreen: React.FC<HirePlayerScreenProps> = ({ onBack, currentUser
 
         } catch (error) {
             console.error("Error fetching players:", error);
-            alert("Erro ao buscar jogadores. Tente novamente.");
+            alert(`Erro ao buscar jogadores: ${(error as any).message || 'Erro desconhecido'}`);
         } finally {
             setIsLoading(false);
         }
