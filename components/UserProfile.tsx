@@ -4,7 +4,7 @@ import { Profile, Team } from '../types';
 import { StarIcon, TrophyIcon, EditIcon } from './Icons';
 import { supabase } from '../services/supabaseClient';
 import ModernLoader from './ModernLoader';
-import { SPORTS_LIST, SPORT_POSITIONS, BRAZILIAN_TEAMS, CITY_LIST } from '../constants';
+import { SPORTS_LIST, SPORT_POSITIONS, BRAZILIAN_TEAMS, CITY_LIST, AVAILABLE_ROLES } from '../constants';
 import FriendsManager from './Friends/FriendsManager';
 import { friendshipService } from '../services/friendshipService';
 import { teamService } from '../services/teamService';
@@ -47,7 +47,8 @@ const UserProfile: React.FC<UserProfileProps> = ({ user, onUpdateUser, onLogout,
         position: user.position || [],
         bannerUrl: user.bannerUrl || '',
         favoriteTeam: user.favoriteTeam || '',
-        favoriteTeamLogoUrl: user.favoriteTeamLogoUrl || ''
+        favoriteTeamLogoUrl: user.favoriteTeamLogoUrl || '',
+        available_roles: user.available_roles || []
     });
     const [availablePositions, setAvailablePositions] = useState<string[]>([]);
     const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
@@ -138,7 +139,7 @@ const UserProfile: React.FC<UserProfileProps> = ({ user, onUpdateUser, onLogout,
         }));
     };
 
-    const handleMultiSelectToggle = (field: 'sport' | 'position', value: string) => {
+    const handleMultiSelectToggle = (field: 'sport' | 'position' | 'available_roles', value: string) => {
         setFormData(prev => {
             const currentValues = prev[field] || [];
             const newValues = currentValues.includes(value)
@@ -462,6 +463,23 @@ const UserProfile: React.FC<UserProfileProps> = ({ user, onUpdateUser, onLogout,
                                 )}
                             </div>
 
+                            <div className="bg-[#0a1628]/50 p-5 rounded-xl border border-white/10 backdrop-blur-sm">
+                                <h3 className="text-white font-bold mb-4 border-b border-white/10 pb-2">Serviços Oferecidos</h3>
+                                <p className="text-[10px] text-gray-400 mb-2">Selecione os serviços que você oferece para a comunidade.</p>
+                                <div className="flex flex-wrap gap-2">
+                                    {AVAILABLE_ROLES.map(role => (
+                                        <button
+                                            key={role}
+                                            type="button"
+                                            onClick={() => handleMultiSelectToggle('available_roles', role)}
+                                            className={multiSelectButtonClasses((formData.available_roles || []).includes(role))}
+                                        >
+                                            {role}
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+
                             <div className="flex gap-4 pt-2">
                                 <button onClick={handleCancel} className="flex-1 bg-gray-700 text-white font-bold py-3 rounded-lg hover:bg-gray-600 transition-all" disabled={isUploadingAvatar || isUploadingBanner || isSaving}>
                                     Cancelar
@@ -514,6 +532,18 @@ const UserProfile: React.FC<UserProfileProps> = ({ user, onUpdateUser, onLogout,
                             </div>
 
                             <div className="pt-6 space-y-3 border-t border-white/10 mt-6">
+                                {user.available_roles && user.available_roles.length > 0 && (
+                                    <div className="mb-6">
+                                        <h3 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3 text-center">Serviços Oferecidos</h3>
+                                        <div className="flex flex-wrap justify-center gap-2">
+                                            {user.available_roles.map(role => (
+                                                <span key={role} className="bg-gradient-to-r from-yellow-600/20 to-yellow-500/20 text-yellow-200 border border-yellow-500/30 px-3 py-1 rounded-full text-sm font-medium shadow-[0_0_10px_rgba(234,179,8,0.1)]">
+                                                    {role}
+                                                </span>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
                                 {/* Seção de Times */}
                                 {!isEditing && (
                                     <div className="mb-6">

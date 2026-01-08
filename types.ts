@@ -21,6 +21,7 @@ export interface Profile {
   matchCoins: number;
   referred_by?: string | null;
   signup_bonus_claimed?: boolean;
+  available_roles?: string[] | null;
 }
 
 export interface Match {

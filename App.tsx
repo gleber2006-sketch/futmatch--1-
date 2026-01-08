@@ -1724,6 +1724,12 @@ const App: React.FC = () => {
                     onNavigateBack={() => setActivePage('explore')}
                     onViewPublicProfile={setViewingPublicProfileId}
                 />;
+            case 'hire':
+                return <HirePlayerScreen
+                    onBack={() => setActivePage('explore')}
+                    currentUserId={currentUser?.id}
+                    onNavigateToDirectChat={handleNavigateToDirectChat}
+                />;
             case 'community':
                 return <Community
                     currentUser={currentUser!}
