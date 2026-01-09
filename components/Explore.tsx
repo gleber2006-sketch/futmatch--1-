@@ -67,7 +67,7 @@ const haversineDistance = (
   return R * c;
 };
 
-const Explore: React.FC<ExploreProps> = ({ matches, platformFeatures, onJoinMatch, onLeaveMatch, onCancelMatch, onDeleteCanceledMatches, onEditMatch, joinedMatchIds, currentUser, onNavigateToCreate, onRefreshMatches, onNavigateToProfile, onNavigateToMap, onNavigateToMyGames, onNavigateToRanking, onNavigateToCommunity, onNavigateToArenas, onNavigateToMatchChat, onNavigateToDirectChat, onNavigateToNotifications, onNavigateToWallet, onBalanceUpdate, onBoostMatch, selectedMatch, onSelectMatch, onCloseMatchDetails, onOpenSidebar, onViewPublicProfile, userLocation, locationStatus, unreadDMsCount = 0, pendingFriendRequestsCount = 0 }) => {
+const Explore: React.FC<ExploreProps> = React.memo(({ matches, platformFeatures, onJoinMatch, onLeaveMatch, onCancelMatch, onDeleteCanceledMatches, onEditMatch, joinedMatchIds, currentUser, onNavigateToCreate, onRefreshMatches, onNavigateToProfile, onNavigateToMap, onNavigateToMyGames, onNavigateToRanking, onNavigateToCommunity, onNavigateToArenas, onNavigateToMatchChat, onNavigateToDirectChat, onNavigateToNotifications, onNavigateToWallet, onBalanceUpdate, onBoostMatch, selectedMatch, onSelectMatch, onCloseMatchDetails, onOpenSidebar, onViewPublicProfile, userLocation, locationStatus, unreadDMsCount = 0, pendingFriendRequestsCount = 0 }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [distanceFilter, setDistanceFilter] = useState<number>(Infinity);
   const [statusFilter, setStatusFilter] = useState<Match['status'] | 'all'>('Convocando');
@@ -342,6 +342,6 @@ const Explore: React.FC<ExploreProps> = ({ matches, platformFeatures, onJoinMatc
       })()}
     </div>
   );
-};
+});
 
 export default Explore;
