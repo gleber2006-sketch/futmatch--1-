@@ -46,7 +46,7 @@ const HirePlayerScreen: React.FC<HirePlayerScreenProps> = ({ onBack, currentUser
             }
 
             // Filter by Role (Service) or Position
-            if (role) {
+            if (role && role !== 'TODOS') {
                 // If a specific role (Juiz, Goleiro, etc) is selected
                 query = query.contains('available_roles', [role]);
 
@@ -58,6 +58,8 @@ const HirePlayerScreen: React.FC<HirePlayerScreenProps> = ({ onBack, currentUser
                 // If a specific position is selected
                 query = query.contains('position', [position]);
             }
+            // If role === 'TODOS', don't apply any role/position filter - show all users
+
 
             // Order by reputation/points
             query = query.order('points', { ascending: false }).limit(20);
@@ -131,6 +133,7 @@ const HirePlayerScreen: React.FC<HirePlayerScreenProps> = ({ onBack, currentUser
                             className="w-full bg-gray-900 border border-gray-700 rounded-lg p-2.5 text-white focus:border-neon-green outline-none transition-colors mb-2"
                         >
                             <option value="">Buscar Jogador (Por Posição)</option>
+                            <option value="TODOS">🔍 Todos os Usuários</option>
                             {AVAILABLE_ROLES.map(r => <option key={r} value={r}>{r}</option>)}
                         </select>
 
@@ -166,7 +169,7 @@ const HirePlayerScreen: React.FC<HirePlayerScreenProps> = ({ onBack, currentUser
                         {isLoading ? <ModernLoader /> : (
                             <>
                                 <SearchIcon className="w-5 h-5" />
-                                {role ? `Buscar ${role}` : 'Buscar Jogadores'}
+                                {role === 'TODOS' ? 'Buscar Todos os Usuários' : role ? `Buscar ${role}` : 'Buscar Jogadores'}
                             </>
                         )}
                     </button>
