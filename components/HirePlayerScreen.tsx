@@ -16,8 +16,7 @@ const HirePlayerScreen: React.FC<HirePlayerScreenProps> = ({ onBack, currentUser
     const [position, setPosition] = useState('');
     const [role, setRole] = useState('');
     const [coachSpecialty, setCoachSpecialty] = useState('');
-    const [city, setCity] = useState('Sorocaba');
-
+    const [city, setCity] = useState('');
     const [players, setPlayers] = useState<Profile[]>([]);
     const [isLoading, setIsLoading] = useState(false);
     const [hasSearched, setHasSearched] = useState(false);
@@ -64,9 +63,25 @@ const HirePlayerScreen: React.FC<HirePlayerScreenProps> = ({ onBack, currentUser
             // Order by reputation/points
             query = query.order('points', { ascending: false }).limit(20);
 
+            console.log(`🔍 [HireSearch] Filtrando por:`, { city, sport, role, coachSpecialty, position });
+
             const { data, error } = await query;
 
-            if (error) throw error;
+            if (error) {
+                console.error("❌ [HireSearch] Erro Supabase:", error);
+                throw error;
+            }
+
+            console.log(`✅ [HireSearch] Resultados encontrados:`, data?.length || 0);
+            if (data && data.length > 0) {
+                console.log('📄 [HireSearch] Amostra do primeiro resultado:', {
+                    id: data[0].id,
+                    name: data[0].name,
+                    available_roles: data[0].available_roles,
+                    city: data[0].city
+                });
+            }
+
             setPlayers(data || []);
 
         } catch (error) {

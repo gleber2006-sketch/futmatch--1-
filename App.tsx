@@ -1763,8 +1763,6 @@ const App: React.FC = () => {
                 return <SettingsScreen onBack={() => setActivePage('explore')} />;
             case 'support':
                 return <SupportScreen onBack={() => setActivePage('explore')} />;
-            case 'hire':
-                return <HirePlayerScreen onBack={() => setActivePage('explore')} />;
             case 'map':
                 return <MatchesMap
                     matches={matches}
