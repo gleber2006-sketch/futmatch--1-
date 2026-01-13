@@ -9,9 +9,10 @@ interface HirePlayerScreenProps {
     onBack: () => void;
     currentUserId?: string;
     onNavigateToDirectChat: (userId: string) => void;
+    onViewPublicProfile: (userId: string) => void;
 }
 
-const HirePlayerScreen: React.FC<HirePlayerScreenProps> = ({ onBack, currentUserId, onNavigateToDirectChat }) => {
+const HirePlayerScreen: React.FC<HirePlayerScreenProps> = ({ onBack, currentUserId, onNavigateToDirectChat, onViewPublicProfile }) => {
     const [sport, setSport] = useState('');
     const [position, setPosition] = useState('');
     const [role, setRole] = useState('');
@@ -33,47 +34,36 @@ const HirePlayerScreen: React.FC<HirePlayerScreenProps> = ({ onBack, currentUser
                 .select('*')
                 .neq('id', currentUserId || ''); // Don't show myself
 
-            // Filter by City
-            if (city) {
-                query = query.eq('city', city);
+            // Global filter for 'Hire' screen: must be a professional (have services)
+            // UNLESS the user specifically asks for ALL users
+            if (role !== 'TODOS') {
+                query = query.not('available_roles', 'is', null)
+                    .neq('available_roles', '{}');
             }
 
-            // Filter by Sport (Array Clean)
-            // Postgres array contains: sport @> {selectedSport}
-            if (sport) {
-                query = query.contains('sport', [sport]);
-            }
+            // Optional Filters
+            if (city) query = query.eq('city', city);
+            if (sport) query = query.contains('sport', [sport]);
 
-            // Filter by Role (Service) or Position
             if (role && role !== 'TODOS') {
-                // If a specific role (Juiz, Goleiro, etc) is selected
                 query = query.contains('available_roles', [role]);
-
-                // If it's a Coach and a specialty is selected
                 if (role === 'Treinador / Coach' && coachSpecialty) {
                     query = query.contains('coach_specialties', [coachSpecialty]);
                 }
             } else if (position) {
-                // If a specific position is selected
                 query = query.contains('position', [position]);
-            } else if (role !== 'TODOS') {
-                // DEFAULT: Show only users who HAVE at least one service/role
-                // This ensures we don't show "normal" players by default
-                query = query.not('available_roles', 'is', null)
-                    .neq('available_roles', '{}');
             }
-            // If role === 'TODOS', don't apply any role/position filter - show all users
 
+            console.log(`🔍 [HireSearch] Searching for:`, { role, position, sport, city, currentUserId });
 
-            // Order by reputation/points
-            query = query.order('points', { ascending: false }).limit(20);
-
-            const { data, error } = await query;
+            const { data, error } = await query.order('points', { ascending: false }).limit(20);
 
             if (error) {
+                console.error("❌ [HireSearch] Error:", error);
                 throw error;
             }
 
+            console.log(`✅ [HireSearch] Found ${data?.length || 0} players`);
             setPlayers(data || []);
 
         } catch (error) {
@@ -199,7 +189,11 @@ const HirePlayerScreen: React.FC<HirePlayerScreenProps> = ({ onBack, currentUser
                 )}
 
                 {players.map(player => (
-                    <div key={player.id} className="bg-gray-800 rounded-xl p-4 border border-gray-700 shadow-md flex items-center gap-4 animate-fade-in group hover:border-neon-green/30 transition-colors">
+                    <div
+                        className="bg-gray-800 rounded-xl p-4 border border-gray-700 shadow-md flex items-center gap-4 animate-fade-in group hover:border-neon-green/30 transition-colors cursor-pointer"
+                        onClick={() => onViewPublicProfile(player.id)}
+                        key={player.id}
+                    >
                         <div className="relative">
                             <img
                                 src={player.photo_url || (player as any).photoUrl || `https://ui-avatars.com/api/?name=${player.name}`}

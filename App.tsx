@@ -1735,6 +1735,7 @@ const App: React.FC = () => {
                     onBack={() => setActivePage('explore')}
                     currentUserId={currentUser?.id}
                     onNavigateToDirectChat={handleNavigateToDirectChat}
+                    onViewPublicProfile={setViewingPublicProfileId}
                 />;
             case 'community':
                 return <Community
