@@ -12,7 +12,7 @@ interface HirePlayerScreenProps {
 }
 
 const HirePlayerScreen: React.FC<HirePlayerScreenProps> = ({ onBack, currentUserId, onNavigateToDirectChat }) => {
-    const [sport, setSport] = useState('Futebol');
+    const [sport, setSport] = useState('');
     const [position, setPosition] = useState('');
     const [role, setRole] = useState('');
     const [coachSpecialty, setCoachSpecialty] = useState('');
@@ -131,6 +131,7 @@ const HirePlayerScreen: React.FC<HirePlayerScreenProps> = ({ onBack, currentUser
                                 }}
                                 className="w-full bg-gray-900 border border-gray-700 rounded-lg p-2.5 text-white text-sm focus:border-neon-green outline-none transition-colors"
                             >
+                                <option value="">Todos os Esportes</option>
                                 {SPORTS_LIST.map(s => <option key={s} value={s}>{s}</option>)}
                             </select>
                         </div>
@@ -209,7 +210,7 @@ const HirePlayerScreen: React.FC<HirePlayerScreenProps> = ({ onBack, currentUser
                     <div key={player.id} className="bg-gray-800 rounded-xl p-4 border border-gray-700 shadow-md flex items-center gap-4 animate-fade-in group hover:border-neon-green/30 transition-colors">
                         <div className="relative">
                             <img
-                                src={player.photoUrl || `https://ui-avatars.com/api/?name=${player.name}`}
+                                src={player.photo_url || (player as any).photoUrl || `https://ui-avatars.com/api/?name=${player.name}`}
                                 alt={player.name}
                                 className="w-16 h-16 rounded-full object-cover border-2 border-gray-600 group-hover:border-neon-green transition-colors"
                             />
