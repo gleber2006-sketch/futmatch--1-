@@ -1,4 +1,4 @@
-﻿import React, { useState, useCallback, useEffect, useRef, lazy, Suspense } from 'react';
+import React, { useState, useCallback, useEffect, useRef, lazy, Suspense } from 'react';
 import BottomNav from './components/BottomNav';
 import { Page, Feature, Profile, Match, Ranking, DraftMatchData, NewUserRegistrationData, MatchParticipant } from './types';
 import { supabase } from './services/supabaseClient';
@@ -311,6 +311,8 @@ const App: React.FC = () => {
                 favoriteTeam: data.favorite_team,
                 favoriteTeamLogoUrl: data.favorite_team_logo_url,
                 matchCoins: balance, // Mapped balance
+                available_roles: data.available_roles,
+                coach_specialties: data.coach_specialties,
             };
         };
 
@@ -1310,6 +1312,8 @@ const App: React.FC = () => {
                 sport: newUser.sport,
                 position: newUser.position,
                 bio: newUser.bio,
+                available_roles: newUser.available_roles,
+                coach_specialties: newUser.coach_specialties,
                 updated_at: new Date().toISOString(),
             };
 
@@ -1356,6 +1360,8 @@ const App: React.FC = () => {
                     banner_url: updatedUser.bannerUrl,
                     favorite_team: updatedUser.favoriteTeam,
                     favorite_team_logo_url: updatedUser.favoriteTeamLogoUrl,
+                    available_roles: updatedUser.available_roles,
+                    coach_specialties: updatedUser.coach_specialties,
                     updated_at: new Date().toISOString(),
                 })
                 .eq('id', updatedUser.id);

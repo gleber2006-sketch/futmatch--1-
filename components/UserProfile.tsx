@@ -111,7 +111,9 @@ const UserProfile: React.FC<UserProfileProps> = ({ user, onUpdateUser, onLogout,
             position: user.position || [],
             bannerUrl: user.bannerUrl || '',
             favoriteTeam: user.favoriteTeam || '',
-            favoriteTeamLogoUrl: user.favoriteTeamLogoUrl || ''
+            favoriteTeamLogoUrl: user.favoriteTeamLogoUrl || '',
+            available_roles: user.available_roles || [],
+            coach_specialties: user.coach_specialties || []
         });
     }, [user]);
 
@@ -174,7 +176,9 @@ const UserProfile: React.FC<UserProfileProps> = ({ user, onUpdateUser, onLogout,
             position: user.position || [],
             bannerUrl: user.bannerUrl || '',
             favoriteTeam: user.favoriteTeam || '',
-            favoriteTeamLogoUrl: user.favoriteTeamLogoUrl || ''
+            favoriteTeamLogoUrl: user.favoriteTeamLogoUrl || '',
+            available_roles: user.available_roles || [],
+            coach_specialties: user.coach_specialties || []
         });
     };
 
