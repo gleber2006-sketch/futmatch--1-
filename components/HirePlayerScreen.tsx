@@ -34,27 +34,28 @@ const HirePlayerScreen: React.FC<HirePlayerScreenProps> = ({ onBack, currentUser
                 .select('*')
                 .neq('id', currentUserId || ''); // Don't show myself
 
-            // Global filter for 'Hire' screen: must be a professional (have services)
-            // UNLESS the user specifically asks for ALL users
-            if (role !== 'TODOS') {
+            // Global filter for 'Hire' screen: only professionals (unless specifically searching TODOS)
+            if (role !== 'TODOS' && !role && !position) {
                 query = query.not('available_roles', 'is', null)
-                    .neq('available_roles', '{}');
+                    .filter('available_roles', 'neq', '{}');
             }
 
             // Optional Filters
             if (city) query = query.eq('city', city);
-            if (sport) query = query.contains('sport', [sport]);
+
+            // Use overlaps for array filters to be more resilient
+            if (sport) query = query.overlaps('sport', [sport]);
 
             if (role && role !== 'TODOS') {
-                query = query.contains('available_roles', [role]);
+                query = query.overlaps('available_roles', [role]);
                 if (role === 'Treinador / Coach' && coachSpecialty) {
-                    query = query.contains('coach_specialties', [coachSpecialty]);
+                    query = query.overlaps('coach_specialties', [coachSpecialty]);
                 }
             } else if (position) {
-                query = query.contains('position', [position]);
+                query = query.overlaps('position', [position]);
             }
 
-            console.log(`🔍 [HireSearch] Searching for:`, { role, position, sport, city, currentUserId });
+            console.log(`🔍 [HireSearch] Searching with filters`, { role, position, sport, city });
 
             const { data, error } = await query.order('points', { ascending: false }).limit(20);
 
@@ -63,7 +64,6 @@ const HirePlayerScreen: React.FC<HirePlayerScreenProps> = ({ onBack, currentUser
                 throw error;
             }
 
-            console.log(`✅ [HireSearch] Found ${data?.length || 0} players`);
             setPlayers(data || []);
 
         } catch (error) {
@@ -218,23 +218,30 @@ const HirePlayerScreen: React.FC<HirePlayerScreenProps> = ({ onBack, currentUser
                             </p>
 
                             <div className="flex flex-wrap gap-1 mt-2">
-                                {/* Prioritize showing the searched role if user has it */}
-                                {role && player.available_roles?.includes(role) && (
-                                    <>
-                                        <span className="bg-yellow-500/20 text-yellow-300 text-[10px] px-2 py-0.5 rounded border border-yellow-500/30 font-bold uppercase">
-                                            {role}
-                                        </span>
-                                        {role === 'Treinador / Coach' && player.coach_specialties?.map(s => (
-                                            <span key={s} className="bg-blue-500/20 text-blue-300 text-[10px] px-2 py-0.5 rounded border border-blue-500/30 font-bold uppercase ml-1">
-                                                {s}
-                                            </span>
-                                        ))}
-                                    </>
-                                )}
-                                {/* Show positions otherwise */}
-                                {!role && player.position?.slice(0, 3).map(p => (
-                                    <span key={p} className="bg-gray-700 text-gray-300 text-[10px] px-2 py-0.5 rounded border border-gray-600">
+                                {/* Roles/Services labels */}
+                                {(player.available_roles || []).map(r => (
+                                    <span
+                                        key={r}
+                                        className={`text-[10px] px-2 py-0.5 rounded border font-bold uppercase ${r === role
+                                                ? 'bg-yellow-500/20 text-yellow-300 border-yellow-500/30'
+                                                : 'bg-neon-green/10 text-neon-green border-neon-green/20'
+                                            }`}
+                                    >
+                                        {r}
+                                    </span>
+                                ))}
+
+                                {/* Positions if no specific role searched and no special roles */}
+                                {(!role && (!player.available_roles || player.available_roles.length === 0)) && player.position?.slice(0, 3).map(p => (
+                                    <span key={p} className="bg-gray-700 text-gray-300 text-[10px] px-2 py-0.5 rounded border border-gray-600 italic">
                                         {p}
+                                    </span>
+                                ))}
+
+                                {/* Coach Specialty extra badge */}
+                                {role === 'Treinador / Coach' && player.coach_specialties?.map(s => (
+                                    <span key={s} className="bg-blue-500/20 text-blue-300 text-[10px] px-2 py-0.5 rounded border border-blue-500/30 font-bold uppercase">
+                                        {s}
                                     </span>
                                 ))}
                             </div>
