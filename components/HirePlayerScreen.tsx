@@ -56,6 +56,11 @@ const HirePlayerScreen: React.FC<HirePlayerScreenProps> = ({ onBack, currentUser
             } else if (position) {
                 // If a specific position is selected
                 query = query.contains('position', [position]);
+            } else if (role !== 'TODOS') {
+                // DEFAULT: Show only users who HAVE at least one service/role
+                // This ensures we don't show "normal" players by default
+                query = query.not('available_roles', 'is', null)
+                    .neq('available_roles', '{}');
             }
             // If role === 'TODOS', don't apply any role/position filter - show all users
 
@@ -63,23 +68,10 @@ const HirePlayerScreen: React.FC<HirePlayerScreenProps> = ({ onBack, currentUser
             // Order by reputation/points
             query = query.order('points', { ascending: false }).limit(20);
 
-            console.log(`🔍 [HireSearch] Filtrando por:`, { city, sport, role, coachSpecialty, position });
-
             const { data, error } = await query;
 
             if (error) {
-                console.error("❌ [HireSearch] Erro Supabase:", error);
                 throw error;
-            }
-
-            console.log(`✅ [HireSearch] Resultados encontrados:`, data?.length || 0);
-            if (data && data.length > 0) {
-                console.log('📄 [HireSearch] Amostra do primeiro resultado:', {
-                    id: data[0].id,
-                    name: data[0].name,
-                    available_roles: data[0].available_roles,
-                    city: data[0].city
-                });
             }
 
             setPlayers(data || []);
