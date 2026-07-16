@@ -43,8 +43,7 @@ const HirePlayerScreen: React.FC<HirePlayerScreenProps> = ({ onBack, currentUser
             // Optional Filters
             if (city) query = query.eq('city', city);
 
-            // Use overlaps for array filters to be more resilient
-            if (sport) query = query.overlaps('sport', [sport]);
+            // FILTRO DESATIVADO POR TESTE: if (sport) query = query.overlaps('sport', [sport]);
 
             if (role && role !== 'TODOS') {
                 query = query.overlaps('available_roles', [role]);
@@ -55,13 +54,18 @@ const HirePlayerScreen: React.FC<HirePlayerScreenProps> = ({ onBack, currentUser
                 query = query.overlaps('position', [position]);
             }
 
-            console.log(`🔍 [HireSearch] Searching with filters`, { role, position, sport, city });
+            console.log(`🔍 [HireSearch] Searching with filters:`, { role, position, sport, city });
 
             const { data, error } = await query.order('points', { ascending: false }).limit(20);
 
             if (error) {
                 console.error("❌ [HireSearch] Error:", error);
                 throw error;
+            }
+
+            console.log(`✅ [HireSearch] Found ${data?.length || 0} players`);
+            if (data && data.length > 0) {
+                console.log('📄 [HireSearch] Sample player sports:', data[0].sport);
             }
 
             setPlayers(data || []);
@@ -110,6 +114,8 @@ const HirePlayerScreen: React.FC<HirePlayerScreenProps> = ({ onBack, currentUser
                                 onChange={(e) => {
                                     setSport(e.target.value);
                                     setPosition(''); // Reset position when sport changes
+                                    setHasSearched(false);
+                                    setPlayers([]);
                                 }}
                                 className="w-full bg-gray-900 border border-gray-700 rounded-lg p-2.5 text-white text-sm focus:border-neon-green outline-none transition-colors"
                             >
@@ -223,8 +229,8 @@ const HirePlayerScreen: React.FC<HirePlayerScreenProps> = ({ onBack, currentUser
                                     <span
                                         key={r}
                                         className={`text-[10px] px-2 py-0.5 rounded border font-bold uppercase ${r === role
-                                                ? 'bg-yellow-500/20 text-yellow-300 border-yellow-500/30'
-                                                : 'bg-neon-green/10 text-neon-green border-neon-green/20'
+                                            ? 'bg-yellow-500/20 text-yellow-300 border-yellow-500/30'
+                                            : 'bg-neon-green/10 text-neon-green border-neon-green/20'
                                             }`}
                                     >
                                         {r}

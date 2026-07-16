@@ -36,8 +36,8 @@ export default async function handler(req, res) {
 
     const title = `🛡️ Entre no time ${team.name}!`;
     const description = `Você foi convidado para o elenco do ${team.name}. Clique para entrar no time pelo FutMatch! ⚽`;
-    const image = team.logo_url || 'https://futmatch-1.vercel.app/logo.jpg';
-    const host = req.headers.host || 'futmatch-1.vercel.app';
+    const image = team.logo_url || 'https://futmatch-3zw.pages.dev/logo.jpg';
+    const host = req.headers.host || 'futmatch-3zw.pages.dev';
     const protocol = req.headers['x-forwarded-proto'] || 'https';
     const appUrl = `${protocol}://${host}/?invite_team=${code}`;
 
