@@ -1,5 +1,4 @@
-
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { GoogleIcon, EyeIcon, EyeOffIcon } from './Icons';
 import { Profile } from '../types';
 import ModernLoader from './ModernLoader';
@@ -29,10 +28,8 @@ const Home: React.FC<HomeProps> = ({ onLogin, onRegister, onGoogleLogin, loginEr
     const [dateOfBirth, setDateOfBirth] = useState('');
     const [photoUrl, setPhotoUrl] = useState(`https://picsum.photos/seed/${Date.now()}/200`);
     const [isRegistering, setIsRegistering] = useState(false);
-    const [backgroundImage, setBackgroundImage] = useState('https://images.unsplash.com/photo-1551958214-2d59cc7a3d46?q=80&w=2070&auto=format&fit=crop');
     const [availablePositions, setAvailablePositions] = useState<string[]>([]);
     const [isDragging, setIsDragging] = useState(false);
-
 
     useEffect(() => {
         const newAvailablePositions = sports.flatMap(s => SPORT_POSITIONS[s] || []);
@@ -108,13 +105,13 @@ const Home: React.FC<HomeProps> = ({ onLogin, onRegister, onGoogleLogin, loginEr
         );
     };
 
-
-    const inputClasses = "w-full bg-[#0a1628]/80 text-white p-3 rounded-lg border border-white/10 focus:outline-none focus:ring-2 focus:ring-neon-green/50 focus:border-neon-green transition-all duration-200 placeholder-gray-500 backdrop-blur-sm";
+    // Tech sporty classes overriding defaults
+    const inputClasses = "w-full !bg-[#0c0d12] text-white p-3 !rounded-[2px] !border-[#1c2230] focus:outline-none focus:!border-neon-green focus:!ring-1 focus:!ring-neon-green/30 transition-all duration-300 placeholder-gray-600 font-mono text-sm";
 
     const multiSelectButtonClasses = (isSelected: boolean) =>
-        `px-3 py-2 rounded-lg text-sm transition-all duration-200 border ${isSelected
-            ? 'bg-neon-green/20 border-neon-green text-neon-green font-bold shadow-[0_0_10px_rgba(0,255,148,0.2)]'
-            : 'bg-[#0a1628]/50 border-white/10 text-gray-400 hover:border-white/30'
+        `px-3 py-2 !rounded-[2px] text-xs font-mono uppercase tracking-wider transition-all duration-300 !border ${isSelected
+            ? '!bg-neon-green/10 !border-neon-green text-neon-green font-bold shadow-[0_0_12px_rgba(0,255,148,0.15)]'
+            : '!bg-[#0c0d12]/80 !border-[#1c2230] text-gray-500 hover:!border-neon-green/50 hover:text-white'
         }`;
 
     const renderContent = () => {
@@ -122,21 +119,23 @@ const Home: React.FC<HomeProps> = ({ onLogin, onRegister, onGoogleLogin, loginEr
             case 'login':
                 return (
                     <div className="animate-fade-in">
-                        <h2 className="text-3xl font-bold text-center text-white mb-2 drop-shadow-md">Bem-vindo!</h2>
-                        <p className="text-gray-400 text-center mb-6">Acesse sua conta para continuar.</p>
+                        <div className="flex items-center justify-between mb-6 border-b border-[#1c2230] pb-3">
+                            <h2 className="text-lg font-bold font-mono text-white tracking-wider uppercase">AUTENTICAÇÃO</h2>
+                            <span className="text-[9px] font-mono text-neon-green bg-neon-green/10 px-2 py-0.5 border border-neon-green/20">SECURE CONNECT</span>
+                        </div>
 
                         {loginError && (
-                            <div className="bg-red-500/20 border border-red-500/50 text-red-300 p-3 rounded-lg mb-4 text-center text-sm backdrop-blur-sm">
+                            <div className="bg-red-500/10 border border-red-500/30 text-red-400 p-3 rounded-[2px] mb-4 text-center text-xs font-mono backdrop-blur-sm">
                                 {loginError}
                             </div>
                         )}
 
                         <form onSubmit={handleLoginSubmit} className="space-y-4">
                             <div>
-                                <label className="block text-sm font-medium text-gray-300 mb-1 ml-1">Email</label>
+                                <label className="block text-[10px] font-mono uppercase tracking-wider text-gray-500 mb-1.5 ml-1">Endereço de E-mail</label>
                                 <input
                                     type="email"
-                                    placeholder="voce@email.com"
+                                    placeholder="USUARIO@EMAIL.COM"
                                     className={inputClasses}
                                     value={loginEmail}
                                     onChange={(e) => { setLoginEmail(e.target.value); clearLoginError(); }}
@@ -144,56 +143,66 @@ const Home: React.FC<HomeProps> = ({ onLogin, onRegister, onGoogleLogin, loginEr
                                     autoComplete="email"
                                 />
                             </div>
-                            <div className="relative">
-                                <label className="block text-sm font-medium text-gray-300 mb-1 ml-1">Senha</label>
-                                <input
-                                    type={isPasswordVisible ? 'text' : 'password'}
-                                    placeholder="••••••••"
-                                    className={`${inputClasses} pr-10`}
-                                    value={loginPassword}
-                                    onChange={(e) => { setLoginPassword(e.target.value); clearLoginError(); }}
-                                    required
-                                    autoComplete="current-password"
-                                />
-                                <button
-                                    type="button"
-                                    onClick={() => setIsPasswordVisible(!isPasswordVisible)}
-                                    className="absolute bottom-0 right-0 flex items-center pr-3 h-[48px] text-gray-400 hover:text-white transition-colors"
-                                    aria-label={isPasswordVisible ? "Ocultar senha" : "Mostrar senha"}
-                                >
-                                    {isPasswordVisible ? <EyeOffIcon /> : <EyeIcon />}
-                                </button>
+                            <div>
+                                <label className="block text-[10px] font-mono uppercase tracking-wider text-gray-500 mb-1.5 ml-1">Senha de Acesso</label>
+                                <div className="relative">
+                                    <input
+                                        type={isPasswordVisible ? 'text' : 'password'}
+                                        placeholder="••••••••"
+                                        className={`${inputClasses} pr-10`}
+                                        value={loginPassword}
+                                        onChange={(e) => { setLoginPassword(e.target.value); clearLoginError(); }}
+                                        required
+                                        autoComplete="current-password"
+                                    />
+                                    <button
+                                        type="button"
+                                        onClick={() => setIsPasswordVisible(!isPasswordVisible)}
+                                        className="absolute bottom-0 right-0 flex items-center pr-3 h-[46px] text-gray-500 hover:text-white transition-colors"
+                                        aria-label={isPasswordVisible ? "Ocultar senha" : "Mostrar senha"}
+                                    >
+                                        {isPasswordVisible ? <EyeOffIcon /> : <EyeIcon />}
+                                    </button>
+                                </div>
                             </div>
-                            <div className="flex justify-between items-center text-sm px-1">
-                                <label className="flex items-center text-gray-400 cursor-pointer hover:text-white transition-colors">
-                                    <input type="checkbox" className="h-4 w-4 rounded bg-[#0a1628] border-gray-600 text-neon-green focus:ring-neon-green" />
-                                    <span className="ml-2">Lembrar login</span>
+                            <div className="flex justify-between items-center text-[11px] px-1 font-mono">
+                                <label className="flex items-center text-gray-500 cursor-pointer hover:text-gray-300 transition-colors">
+                                    <input type="checkbox" className="h-3.5 w-3.5 bg-[#0c0d12] border-[#1c2230] rounded-[1px] text-neon-green focus:ring-0 focus:ring-offset-0 focus:outline-none" />
+                                    <span className="ml-2 uppercase tracking-wider">Manter ativo</span>
                                 </label>
-                                <a href="#" className="font-semibold text-neon-green hover:text-[#00e686] hover:underline transition-colors">Esqueci a senha</a>
+                                <a href="#" className="font-bold text-neon-blue hover:text-neon-green hover:underline transition-colors uppercase tracking-wider">Recuperar</a>
                             </div>
-                            <button type="submit" className="w-full bg-[#00FF94] text-[#0a1628] p-3 rounded-lg font-bold shadow-lg hover:bg-[#00e686] hover:shadow-[0_0_20px_rgba(0,255,148,0.4)] transition-all transform hover:scale-[1.02]">
-                                Entrar
+                            <button type="submit" className="w-full bg-gradient-to-r from-neon-green to-neon-blue text-[#06080c] py-3 rounded-[2px] font-bold font-mono text-sm uppercase tracking-wider shadow-lg hover:shadow-[0_0_20px_rgba(0,255,148,0.3)] transition-all duration-300 relative overflow-hidden group">
+                                <span className="relative z-10">Conectar Jogador</span>
+                                <div className="absolute inset-0 w-full h-full bg-white/20 transform scale-x-0 group-hover:scale-x-100 transition-transform origin-left duration-300"></div>
                             </button>
                         </form>
+                        
                         <div className="flex items-center my-6">
-                            <hr className="flex-grow border-white/10" /><span className="mx-4 text-gray-500 text-xs font-bold uppercase tracking-widest">OU</span><hr className="flex-grow border-white/10" />
+                            <hr className="flex-grow border-[#1c2230]" />
+                            <span className="mx-4 text-gray-600 text-[10px] font-mono font-bold uppercase tracking-widest">OAUTH SYSTEM</span>
+                            <hr className="flex-grow border-[#1c2230]" />
                         </div>
-                        <button onClick={onGoogleLogin} className="w-full bg-white/5 border border-white/10 text-white p-3 rounded-lg font-semibold shadow-md flex items-center justify-center gap-2 opacity-50 cursor-not-allowed hover:bg-white/10 transition-all" disabled>
-                            <GoogleIcon /> Continuar com Google
+                        
+                        <button onClick={onGoogleLogin} className="w-full bg-[#0c0d12]/50 border border-[#1c2230] text-gray-600 py-3 rounded-[2px] font-semibold font-mono text-xs flex items-center justify-center gap-2 opacity-40 cursor-not-allowed" disabled>
+                            <GoogleIcon /> GOOGLE LOGIN OFFLINE
                         </button>
-                        <p className="text-xs text-gray-500 text-center mt-2 px-4">
-                            Login com Google desabilitado neste ambiente. Por favor, use o e-mail.
-                        </p>
-                        <button onClick={() => setView('welcome')} className="w-full mt-6 text-sm text-gray-400 hover:text-white underline transition-colors">Voltar</button>
+                        
+                        <button onClick={() => setView('welcome')} className="w-full mt-6 text-xs font-mono uppercase tracking-wider text-gray-500 hover:text-neon-blue transition-colors">
+                            &lt; Voltar ao Terminal
+                        </button>
                     </div>
                 );
             case 'register':
                 return (
                     <div className="animate-fade-in">
-                        <h2 className="text-3xl font-bold text-center text-white mb-6 drop-shadow-md">Crie sua Conta</h2>
+                        <div className="flex items-center justify-between mb-6 border-b border-[#1c2230] pb-3">
+                            <h2 className="text-lg font-bold font-mono text-white tracking-wider uppercase">NOVO JOGADOR</h2>
+                            <span className="text-[9px] font-mono text-neon-blue bg-neon-blue/10 px-2 py-0.5 border border-neon-blue/20">REGISTRO</span>
+                        </div>
 
                         {loginError && (
-                            <div className="bg-red-500/20 border border-red-500/50 text-red-300 p-3 rounded-lg mb-4 text-center text-sm backdrop-blur-sm">
+                            <div className="bg-red-500/10 border border-red-500/30 text-red-400 p-3 rounded-[2px] mb-4 text-center text-xs font-mono backdrop-blur-sm">
                                 {loginError}
                             </div>
                         )}
@@ -205,61 +214,79 @@ const Home: React.FC<HomeProps> = ({ onLogin, onRegister, onGoogleLogin, loginEr
                                     onDragOver={handleDragOver}
                                     onDragLeave={handleDragLeave}
                                     onDrop={handleDrop}
-                                    className={`relative cursor-pointer w-28 h-28 rounded-full border-4 transition-all duration-300 flex items-center justify-center overflow-hidden shadow-xl group ${isDragging ? 'border-neon-green scale-110 shadow-[0_0_20px_rgba(0,255,148,0.5)]' : 'border-[#0a1628] hover:border-neon-green'}`}
+                                    className={`relative cursor-pointer w-24 h-24 border transition-all duration-300 flex items-center justify-center overflow-hidden shadow-xl group ${isDragging ? 'border-neon-green scale-105 shadow-[0_0_15px_rgba(0,255,148,0.3)]' : 'border-[#1c2230] hover:border-neon-green'}`}
                                 >
+                                    {/* Corners decorators */}
+                                    <div className="absolute top-0 left-0 w-2 h-2 border-t border-l border-neon-green/40 group-hover:border-neon-green"></div>
+                                    <div className="absolute top-0 right-0 w-2 h-2 border-t border-r border-neon-green/40 group-hover:border-neon-green"></div>
+                                    <div className="absolute bottom-0 left-0 w-2 h-2 border-b border-l border-neon-green/40 group-hover:border-neon-green"></div>
+                                    <div className="absolute bottom-0 right-0 w-2 h-2 border-b border-r border-neon-green/40 group-hover:border-neon-green"></div>
+
                                     <img src={photoUrl} alt="Preview" className="w-full h-full object-cover" />
-                                    <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                                        <p className="text-white text-xs font-bold text-center px-2">Alterar Foto</p>
+                                    <div className="absolute inset-0 bg-black/60 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                                        <p className="text-white text-[10px] font-mono uppercase tracking-wider font-bold text-center px-1">Upload Foto</p>
                                     </div>
                                     {isDragging && (
                                         <div className="absolute inset-0 bg-neon-green/20 flex items-center justify-center backdrop-blur-sm">
-                                            <p className="text-white text-xs font-bold text-center drop-shadow-md">Solte a imagem</p>
+                                            <p className="text-white text-[10px] font-mono font-bold text-center">SOLTAR</p>
                                         </div>
                                     )}
                                     <input id="photo-upload" type="file" accept="image/*" onChange={handlePhotoChange} className="hidden" />
                                 </label>
                             </div>
-                            <input type="text" placeholder="Nome completo" value={name} onChange={e => setName(e.target.value)} className={inputClasses} required />
-                            <input type="email" placeholder="Seu melhor e-mail" value={email} onChange={e => setEmail(e.target.value)} className={inputClasses} required />
-                            <div className="relative">
-                                <input
-                                    type={isPasswordVisible ? 'text' : 'password'}
-                                    placeholder="Senha (mín. 6 caracteres)"
-                                    value={password}
-                                    onChange={e => setPassword(e.target.value)}
-                                    className={`${inputClasses} pr-10`}
-                                    required
-                                />
-                                <button
-                                    type="button"
-                                    onClick={() => setIsPasswordVisible(!isPasswordVisible)}
-                                    className="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400 hover:text-white transition-colors"
-                                    aria-label={isPasswordVisible ? "Ocultar senha" : "Mostrar senha"}
-                                >
-                                    {isPasswordVisible ? <EyeOffIcon /> : <EyeIcon />}
-                                </button>
+
+                            <div>
+                                <label className="block text-[10px] font-mono uppercase tracking-wider text-gray-500 mb-1.5 ml-1">Nome Completo</label>
+                                <input type="text" placeholder="EX: FULANO DA SILVA" value={name} onChange={e => setName(e.target.value)} className={inputClasses} required />
+                            </div>
+
+                            <div>
+                                <label className="block text-[10px] font-mono uppercase tracking-wider text-gray-500 mb-1.5 ml-1">Seu melhor e-mail</label>
+                                <input type="email" placeholder="EX: NOME@EMAIL.COM" value={email} onChange={e => setEmail(e.target.value)} className={inputClasses} required />
+                            </div>
+
+                            <div>
+                                <label className="block text-[10px] font-mono uppercase tracking-wider text-gray-500 mb-1.5 ml-1">Senha (mín. 6 caracteres)</label>
+                                <div className="relative">
+                                    <input
+                                        type={isPasswordVisible ? 'text' : 'password'}
+                                        placeholder="••••••••"
+                                        value={password}
+                                        onChange={e => setPassword(e.target.value)}
+                                        className={`${inputClasses} pr-10`}
+                                        required
+                                    />
+                                    <button
+                                        type="button"
+                                        onClick={() => setIsPasswordVisible(!isPasswordVisible)}
+                                        className="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-500 hover:text-white transition-colors"
+                                        aria-label={isPasswordVisible ? "Ocultar senha" : "Mostrar senha"}
+                                    >
+                                        {isPasswordVisible ? <EyeOffIcon /> : <EyeIcon />}
+                                    </button>
+                                </div>
                             </div>
 
                             <div className="flex gap-4">
                                 <div className="w-1/3">
-                                    <label className="block text-sm font-medium text-gray-300 mb-1 ml-1">Estado</label>
-                                    <input type="text" value="SP" className={`${inputClasses} bg-[#0a1628]/50 cursor-not-allowed opacity-70`} disabled />
+                                    <label className="block text-[10px] font-mono uppercase tracking-wider text-gray-500 mb-1.5 ml-1">Estado</label>
+                                    <input type="text" value="SP" className={`${inputClasses} !bg-[#0c0d12]/50 cursor-not-allowed opacity-50`} disabled />
                                 </div>
                                 <div className="w-2/3">
-                                    <label className="block text-sm font-medium text-gray-300 mb-1 ml-1">Cidade</label>
-                                    <select value={city} onChange={e => setCity(e.target.value)} className={inputClasses} required>
-                                        {CITY_LIST.map(c => <option key={c} value={c} className="bg-[#0a1628] text-white">{c}</option>)}
+                                    <label className="block text-[10px] font-mono uppercase tracking-wider text-gray-500 mb-1.5 ml-1">Cidade</label>
+                                    <select value={city} onChange={e => setCity(e.target.value)} className={`${inputClasses} !py-2.5`} required>
+                                        {CITY_LIST.map(c => <option key={c} value={c} className="bg-[#07090e] text-white">{c}</option>)}
                                     </select>
                                 </div>
                             </div>
 
                             <div>
-                                <label className="block text-sm font-medium text-gray-300 mb-1 ml-1">Data de Nascimento</label>
+                                <label className="block text-[10px] font-mono uppercase tracking-wider text-gray-500 mb-1.5 ml-1">Data de Nascimento</label>
                                 <input type="date" value={dateOfBirth} onChange={e => setDateOfBirth(e.target.value)} className={inputClasses} required />
                             </div>
 
                             <div>
-                                <label className="block text-sm font-medium text-gray-300 mb-2 ml-1">Quais esportes você joga?</label>
+                                <label className="block text-[10px] font-mono uppercase tracking-wider text-gray-500 mb-2 ml-1">Quais esportes você joga?</label>
                                 <div className="flex flex-wrap gap-2">
                                     {SPORTS_LIST.map(sport => (
                                         <button key={sport} type="button" onClick={() => handleMultiSelectToggle(setSports, sport)} className={multiSelectButtonClasses(sports.includes(sport))}>
@@ -271,7 +298,7 @@ const Home: React.FC<HomeProps> = ({ onLogin, onRegister, onGoogleLogin, loginEr
 
                             {availablePositions.length > 0 && (
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-300 mb-2 ml-1">Em quais posições?</label>
+                                    <label className="block text-[10px] font-mono uppercase tracking-wider text-gray-500 mb-2 ml-1">Em quais posições?</label>
                                     <div className="flex flex-wrap gap-2">
                                         {availablePositions.map(position => (
                                             <button key={position} type="button" onClick={() => handleMultiSelectToggle(setPositions, position)} className={multiSelectButtonClasses(positions.includes(position))}>
@@ -282,110 +309,130 @@ const Home: React.FC<HomeProps> = ({ onLogin, onRegister, onGoogleLogin, loginEr
                                 </div>
                             )}
 
-                            <button type="submit" className="w-full bg-[#00FF94] text-[#0a1628] p-3 rounded-lg font-bold shadow-lg hover:bg-[#00e686] hover:shadow-[0_0_20px_rgba(0,255,148,0.4)] transition-all transform hover:scale-[1.02] mt-4" disabled={isRegistering}>
-                                {isRegistering ? 'Registrando...' : 'Criar Conta'}
+                            <button type="submit" className="w-full bg-gradient-to-r from-neon-green to-neon-blue text-[#06080c] py-3 rounded-[2px] font-bold font-mono text-sm uppercase tracking-wider shadow-lg hover:shadow-[0_0_20px_rgba(0,255,148,0.3)] transition-all duration-300 mt-4 relative overflow-hidden group" disabled={isRegistering}>
+                                <span className="relative z-10">{isRegistering ? 'Conectando Ficha...' : 'Finalizar Cadastro'}</span>
+                                <div className="absolute inset-0 w-full h-full bg-white/20 transform scale-x-0 group-hover:scale-x-100 transition-transform origin-left duration-300"></div>
                             </button>
                             {isRegistering && <ModernLoader />}
-
-                            <div className="flex items-center my-4">
-                                <hr className="flex-grow border-white/10" /><span className="mx-4 text-gray-500 text-xs font-bold uppercase tracking-widest">OU</span><hr className="flex-grow border-white/10" />
-                            </div>
-                            <button onClick={onGoogleLogin} className="w-full bg-white/5 border border-white/10 text-white p-3 rounded-lg font-semibold shadow-md flex items-center justify-center gap-2 opacity-50 cursor-not-allowed hover:bg-white/10 transition-all" disabled>
-                                <GoogleIcon /> Continuar com Google
-                            </button>
-                            <p className="text-xs text-gray-500 text-center mt-2 px-4">
-                                Login com Google desabilitado neste ambiente. Por favor, use o e-mail.
-                            </p>
-                            <button onClick={() => setView('welcome')} className="w-full mt-4 text-sm text-gray-400 hover:text-white underline transition-colors">Voltar</button>
                         </form>
+
+                        <div className="flex items-center my-6">
+                            <hr className="flex-grow border-[#1c2230]" />
+                            <span className="mx-4 text-gray-600 text-[10px] font-mono font-bold uppercase tracking-widest">OAUTH SYSTEM</span>
+                            <hr className="flex-grow border-[#1c2230]" />
+                        </div>
+                        
+                        <button onClick={onGoogleLogin} className="w-full bg-[#0c0d12]/50 border border-[#1c2230] text-gray-600 py-3 rounded-[2px] font-semibold font-mono text-xs flex items-center justify-center gap-2 opacity-40 cursor-not-allowed" disabled>
+                            <GoogleIcon /> GOOGLE LOGIN OFFLINE
+                        </button>
+                        
+                        <button onClick={() => setView('welcome')} className="w-full mt-6 text-xs font-mono uppercase tracking-wider text-gray-500 hover:text-neon-blue transition-colors">
+                            &lt; Voltar ao Terminal
+                        </button>
                     </div>
                 );
             case 'welcome':
             default:
                 return (
                     <div className="animate-fade-in text-center">
-                        {/* Logo compacto */}
-                        <div className="flex justify-center mb-5">
-                            <div className="w-20 h-20 rounded-2xl flex items-center justify-center shadow-lg"
-                                style={{ background: 'linear-gradient(135deg, #00FF94, #00C2FF)', boxShadow: '0 0 24px rgba(0,255,148,0.35)' }}
-                            >
-                                <span className="text-4xl">⚽</span>
+                        <div className="flex justify-center mb-6">
+                            <div className="relative w-20 h-20 flex items-center justify-center border border-neon-green/30 p-1">
+                                {/* Corners decorators */}
+                                <div className="absolute top-0 left-0 w-2 h-2 border-t border-l border-neon-green"></div>
+                                <div className="absolute top-0 right-0 w-2 h-2 border-t border-r border-neon-green"></div>
+                                <div className="absolute bottom-0 left-0 w-2 h-2 border-b border-l border-neon-green"></div>
+                                <div className="absolute bottom-0 right-0 w-2 h-2 border-b border-r border-neon-green"></div>
+                                
+                                <div className="w-full h-full flex items-center justify-center bg-[#07090e] border border-neon-green/10 shadow-[inset_0_0_15px_rgba(0,255,148,0.08)]">
+                                    <span className="text-3xl animate-pulse">⚽</span>
+                                </div>
                             </div>
                         </div>
 
-                        <h1 className="text-4xl font-bold text-white mb-1 tracking-tight">FutMatch</h1>
-                        <p className="text-sm mb-8" style={{ color: 'rgba(255,255,255,0.45)' }}>
-                            Encontre partidas, conecte jogadores.
+                        <h1 className="text-3xl font-black text-white mb-1 tracking-wider uppercase font-mono">
+                            FUT<span className="text-neon-green">MATCH</span>
+                        </h1>
+                        <div className="h-[1.5px] w-12 bg-gradient-to-r from-neon-green to-neon-blue mx-auto mb-4"></div>
+                        <p className="text-[10px] mb-8 uppercase tracking-widest text-gray-500 font-mono">
+                            [ telemetry system v2.1 ]
                         </p>
 
-                        <div className="space-y-3">
+                        <div className="space-y-3 font-mono">
                             <button
                                 onClick={() => setView('login')}
-                                className="w-full p-3 rounded-xl font-bold text-white transition-all hover:scale-[1.02]"
-                                style={{ background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.12)' }}
+                                className="w-full py-3 px-4 bg-[#0c0d12] border border-[#1c2230] text-xs text-white uppercase tracking-wider font-bold hover:border-neon-green hover:text-neon-green hover:shadow-[0_0_15px_rgba(0,255,148,0.1)] transition-all duration-300 relative group overflow-hidden"
                             >
-                                Entrar
+                                <span className="relative z-10">Entrar no Sistema</span>
+                                <div className="absolute inset-0 w-full h-full bg-neon-green/5 transform scale-x-0 group-hover:scale-x-100 transition-transform origin-left duration-300"></div>
                             </button>
                             <button
                                 onClick={() => setView('register')}
-                                className="w-full p-3 rounded-xl font-bold transition-all hover:scale-[1.02]"
-                                style={{ background: 'linear-gradient(90deg, #00FF94, #00C2FF)', color: '#060d1a', boxShadow: '0 4px 20px rgba(0,255,148,0.3)' }}
+                                className="w-full py-3 px-4 bg-gradient-to-r from-neon-green to-neon-blue text-xs text-[#06080c] uppercase tracking-wider font-bold hover:shadow-[0_0_20px_rgba(0,255,148,0.3)] transition-all duration-300 relative overflow-hidden group"
                             >
-                                Criar Conta
+                                <span className="relative z-10">Criar Nova Ficha</span>
+                                <div className="absolute inset-0 w-full h-full bg-white/20 transform scale-x-0 group-hover:scale-x-100 transition-transform origin-left duration-300"></div>
                             </button>
                         </div>
 
-                        <p className="text-xs mt-6" style={{ color: 'rgba(255,255,255,0.2)' }}>
-                            Ao continuar, você aceita os Termos de Uso.
+                        <p className="text-[10px] mt-8 text-gray-600 uppercase font-mono tracking-wider">
+                            SECURE SESSION PROTOCOL ACTIVE
                         </p>
                     </div>
                 );
         }
-    }
-
-
+    };
 
     return (
         <div className="min-h-screen flex flex-col items-center justify-center text-white relative overflow-hidden"
-            style={{ background: 'linear-gradient(135deg, #060d1a 0%, #0a1628 50%, #0d1f38 100%)' }}
+            style={{ background: 'linear-gradient(135deg, #050608 0%, #0c0d14 50%, #121722 100%)' }}
         >
             {/* Subtle grid pattern */}
-            <div className="absolute inset-0 opacity-[0.03]"
+            <div className="absolute inset-0 opacity-[0.02]"
                 style={{
                     backgroundImage: 'linear-gradient(#00FF94 1px, transparent 1px), linear-gradient(90deg, #00FF94 1px, transparent 1px)',
-                    backgroundSize: '40px 40px'
+                    backgroundSize: '32px 32px'
                 }}
             />
 
-            {/* Single sharp accent — top left */}
-            <div className="absolute top-0 left-0 w-64 h-64 opacity-10"
+            {/* Scanlines layer */}
+            <div className="absolute inset-0 pointer-events-none opacity-[0.03]"
+                style={{
+                    backgroundImage: 'linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06))',
+                    backgroundSize: '100% 4px, 6px 100%'
+                }}
+            />
+
+            {/* Accent glows */}
+            <div className="absolute top-0 left-0 w-80 h-80 opacity-[0.08] pointer-events-none"
                 style={{ background: 'radial-gradient(circle at top left, #00FF94, transparent 70%)' }}
             />
-            {/* Single sharp accent — bottom right */}
-            <div className="absolute bottom-0 right-0 w-64 h-64 opacity-10"
+            <div className="absolute bottom-0 right-0 w-80 h-80 opacity-[0.08] pointer-events-none"
                 style={{ background: 'radial-gradient(circle at bottom right, #00C2FF, transparent 70%)' }}
             />
 
             <div className="relative z-10 w-full max-w-sm px-4">
+                {/* HUD border elements */}
+                <div className="h-[2px] bg-gradient-to-r from-neon-green to-neon-blue w-full"></div>
                 <div
-                    className="rounded-2xl shadow-2xl p-8 transition-all duration-300"
-                    style={{
-                        background: 'rgba(17, 34, 64, 0.85)',
-                        border: '1px solid rgba(255,255,255,0.08)',
-                        backdropFilter: 'blur(20px)',
-                    }}
+                    className="bg-[#07090e]/95 p-8 transition-all duration-300 border-x border-b border-[#1c2230] shadow-[0_20px_50px_rgba(0,0,0,0.8)] relative"
                 >
+                    {/* Corners decorators */}
+                    <div className="absolute top-2 left-2 w-1.5 h-1.5 border-t border-l border-gray-600"></div>
+                    <div className="absolute top-2 right-2 w-1.5 h-1.5 border-t border-r border-gray-600"></div>
+                    <div className="absolute bottom-2 left-2 w-1.5 h-1.5 border-b border-l border-gray-600"></div>
+                    <div className="absolute bottom-2 right-2 w-1.5 h-1.5 border-b border-r border-gray-600"></div>
+
                     {renderContent()}
                 </div>
             </div>
 
             <style>{`
               @keyframes fade-in {
-                from { opacity: 0; transform: translateY(12px); }
+                from { opacity: 0; transform: translateY(8px); }
                 to { opacity: 1; transform: translateY(0); }
               }
               .animate-fade-in {
-                animation: fade-in 0.35s ease-out forwards;
+                animation: fade-in 0.3s ease-out forwards;
               }
             `}</style>
         </div>
@@ -393,4 +440,3 @@ const Home: React.FC<HomeProps> = ({ onLogin, onRegister, onGoogleLogin, loginEr
 };
 
 export default Home;
-
