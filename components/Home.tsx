@@ -304,52 +304,88 @@ const Home: React.FC<HomeProps> = ({ onLogin, onRegister, onGoogleLogin, loginEr
             default:
                 return (
                     <div className="animate-fade-in text-center">
-                        <div className="flex justify-center mb-8">
-                            <div className="w-28 h-28 rounded-full bg-[#0a1628] flex items-center justify-center border-4 border-neon-green shadow-[0_0_30px_rgba(0,255,148,0.4)] relative">
-                                <span className="text-6xl animate-pulse drop-shadow-[0_0_10px_rgba(255,255,255,0.5)]">⚽</span>
-                                <div className="absolute inset-0 rounded-full border border-white/20 animate-ping opacity-20"></div>
+                        {/* Logo compacto */}
+                        <div className="flex justify-center mb-5">
+                            <div className="w-20 h-20 rounded-2xl flex items-center justify-center shadow-lg"
+                                style={{ background: 'linear-gradient(135deg, #00FF94, #00C2FF)', boxShadow: '0 0 24px rgba(0,255,148,0.35)' }}
+                            >
+                                <span className="text-4xl">⚽</span>
                             </div>
                         </div>
-                        <h1 className="text-5xl font-bold text-white mb-2 tracking-tight drop-shadow-lg">FutMatch</h1>
-                        <p className="text-gray-300 text-lg mb-10 max-w-xs mx-auto leading-relaxed">Seu jogo está a um passo do seu próximo match.</p>
-                        <div className="space-y-4">
-                            <button onClick={onGoogleLogin} className="w-full bg-white/5 border border-white/10 text-white p-3 rounded-lg font-semibold shadow-md flex items-center justify-center gap-2 opacity-50 cursor-not-allowed hover:bg-white/10 transition-all" disabled>
-                                <GoogleIcon /> Continuar com Google
+
+                        <h1 className="text-4xl font-bold text-white mb-1 tracking-tight">FutMatch</h1>
+                        <p className="text-sm mb-8" style={{ color: 'rgba(255,255,255,0.45)' }}>
+                            Encontre partidas, conecte jogadores.
+                        </p>
+
+                        <div className="space-y-3">
+                            <button
+                                onClick={() => setView('login')}
+                                className="w-full p-3 rounded-xl font-bold text-white transition-all hover:scale-[1.02]"
+                                style={{ background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.12)' }}
+                            >
+                                Entrar
                             </button>
-                            <p className="text-xs text-gray-500 -mt-2 px-4">
-                                Login com Google desabilitado neste ambiente. Use o e-mail.
-                            </p>
-                            <button onClick={() => setView('login')} className="w-full bg-[#112240] border border-neon-green/30 text-white p-3 rounded-lg font-semibold shadow-lg hover:bg-[#1a2f55] hover:border-neon-green/50 transition-all">Entrar com E-mail</button>
-                            <button onClick={() => setView('register')} className="w-full bg-[#00FF94] text-[#0a1628] p-3 rounded-lg font-bold shadow-[0_0_20px_rgba(0,255,148,0.3)] hover:bg-[#00e686] hover:shadow-[0_0_30px_rgba(0,255,148,0.5)] transition-all transform hover:scale-105">Criar Nova Conta</button>
+                            <button
+                                onClick={() => setView('register')}
+                                className="w-full p-3 rounded-xl font-bold transition-all hover:scale-[1.02]"
+                                style={{ background: 'linear-gradient(90deg, #00FF94, #00C2FF)', color: '#060d1a', boxShadow: '0 4px 20px rgba(0,255,148,0.3)' }}
+                            >
+                                Criar Conta
+                            </button>
                         </div>
+
+                        <p className="text-xs mt-6" style={{ color: 'rgba(255,255,255,0.2)' }}>
+                            Ao continuar, você aceita os Termos de Uso.
+                        </p>
                     </div>
                 );
         }
     }
 
+
+
     return (
-        <div
-            className="min-h-screen flex flex-col items-center justify-center bg-cover bg-center text-white p-4 transition-all duration-1000 relative overflow-hidden"
-            style={{ backgroundImage: `url(${backgroundImage})` }}
+        <div className="min-h-screen flex flex-col items-center justify-center text-white relative overflow-hidden"
+            style={{ background: 'linear-gradient(135deg, #060d1a 0%, #0a1628 50%, #0d1f38 100%)' }}
         >
-            <div className="absolute inset-0 bg-[#0a1628]/90 z-0"></div>
+            {/* Subtle grid pattern */}
+            <div className="absolute inset-0 opacity-[0.03]"
+                style={{
+                    backgroundImage: 'linear-gradient(#00FF94 1px, transparent 1px), linear-gradient(90deg, #00FF94 1px, transparent 1px)',
+                    backgroundSize: '40px 40px'
+                }}
+            />
 
-            {/* Background Effects */}
-            <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] bg-neon-green/10 rounded-full blur-[100px] animate-pulse"></div>
-            <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] bg-neon-blue/10 rounded-full blur-[100px] animate-pulse delay-1000"></div>
+            {/* Single sharp accent — top left */}
+            <div className="absolute top-0 left-0 w-64 h-64 opacity-10"
+                style={{ background: 'radial-gradient(circle at top left, #00FF94, transparent 70%)' }}
+            />
+            {/* Single sharp accent — bottom right */}
+            <div className="absolute bottom-0 right-0 w-64 h-64 opacity-10"
+                style={{ background: 'radial-gradient(circle at bottom right, #00C2FF, transparent 70%)' }}
+            />
 
-            <div className="relative z-10 w-full max-w-md">
-                <div className="bg-[#112240]/60 backdrop-blur-xl border border-white/10 rounded-2xl shadow-2xl p-8 transition-all duration-300">
+            <div className="relative z-10 w-full max-w-sm px-4">
+                <div
+                    className="rounded-2xl shadow-2xl p-8 transition-all duration-300"
+                    style={{
+                        background: 'rgba(17, 34, 64, 0.85)',
+                        border: '1px solid rgba(255,255,255,0.08)',
+                        backdropFilter: 'blur(20px)',
+                    }}
+                >
                     {renderContent()}
                 </div>
             </div>
+
             <style>{`
               @keyframes fade-in {
-                from { opacity: 0; transform: translateY(10px); }
+                from { opacity: 0; transform: translateY(12px); }
                 to { opacity: 1; transform: translateY(0); }
               }
               .animate-fade-in {
-                animation: fade-in 0.4s ease-out forwards;
+                animation: fade-in 0.35s ease-out forwards;
               }
             `}</style>
         </div>
@@ -357,3 +393,4 @@ const Home: React.FC<HomeProps> = ({ onLogin, onRegister, onGoogleLogin, loginEr
 };
 
 export default Home;
+
